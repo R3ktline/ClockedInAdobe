@@ -1,0 +1,30 @@
+{
+  "id": "mihai",
+  "label": "Mihai (synthetic): searches by spec, opens the full specification table and reads it",
+  "expectedPersona": { "dialect": "dense", "need": "specs" },
+  "startPath": "/taraba/p/elec-lap-01",
+  "partner": {
+    "consent": { "personalization": true, "partnerData": false },
+    "visitor": { "returning": false, "visits": 1 },
+    "device": { "pointer": "fine", "viewportWidth": 1600, "zoom": 1, "prefersReducedMotion": false, "prefersContrast": false }
+  },
+  "events": [
+    { "t": 0, "type": "page_view", "productId": "elec-lap-01" },
+    { "t": 1500, "type": "search", "value": "16GB DDR5 laptop" },
+    { "t": 3500, "type": "filter", "value": "ram:16GB" },
+    { "t": 5000, "type": "block_open", "blockId": "specs", "productId": "elec-lap-01" },
+    { "t": 8000, "type": "block_dwell", "blockId": "specs", "value": 9500 },
+    { "t": 11000, "type": "block_open", "blockId": "specs", "productId": "elec-lap-01" },
+    { "t": 13000, "type": "filter", "value": "cpu:8-core" }
+  ],
+  "pages": [
+    {
+      "path": "/taraba/p/elec-mon-01",
+      "events": [
+        { "t": 0, "type": "page_view", "productId": "elec-mon-01" },
+        { "t": 2500, "type": "block_open", "blockId": "specs", "productId": "elec-mon-01" },
+        { "t": 6000, "type": "block_dwell", "blockId": "specs", "value": 9000 }
+      ]
+    }
+  ]
+}

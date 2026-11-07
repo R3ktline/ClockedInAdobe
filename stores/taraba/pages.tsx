@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import {
-  BabelBlock, BabelProvider, BabelStack, useBabel,
+  BabelBlock, BabelProvider, BabelStack, useBabel, useReviewPicks,
   type BrandKit, type Category, type InteractionEvent, type PartnerContext, type Product,
 } from "@/babel/sdk";
 import brandKit from "./brand-kit.json";
@@ -21,7 +21,7 @@ const CATEGORY_TINT: Record<Category, string> = {
   electronics: "#e7ecfb", fashion: "#f6e9ef", home: "#e9f3ec", groceries: "#fbf3df", toys: "#fdeee3", health_beauty: "#eef0f6",
 };
 
-type Common = { partner: PartnerContext; ghost?: { label: string; events: InteractionEvent[] } };
+type Common = { partner: PartnerContext; ghost?: { label: string; events: InteractionEvent[]; step?: number; next?: string } };
 
 const card = "rounded-[var(--babel-radius)] border border-black/10 bg-white";
 
@@ -184,6 +184,7 @@ function Policy({ p, kind, title, children }: { p: Product; kind: string; title:
 
 function Trust({ p, policiesFirst }: { p: Product; policiesFirst: boolean }) {
   const { track } = useBabel();
+  const picks = useReviewPicks(p.id);
   const policies = policiesFirst ? (
     <div className="grid gap-3 sm:grid-cols-3">
       {[
@@ -204,12 +205,42 @@ function Trust({ p, policiesFirst }: { p: Product; policiesFirst: boolean }) {
       <Policy p={p} kind="delivery" title="Delivery">Delivered in {p.policies.deliveryDays} days, tracked.</Policy>
     </div>
   );
+  const reviewItem = (r: Product["reviews"][number]) => (
+    <li key={r.author + r.date} className="border-t border-black/10 pt-3">
+      <p>
+        <span role="img" className="text-[var(--c-primary)]" aria-label={`Rated ${r.rating} out of 5`}>
+          {"★".repeat(r.rating)}<span className="text-black/20">{"★".repeat(5 - r.rating)}</span>
+        </span>{" "}
+        <span className="font-semibold">{r.title}</span>
+      </p>
+      <p className="mt-1">{r.text}</p>
+      <p className="mt-1 text-sm text-[var(--c-muted)]">
+        {r.author} · {new Date(r.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
+        {r.verified && " · Verified purchase"}
+      </p>
+    </li>
+  );
   const reviews = (
     <div>
       <Stars p={p} />
       <div className="mt-2 grid gap-2 sm:grid-cols-2">
         <p><span className="font-semibold">People like:</span> {p.reviewSummary.pros.join(", ")}</p>
         <p><span className="font-semibold">Watch out for:</span> {p.reviewSummary.cons.join(", ")}</p>
+      </div>
+      <div className="mt-3">
+        <button type="button" onClick={picks.ask} disabled={picks.status === "loading"} className="font-semibold text-[var(--c-primary)] underline disabled:opacity-50">
+          {picks.status === "loading" ? "Choosing…" : "Show the reviews that sum it up"}
+        </button>
+        {picks.status === "error" && <p className="mt-1 text-sm text-[var(--c-muted)]">Could not choose right now. All reviews are below.</p>}
+        {picks.status === "done" && (
+          <div className="mt-2 rounded-[var(--babel-radius)] bg-[#f3f5fb] p-3">
+            <p className="text-sm text-[var(--c-muted)]">
+              Chosen by the Babel agent to cover the range of opinions. The words are the buyers&apos;, not Babel&apos;s.{" "}
+              <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold">simulated</span>
+            </p>
+            <ul className="mt-2 flex flex-col gap-3">{picks.indexes.map((i) => reviewItem(p.reviews[i]))}</ul>
+          </div>
+        )}
       </div>
       <details className="mt-2" onToggle={(e) => e.currentTarget.open && track("review_open", { blockId: "trust", productId: p.id })}>
         <summary data-ghost="review_open" className="cursor-pointer font-semibold text-[var(--c-primary)]">Read reviews</summary>
@@ -218,21 +249,7 @@ function Trust({ p, policiesFirst }: { p: Product; policiesFirst: boolean }) {
           <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold">simulated</span>
         </p>
         <ul className="mt-2 flex flex-col gap-3">
-          {p.reviews.map((r) => (
-            <li key={r.author + r.date} className="border-t border-black/10 pt-3">
-              <p>
-                <span role="img" className="text-[var(--c-primary)]" aria-label={`Rated ${r.rating} out of 5`}>
-                  {"★".repeat(r.rating)}<span className="text-black/20">{"★".repeat(5 - r.rating)}</span>
-                </span>{" "}
-                <span className="font-semibold">{r.title}</span>
-              </p>
-              <p className="mt-1">{r.text}</p>
-              <p className="mt-1 text-sm text-[var(--c-muted)]">
-                {r.author} · {new Date(r.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
-                {r.verified && " · Verified purchase"}
-              </p>
-            </li>
-          ))}
+          {p.reviews.map(reviewItem)}
         </ul>
       </details>
     </div>

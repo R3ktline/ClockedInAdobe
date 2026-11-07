@@ -3,7 +3,7 @@ import type {
   BlockId, BrandKit, CopyRegister, Dialect, InteractionEvent, Need, PartnerContext, Persona, Registry, Slide, SlideBlock, Template, Theme,
 } from "@/babel/schema";
 import { modelInputs } from "./modelInputs";
-import { buildProfile, personaOf } from "./signalModel";
+import { buildProfile, personaOf, type Groups } from "./signalModel";
 
 export const CONFIDENCE_THRESHOLD = 0.55;
 export const NEUTRAL_PERSONA: Persona = { dialect: "standard", need: "balanced", confidence: 0 };
@@ -11,18 +11,20 @@ export const NEUTRAL_PERSONA: Persona = { dialect: "standard", need: "balanced",
 // Slide 0 and the in-visit "who is this shopper" read both come from David's signal model
 // (./signalModel.ts). With no events yet, only declared needs (accessibility settings) and
 // consented partner context can move it; everything else stays neutral until real behaviour.
-export function readShopper(ctx: PartnerContext, events: InteractionEvent[] = []) {
+// `prior` = what the earlier pages of this same visit taught the model, carried at full weight
+// (the model's default 0.6 is for a visit days ago). Group caps keep it from running away.
+export function readShopper(ctx: PartnerContext, events: InteractionEvent[] = [], prior?: Groups) {
   const { signals, context, declared } = modelInputs(events, ctx);
-  const profile = buildProfile(signals, declared, context);
+  const profile = buildProfile(signals, declared, context, prior, 1);
   return { profile, model: personaOf(profile) };
 }
 
-export function initialPersona(ctx: PartnerContext): { persona: Persona; reasons: string[]; copyRegister: CopyRegister } {
+export function initialPersona(ctx: PartnerContext, prior?: Groups): { persona: Persona; reasons: string[]; copyRegister: CopyRegister } {
   if (!ctx.consent.personalization) return { persona: NEUTRAL_PERSONA, reasons: ["no consent: standard view"], copyRegister: "standard" };
-  const { model } = readShopper(ctx);
+  const { model } = readShopper(ctx, [], prior);
   return {
     persona: { dialect: model.dialect, need: model.need, confidence: model.confidence },
-    reasons: [`dialect: ${model.dialectWhy}`, `need: ${model.needWhy}`],
+    reasons: [`${prior ? "remembered from earlier pages · " : ""}dialect: ${model.dialectWhy}`, `need: ${model.needWhy}`],
     copyRegister: model.copyRegister,
   };
 }

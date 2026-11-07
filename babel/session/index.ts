@@ -4,7 +4,7 @@ import type {
 } from "@/babel/schema";
 import { computeMarkers, findTriggers } from "@/babel/markers";
 import { readShopper } from "@/babel/persona";
-import { TRAIT_NAMES, TRAITS } from "@/babel/persona/signalModel";
+import { TRAIT_NAMES, TRAITS, type Groups } from "@/babel/persona/signalModel";
 import type { LlmTranscript } from "@/babel/agents/director";
 
 // "checkin" = a routine look by the agent; "zoom" = the shopper zoomed the page in.
@@ -46,6 +46,8 @@ export type Visit = {
   eventsAtLastLook: number;
   zoom: number;            // current page zoom relative to page load
   shopper?: ReturnType<typeof readShopper>; // David's signal model, re-read on every batch of events
+  visitorId?: string;      // set only with consent; keys the cross-page memory
+  prior?: Groups;          // what this shopper's earlier pages taught the model
   directorBusy: boolean;
   lastDirectorSlideAt?: number;
   minorCount: number;
@@ -59,8 +61,14 @@ const MAX_MINOR_SLIDES = 5;
 const CHECKIN_MS = Number(process.env.BABEL_CHECKIN_MS ?? 15_000);
 const CHECKIN_MIN_EVENTS = 3;
 
-const g = globalThis as unknown as { __babelVisits?: Map<string, Visit> };
+const g = globalThis as unknown as { __babelVisits?: Map<string, Visit>; __babelMemory?: Map<string, Groups> };
 const visits: Map<string, Visit> = (g.__babelVisits ??= new Map());
+
+// Cross-page memory: per visitor, the signal model's group sums at the end of the last page. Demo scope:
+// in memory, consented visitors only. The next page's slide 0 starts from it (rules, no LLM).
+const memory: Map<string, Groups> = (g.__babelMemory ??= new Map());
+export const recall = (visitorId?: string) => (visitorId ? memory.get(visitorId) : undefined);
+export const forget = (visitorId: string) => memory.delete(visitorId);
 
 export const getVisit = (id: string) => visits.get(id);
 export const listVisits = () => [...visits.values()].sort((a, b) => b.startedAt - a.startedAt);
@@ -68,6 +76,7 @@ export const elapsed = (v: Visit) => Date.now() - v.startedAt;
 
 export function createVisit(init: {
   store: string; template: Template; productId?: string; partner: PartnerContext; persona: Persona; slide: Slide; reasons: string[];
+  visitorId?: string;
 }): Visit {
   const v: Visit = {
     id: crypto.randomUUID(),
@@ -76,6 +85,8 @@ export function createVisit(init: {
     productId: init.productId,
     partner: init.partner,
     returning: init.partner.visitor.returning,
+    visitorId: init.partner.consent.personalization ? init.visitorId : undefined,
+    prior: init.partner.consent.personalization ? recall(init.visitorId) : undefined,
     startedAt: Date.now(),
     events: [],
     markers: {},
@@ -115,7 +126,8 @@ export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: b
   const now = Math.max(elapsed(v), ...v.events.map((e) => e.t));
   const prev = v.markers;
   v.markers = computeMarkers(v.events, now);
-  v.shopper = readShopper(v.partner, v.events);
+  v.shopper = readShopper(v.partner, v.events, v.prior);
+  if (v.visitorId && v.shopper.profile) memory.set(v.visitorId, v.shopper.profile.groups);
   scoreHypotheses(v, now);
 
   const crossed: Trigger[] = [...findTriggers(prev, v.markers), ...(zoomedIn ? ["zoom" as const] : [])];
