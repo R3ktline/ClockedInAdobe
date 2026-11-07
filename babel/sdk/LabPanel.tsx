@@ -3,6 +3,7 @@
 // what the agent is watching, and when the page changes. It also writes the shopper's memory to
 // the browser as they go, so closing the site and coming back works like it would for a real
 // consented visitor (signal-model spec §3: capped group sums only, never raw events).
+// Everything sits in the left column, so nothing covers the store; changes get only a small notice.
 import { useEffect, useRef, useState } from "react";
 import { useBabel } from "./BabelProvider";
 import { describeEvent } from "./Ghost";
@@ -10,6 +11,7 @@ import { describeEvent } from "./Ghost";
 type Effect = { signal: string; trait: string; dir: string };
 type Feed = {
   ageMs: number; returning: boolean; usedMemory: boolean; threshold: number;
+  llm: { mocked: boolean; model: string };
   slide: { index: number; kind: string; source: string; persona: { dialect: string; need: string; confidence: number }; rationale: string; copyRegister: string };
   slides: number;
   events: { t: number; type: string; value?: string | number; blockId?: string; effects: Effect[] }[];
@@ -39,11 +41,12 @@ const LABEL: Record<string, string> = {
 const KIND: Record<string, string> = { visit: "page opened", trigger: "agent alerted", slide: "page changed", hold: "agent kept the page", result: "agent checked its bet", skip: "agent skipped" };
 
 export function LabPanel() {
-  const { visitId, ghost, lastChange, agent, slide } = useBabel();
+  const { visitId, ghost, lastChange, agent, slide, player } = useBabel();
   const [feed, setFeed] = useState<Feed | null>(null);
   const [flash, setFlash] = useState<string[]>([]);
   const prevUsed = useRef<Record<string, boolean>>({});
-  const [banner, setBanner] = useState<typeof lastChange>(null);
+  const [toast, setToast] = useState(false);
+  const [freshChange, setFreshChange] = useState(false);
   const id = ghost?.label.toLowerCase() ?? "";
 
   useEffect(() => {
@@ -73,31 +76,28 @@ export function LabPanel() {
     return () => { stop = true; clearInterval(t); };
   }, [visitId, ghost?.visit, ghost?.step, id]);
 
-  // Big, unmissable notice every time the page changes shape.
+  // A small notice over the store, and the details highlighted in the panel.
   useEffect(() => {
     if (!lastChange) return;
-    setBanner(lastChange);
-    const t = setTimeout(() => setBanner(null), 8000);
-    return () => clearTimeout(t);
+    setToast(true); setFreshChange(true);
+    const a = setTimeout(() => setToast(false), 5000);
+    const b = setTimeout(() => setFreshChange(false), 8000);
+    return () => { clearTimeout(a); clearTimeout(b); };
   }, [lastChange]);
 
   if (!ghost) return null;
   const s = feed?.slide;
+  const pb = player?.state;
   const box = "rounded-lg bg-white/[0.06] p-3";
   const h = "mb-1.5 text-[11px] font-bold tracking-wider text-white/50 uppercase";
+  const pill = "rounded-md border border-white/25 px-2.5 py-1 font-semibold hover:bg-white/10 disabled:opacity-30";
+  const openedAdapted = lastChange && lastChange.from === lastChange.to;
 
   return (
     <>
-      {banner && (
-        <div role="status" className="babel-lab-banner fixed top-3 left-1/2 z-[70] w-[min(640px,calc(100vw-2rem))] -translate-x-1/2 rounded-xl border-2 border-[#f5b301] bg-[#14171f] p-4 text-white shadow-2xl">
-          <p className="text-lg font-extrabold text-[#f5b301]">
-            {banner.from === banner.to
-              ? `⚡ This page opened already adapted for her${feed?.usedMemory ? (feed.returning ? " · built from her last visit" : " · from her earlier pages") : ""}`
-              : `⚡ The page changed while she was on it · view ${banner.from} → ${banner.to}`}
-          </p>
-          <p className="text-sm text-white/70">Compared with the store&apos;s normal page:</p>
-          <ul className="mt-1 list-disc pl-5">{banner.lines.map((l) => <li key={l}>{l}</li>)}</ul>
-          <p className="mt-1 text-sm text-white/70">Why: {banner.rationale}</p>
+      {toast && lastChange && (
+        <div role="status" className="pointer-events-none fixed top-3 left-[390px] z-[70] rounded-full bg-[#f5b301] px-3 py-1 text-sm font-bold text-[#14171f] shadow-lg">
+          ⚡ {openedAdapted ? "Page opened already adapted" : `Page changed · view ${lastChange.from} → ${lastChange.to}`} · details in the panel
         </div>
       )}
       <aside aria-label="Lab indicators" className="fixed top-0 left-0 z-[55] flex h-screen w-[370px] flex-col gap-2 overflow-y-auto bg-[#0e1117] p-3 text-[13px] text-white shadow-2xl" style={{ fontSize: 13 }}>
@@ -107,9 +107,47 @@ export function LabPanel() {
             {feed?.returning ? "Return visit. " : "First visit. "}
             {feed?.usedMemory ? (feed.returning ? "Memory: rebuilt from her last visit (old behaviour counts 60%)." : "Memory: carried from her earlier pages.") : "Memory: none yet, everything starts neutral."}
           </p>
+          {feed && (
+            <p className={`mt-1 font-semibold ${feed.llm.mocked ? "text-white/60" : "text-[#4ade80]"}`}>
+              Agent brain: {feed.llm.mocked ? "stand-in rules (no DeepSeek key)" : `DeepSeek · ${feed.llm.model || "model from .env.local"}`}
+            </p>
+          )}
         </div>
 
-        <div className={`${box} ${s?.kind === "major" ? "ring-2 ring-[#f5b301]" : ""}`}>
+        {pb && (
+          <div className={`${box} ${pb.paused ? "ring-2 ring-[#60a5fa]" : ""}`}>
+            <p className={h}>Playback · step {pb.done} of {pb.total}{pb.paused && " · PAUSED"}</p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {pb.paused
+                ? <button className={pill} onClick={player!.play} title="Plays on without stopping">▶ Play</button>
+                : <button className={pill} onClick={player!.pause}>⏸ Pause</button>}
+              <button className={pill} onClick={player!.step} disabled={!pb.next}>⏭ Next step</button>
+              <label className="ml-1 flex items-center gap-1.5 text-white/80">
+                <input type="checkbox" checked={pb.stepMode} onChange={(e) => player!.setStepMode(e.target.checked)} />
+                pause after each step
+              </label>
+            </div>
+            <p className="mt-1.5 text-white/60">{pb.next ? <>Next: <b className="text-white">{pb.next}</b></> : "Script finished for this page."}</p>
+            {pb.paused && <p className="text-[11px] text-white/45">She stops acting; the page, the indicators and the agent keep reacting to what she already did.</p>}
+          </div>
+        )}
+
+        <div className={`${box} transition-shadow ${freshChange ? "ring-2 ring-[#f5b301]" : ""}`}>
+          <p className={h}>Last change to the page</p>
+          {lastChange ? (
+            <>
+              <p className="font-bold text-[#f5b301]">
+                {openedAdapted
+                  ? `Opened already adapted${feed?.usedMemory ? (feed.returning ? " · from her last visit" : " · from her earlier pages") : ""}`
+                  : `Changed while she was on it · view ${lastChange.from} → ${lastChange.to}`}
+              </p>
+              <ul className="mt-1 list-disc pl-4 text-white/85">{lastChange.lines.map((l) => <li key={l}>{l}</li>)}</ul>
+              <p className="mt-1 text-white/60">Why: {lastChange.rationale}</p>
+            </>
+          ) : <p className="text-white/60">The store&apos;s normal page, nothing changed yet.</p>}
+        </div>
+
+        <div className={`${box} ${s?.kind === "major" ? "ring-1 ring-[#f5b301]/60" : ""}`}>
           <p className={h}>On screen now</p>
           {s ? (
             <>
@@ -118,10 +156,9 @@ export function LabPanel() {
                 {s.kind === "major" ? "Rebuilt from memory on return · " : s.kind === "initial" ? "First view of this page · " : ""}
                 chosen by {s.source === "director" ? "the agent" : s.source === "explicit" ? "the lab (forced variant)" : "the rules"} · copy {s.copyRegister}
               </p>
-              <p className="mt-1 text-white/80">{s.rationale}</p>
             </>
           ) : <p className="text-white/60">waiting for the page…</p>}
-          {ghost.variant && <p className="mt-1 font-semibold text-[#f5b301]">Forced variant: {ghost.variant.dialect} × {ghost.variant.need}</p>}
+          {ghost.variant && <p className="mt-1 font-semibold text-[#f5b301]">Forced variant: {ghost.variant.dialect} × {ghost.variant.need} (locked)</p>}
         </div>
 
         <div className={box}>
@@ -193,6 +230,20 @@ export function LabPanel() {
               <li key={i} className="text-white/75"><span className="text-white/40 tabular-nums">{(t.at / 1000).toFixed(1)}s</span> <b>{KIND[t.kind] ?? t.kind}:</b> {t.text}</li>
             ))}
           </ul>
+          {agent.llm && agent.llm.rounds.length > 0 && (
+            <details className="mt-2 border-t border-white/10 pt-2">
+              <summary className="cursor-pointer font-semibold">The agent&apos;s own answer · {agent.llm.model}</summary>
+              <ol className="mt-1 flex flex-col gap-1.5">
+                {agent.llm.rounds.map((r, i) => (
+                  <li key={i} className="rounded bg-white/5 p-2">
+                    <p className="text-white/50">round {i + 1} · {(r.ms / 1000).toFixed(1)}s · {r.verdict}</p>
+                    {r.said && <p className="mt-1 whitespace-pre-wrap">{r.said}</p>}
+                    {r.call && <pre className="mt-1 overflow-auto text-[11px] whitespace-pre-wrap">{r.call.name}({JSON.stringify(r.call.args, null, 1)})</pre>}
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )}
         </div>
 
         <div className="mt-auto flex flex-col gap-2 pt-2">
