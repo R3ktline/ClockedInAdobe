@@ -96,6 +96,42 @@ type Scene = {
 
 The frontend keeps a scene stack and renders a scene strip (like slide thumbnails). Back/forward work, and `?scene=<id>` restores a scene.
 
+### 4.3 Truth model: what's real on a page the AI keeps reshaping
+
+> **The AI decides how to show it, never what's true.**
+
+Everything on a page comes from one of four layers. When they conflict, the lower number wins:
+
+| # | Layer | Owner | Can the AI change it? |
+|---|---|---|---|
+| 1 | **Catalog facts**: price, stock, specs, ratings, discounts | Merchant | **Never.** The renderer looks them up by `productId` (§4.1). |
+| 2 | **Explicit shopper choices**: view chip, chat answers, "show me simpler" | Shopper | No. They override every inference. |
+| 3 | **Inferred signals**: rules engine, Profiler Agent | System | Yes, but always labeled as a guess, explained, and reversible. |
+| 4 | **LLM output**: layout, ordering, summaries, narration | Model | Presentation only. Validated against 1-3 and never a source itself. |
+
+**The agent follows the same rule.** Only tool results (`searchProducts`, `getProduct`, `compareProducts`, ...) count as facts. Anything the model "knows" without a tool result doesn't count, and the grounding check rejects it.
+
+**What the shopper sees:**
+- **Facts look the same in every view.** Price, specs and stock use the same components in every persona, unchanged. The side-by-side persona comparison (P1) proves it: the shape changes, the numbers don't.
+- **Every AI claim has a receipt (P1).** Factual parts of generated copy link to the catalog field they came from, and hovering or tapping shows the source. The grounding check already verifies these links; this surfaces them. Working name for the feature: **Receipts**.
+- **"I don't know" is a valid answer (P0).** If the catalog doesn't cover a question ("does it run Final Cut?"), the scene says "not in our product data" instead of guessing.
+- **Guesses are labeled and reversible.** "Why this view?" names what was inferred and from which signals. A "Standard view" reset is always one tap away.
+- **Fallbacks are honest.** If DeepSeek is unreachable, the chip says "Standard view" rather than pretending the page is personalized.
+
+**Proposed schema additions** (Track A to decide; not in `packages/schema` yet):
+
+```ts
+// on copyBlock, editorial, hero: links generated text to catalog spec fields.
+// Specs only: price, stock, rating and discounts never appear in LLM text at all,
+// they are shown only by renderer components (§4.1).
+claims?: { text: string; productId: string; field: SpecKey }[];
+
+// on Scene: an honest "no answer" instead of a guess
+answer: { status: "answered" } | { status: "unknown"; reason: "not_in_catalog" | "out_of_scope" };
+```
+
+The validator checks each claim: `productId` exists, `field` exists on that product, and `text` matches the value the renderer would show. A claim that fails is dropped together with its sentence.
+
 ## 5. Architecture
 
 ```
@@ -240,6 +276,7 @@ Tools are read-only. Nothing the agent can call mutates state except creating a 
 - [ ] LLM critic agent on chat scenes
 - [ ] `deals` persona + campaign/UTM-matched landing variant ("ad → page continuity")
 - [ ] Side-by-side persona comparison view for the pitch
+- [ ] Receipts: hover/tap a fact in AI copy to see its catalog source (§4.3)
 
 ### P2: stretch
 - [ ] Simulated-shopper eval: DeepSeek role-plays each persona on a task and we measure steps to success per variant
@@ -270,6 +307,7 @@ Freeze the schema **first**. Everything else depends on it.
 
 ## 11. Open questions
 
+- [ ] Product name? Candidates: **Facet** (recommended), Fitted, Dial. Check none is taken in this space before using it publicly.
 - [ ] Which product category? (Laptops recommended.)
 - [ ] Is there a sponsor (e.g. Adobe) whose stack we should name in the pitch?
 - [ ] Do we use an explicit onboarding question on first visit, or only the chip? (Recommend: chip plus an optional one-tap question.)

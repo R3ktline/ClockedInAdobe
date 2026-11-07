@@ -20,6 +20,8 @@ Format: `- YYYY-MM-DD · [track] · decision. Why: reason. (owner)`
 - Full PageSpec per scene vs JSON patches (MVP leaning: full spec)
 - DeepSeek model ID(s) and token budget. Provider is locked (see Log); check `api-docs.deepseek.com` on the day for current IDs, since legacy aliases are being deprecated
 - Live demo vs recorded fallback. Proposal in [DEMO.md](DEMO.md): live, with replayed responses for scripted beats plus a backup video
+- Product name: **Facet** (recommended), Fitted, or Dial. "Receipts" as the name for the claim-source feature. Check availability first
+- Adopt the truth model and the proposed `claims` / `answer.status` schema additions from [SPEC §4.3](../SPEC.md#43-truth-model-whats-real-on-a-page-the-ai-keeps-reshaping)? Track A to decide
 - Add the session agent and optimizer agent from [PLANNING-NOTES.md §6](PLANNING-NOTES.md#6-making-it-agentic)? Not yet in SPEC
 
 ## Log
