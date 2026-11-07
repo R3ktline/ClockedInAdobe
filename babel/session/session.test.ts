@@ -1,9 +1,12 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { BrandKit, Registry, type InteractionEvent } from "@/babel/schema";
+import { BrandKit, Registry, type InteractionEvent, type Slide } from "@/babel/schema";
 import { buildSlide, NEUTRAL_PERSONA } from "@/babel/persona";
 import { anonymousPartner } from "@/data/shoppers";
 import { taraba } from "@/stores/taraba/config";
-import { createVisit, forget, recall, recordEvents } from ".";
+import { addSlide, createVisit, forget, recall, recallSlide, recordEvents, reloadMemory, startSession, writeMemory } from ".";
 
 const brand = BrandKit.parse(taraba.brand);
 const registry = Registry.parse(taraba.registry);
@@ -52,6 +55,41 @@ describe("cross-page memory", () => {
     recordEvents(v, trust);
     expect(v.visitorId).toBeUndefined();
     expect(recall("mem-c")).toBeUndefined();
+  });
+});
+
+describe("persistence and return visits", () => {
+  const file = path.join(mkdtempSync(path.join(tmpdir(), "babel-")), "memory.json");
+  const director = (): Slide => ({ ...buildSlide({ persona: NEUTRAL_PERSONA, template: "product", registry, brand }), index: 1, kind: "minor", source: "director" });
+
+  it("survives a restart, and a director view is kept per page type", () => {
+    process.env.BABEL_MEMORY_FILE = file;
+    startSession("p-a");
+    const v = createVisit({ store: "taraba", template: "product", partner: anonymousPartner, persona: NEUTRAL_PERSONA, reasons: [], visitorId: "p-a", slide: director() });
+    addSlide(v, director());
+    writeMemory();
+    reloadMemory(); // what a restart does: the in-memory copy is gone, the file is read back
+    expect(recallSlide("p-a", "product")?.source).toBe("director");
+    expect(recallSlide("p-a", "home")).toBeUndefined();
+    expect(forget("p-a")).toBe(true);
+    delete process.env.BABEL_MEMORY_FILE;
+  });
+
+  it("going back from a view stops it from being remembered", () => {
+    const v = createVisit({ store: "taraba", template: "product", partner: anonymousPartner, persona: NEUTRAL_PERSONA, reasons: [], visitorId: "p-b", slide: director() });
+    addSlide(v, director());
+    expect(recallSlide("p-b", "product")).toBeDefined();
+    recordEvents(v, [{ t: 1000, type: "slide_prev", value: 0 }]);
+    expect(recallSlide("p-b", "product")).toBeUndefined();
+    forget("p-b");
+  });
+
+  it("is a return visit only after a long gap", () => {
+    const t = Date.now();
+    expect(startSession("p-c", t)).toEqual({ returning: false, visits: 1 });
+    expect(startSession("p-c", t + 60_000)).toEqual({ returning: false, visits: 1 });
+    expect(startSession("p-c", t + 60 * 60_000)).toEqual({ returning: true, visits: 2 });
+    forget("p-c");
   });
 });
 
