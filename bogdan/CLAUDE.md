@@ -4,7 +4,7 @@ Guidance for AI coding agents (Claude Code, etc.) working in this repo.
 
 ## What this is
 
-Hackathon project: an **adaptive storefront**. The page reshapes itself per shopper persona (density, layout, copy depth) and through a chat that turns answers into page "scenes". Runtime AI is the **DeepSeek API**.
+Hackathon project: **Babel**, an adaptive storefront. The page reshapes itself per shopper persona (density, layout, copy depth) and through a chat that turns answers into page "scenes". Runtime AI is the **DeepSeek API**.
 
 - Product spec and architecture: [SPEC.md](SPEC.md)
 - Risks, competition, counterpoints: [docs/ANALYSIS.md](docs/ANALYSIS.md)

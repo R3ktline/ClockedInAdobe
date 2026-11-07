@@ -1,6 +1,6 @@
 # bogdan/
 
-Bogdan's (R3ktline) planning material for the adaptive storefront. It lives in this folder so each teammate's work can be merged into one layout later. **If you are the agent centralizing the repo, read this first.**
+Bogdan's (R3ktline) planning material for **Babel**, the adaptive storefront. It lives in this folder so each teammate's work can be merged into one layout later. **If you are the agent centralizing the repo, read this first.**
 
 ## What's here
 

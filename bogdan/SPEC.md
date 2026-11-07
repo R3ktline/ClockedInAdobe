@@ -1,4 +1,4 @@
-# SPEC: Adaptive Storefront (working name)
+# SPEC: Babel, the adaptive storefront
 
 > **Status:** planning. Nothing is built yet.
 > Companion docs: [docs/ANALYSIS.md](docs/ANALYSIS.md) (risks, market) · [docs/GUARDRAILS.md](docs/GUARDRAILS.md) (safety, prompts) · [CLAUDE.md](CLAUDE.md) (how to work in this repo)
@@ -307,7 +307,7 @@ Freeze the schema **first**. Everything else depends on it.
 
 ## 11. Open questions
 
-- [ ] Product name? Candidates: **Facet** (recommended), Fitted, Dial. Check none is taken in this space before using it publicly.
+- [x] Product name: **Babel** (see DECISIONS)
 - [ ] Which product category? (Laptops recommended.)
 - [ ] Is there a sponsor (e.g. Adobe) whose stack we should name in the pitch?
 - [ ] Do we use an explicit onboarding question on first visit, or only the chip? (Recommend: chip plus an optional one-tap question.)

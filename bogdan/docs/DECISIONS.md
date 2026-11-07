@@ -20,7 +20,7 @@ Format: `- YYYY-MM-DD · [track] · decision. Why: reason. (owner)`
 - Full PageSpec per scene vs JSON patches (MVP leaning: full spec)
 - DeepSeek model ID(s) and token budget. Provider is locked (see Log); check `api-docs.deepseek.com` on the day for current IDs, since legacy aliases are being deprecated
 - Live demo vs recorded fallback. Proposal in [DEMO.md](DEMO.md): live, with replayed responses for scripted beats plus a backup video
-- Product name: **Facet** (recommended), Fitted, or Dial. "Receipts" as the name for the claim-source feature. Check availability first
+- "Receipts" as the name for the claim-source feature (SPEC §4.3)?
 - Adopt the truth model and the proposed `claims` / `answer.status` schema additions from [SPEC §4.3](../SPEC.md#43-truth-model-whats-real-on-a-page-the-ai-keeps-reshaping)? Track A to decide
 - Add the session agent and optimizer agent from [PLANNING-NOTES.md §6](PLANNING-NOTES.md#6-making-it-agentic)? Not yet in SPEC
 
@@ -30,3 +30,4 @@ Format: `- YYYY-MM-DD · [track] · decision. Why: reason. (owner)`
 - 2026-11-07 · all · Build the adaptive storefront, even though the hackathon is hosted by Adobe and Target covers nearby ground. Why: instantly understood, very visual demo, and we change *how much and how* people see, not *what*. Alternatives considered and set aside are in PLANNING-NOTES §2-4. (team)
 - 2026-11-07 · all · Pitch line: "Target personalizes content. We personalize complexity." Position it as complementary to Adobe (PageSpec could be delivered as a Target offer or built from AEM content), not as a competitor. (team)
 - 2026-11-07 · C · DeepSeek is locked in as the only runtime LLM. Considered Claude Haiku 5.5 and TypeSafe Jev (PLANNING-NOTES §8). Why: team choice, cheap, OpenAI-compatible. Its weak spots are covered by existing rules: zod validation plus one repair retry (JSON mode doesn't enforce our schema), no PII sent (data is processed in China), deterministic fallbacks (outages). (team)
+- 2026-11-07 · all · The app is called **Babel**. Considered Facet, Fitted, Dial. Not to be confused with the Babel JS compiler: say "Babel storefront" in package names and search terms where it could clash. (R3ktline)
