@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Babel v2 — Full Telemetry & Age Inference Testbench</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    .pulse { animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{ opacity:1 } 50%{ opacity:.4 } }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- HEADER -->
+  <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 sticky top-0 z-50 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">B</div>
+      <div>
+        <h1 class="text-sm font-bold tracking-tight">Babel Adaptive Storefront <span class="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 ml-1">v2 Full Telemetry</span></h1>
+        <p class="text-xs text-slate-400">All markers + enhanced age-relevant signals</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 text-xs">
+      <span class="text-slate-400">Account:</span>
+      <select id="user-select" onchange="setUser(this.value)" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded px-2 py-1">
+        <option value="guest">Guest (Not Logged In)</option>
+        <option value="alice">Alice Rivera (Age 19)</option>
+        <option value="marcus">Marcus Vance (Age 34)</option>
+        <option value="eleanor">Eleanor Davies (Age 68)</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- CONTROLS BAR -->
+  <div class="bg-slate-900/50 border-b border-slate-800 px-4 py-2 flex flex-wrap items-center gap-4 text-xs">
+    <!-- UTM Sim -->
+    <div class="flex items-center gap-1.5">
+      <span class="text-slate-400 font-semibold">UTM:</span>
+      <button onclick="simUTM('tiktok','genz_audio_18-24','ugc')" class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20">TikTok 18-24</button>
+      <button onclick="simUTM('google','audiophile_benchmark_25-40','search')" class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20">Google 25-40</button>
+      <button onclick="simUTM('facebook','retiree_comfort_60plus','feed')" class="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/30 hover:bg-purple-500/20">FB 60+</button>
+      <button onclick="simUTM('direct','none','none')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Reset</button>
+    </div>
+    <!-- Search Sim -->
+    <div class="flex items-center gap-1.5 flex-1 max-w-md">
+      <span class="text-slate-400 font-semibold">Search:</span>
+      <input id="search-box" oninput="handleSearch(this.value)" placeholder="Type a query..." class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none">
+    </div>
+    <!-- Payment Sim -->
+    <div class="flex items-center gap-1.5">
+      <span class="text-slate-400 font-semibold">Payment:</span>
+      <button onclick="setPay('apple_pay')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700"> Pay</button>
+      <button onclick="setPay('klarna')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700">Klarna</button>
+      <button onclick="setPay('card_manual')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700">Manual Card</button>
+      <button onclick="setPay('bank_transfer')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700">Bank Transfer</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+
+    <!-- LEFT: Scrollable Content with data-section markers -->
+    <main id="scroll-area" class="lg:col-span-7 border-r border-slate-800 p-5 overflow-y-auto max-h-[calc(100vh-105px)] space-y-6">
+
+      <section data-section="hero" id="hero" class="rounded-xl border border-slate-800 p-6 bg-gradient-to-br from-slate-900 to-slate-950 space-y-3">
+        <span class="text-xs uppercase tracking-widest font-bold text-indigo-400">Premium Audio Flagship</span>
+        <h2 class="text-2xl font-extrabold">Vortex Pro Spatial Headphones</h2>
+        <p class="text-sm text-slate-400">Studio-grade 45mm beryllium drivers with algorithmic DSP. 40hr battery.</p>
+        <div class="flex items-center gap-3 pt-1">
+          <span class="text-xl font-black">$349.00</span>
+          <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">Add to Cart</button>
+        </div>
+      </section>
+
+      <section data-section="specs" id="specs" class="rounded-xl border border-slate-800 p-5 bg-slate-900 space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400">Technical Specifications</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono">
+          <div class="border border-slate-800 rounded p-2 bg-slate-950"><span class="text-slate-400 block">Impedance</span><span class="font-bold">32Ω</span></div>
+          <div class="border border-slate-800 rounded p-2 bg-slate-950"><span class="text-slate-400 block">Codec</span><span class="font-bold">LDAC / aptX HD</span></div>
+          <div class="border border-slate-800 rounded p-2 bg-slate-950"><span class="text-slate-400 block">Latency</span><span class="font-bold">18ms RF</span></div>
+          <div class="border border-slate-800 rounded p-2 bg-slate-950"><span class="text-slate-400 block">SNR</span><span class="font-bold">118 dB</span></div>
+        </div>
+        <p class="text-xs text-slate-400 leading-relaxed">THD &lt; 0.05% @ 1kHz. 5Hz–42kHz frequency response with linear phase calibration. Discrete Class-A amplification stage with independent left/right DAC channels. Bluetooth 5.4 multipoint with LC3plus support.</p>
+      </section>
+
+      <section data-section="reviews" id="reviews" class="rounded-xl border border-slate-800 p-5 bg-slate-900 space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">Customer Reviews</h3>
+        <div class="space-y-2">
+          <div class="border border-slate-800 rounded p-3 bg-slate-950 text-xs">
+            <div class="font-bold">⭐⭐⭐⭐⭐ "Best headphones I've owned"</div>
+            <p class="text-slate-400 mt-1">The noise cancellation is incredible. I wear these 8+ hours a day for work calls. Crystal clear dialogue even in a noisy office.</p>
+          </div>
+          <div class="border border-slate-800 rounded p-3 bg-slate-950 text-xs">
+            <div class="font-bold">⭐⭐⭐⭐ "Great sound, wish the app was simpler"</div>
+            <p class="text-slate-400 mt-1">Sound quality is amazing. The companion app has too many menus though. I just wanted to pair it with my TV and it took me a while to figure out.</p>
+          </div>
+        </div>
+      </section>
+
+      <section data-section="compare" id="compare" class="rounded-xl border border-slate-800 p-5 bg-slate-900 space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400">Compare Models</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="border border-slate-800 rounded-lg p-4 bg-slate-950 space-y-1">
+            <div class="text-xs font-bold">Vortex Studio ANC</div>
+            <p class="text-[11px] text-slate-400">40hr battery, 8-mic ANC, aptX. For professionals.</p>
+            <div class="text-sm font-bold">$279.00</div>
+          </div>
+          <div class="border border-slate-800 rounded-lg p-4 bg-slate-950 space-y-1">
+            <div class="text-xs font-bold">Vortex Light Travel</div>
+            <p class="text-[11px] text-slate-400">Foldable, USB-C fast charge, IPX4. For commuters.</p>
+            <div class="text-sm font-bold">$189.00</div>
+          </div>
+        </div>
+      </section>
+
+      <section data-section="support" id="support" class="rounded-xl border border-slate-800 p-5 bg-slate-900 space-y-2">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-purple-400">Setup & Support</h3>
+        <p class="text-xs text-slate-400">Free 1-on-1 phone setup assistance. 60-day in-home trial. 3-year extended warranty included with all models.</p>
+      </section>
+
+      <div data-section="bottom" id="bottom" class="h-24 flex items-center justify-center text-xs text-slate-500 border border-dashed border-slate-800 rounded-lg">
+        [ Page Bottom — Scroll Depth Target: 100% ]
+      </div>
+    </main>
+
+    <!-- RIGHT: Live Telemetry Console -->
+    <aside class="lg:col-span-5 bg-slate-900 p-4 overflow-y-auto max-h-[calc(100vh-105px)] space-y-3 text-[11px]">
+
+      <div class="border-b border-slate-800 pb-2 flex items-center justify-between">
+        <h2 class="font-bold text-sm">Live Telemetry Inspector</h2>
+        <span class="w-2 h-2 rounded-full bg-emerald-500 pulse"></span>
+      </div>
+
+      <!-- Account -->
+      <div class="border border-slate-800 rounded-lg p-2.5 bg-slate-950 space-y-1">
+        <span class="font-bold text-indigo-400">1. Account Profile</span>
+        <pre id="d-account" class="text-slate-400 font-mono text-[10px] whitespace-pre-wrap">null (Guest)</pre>
+      </div>
+
+      <!-- Pre-Arrival -->
+      <div class="border border-slate-800 rounded-lg p-2.5 bg-slate-950 space-y-1">
+        <span class="font-bold text-amber-400">2. Pre-Arrival (UTMs)</span>
+        <pre id="d-pre" class="text-slate-400 font-mono text-[10px] whitespace-pre-wrap">direct / none</pre>
+      </div>
+
+      <!-- Environmental -->
+      <div class="border border-slate-800 rounded-lg p-2.5 bg-slate-950 space-y-1">
+        <span class="font-bold text-blue-400">3. Environmental Sensors</span>
+        <pre id="d-env" class="text-slate-400 font-mono text-[10px] whitespace-pre-wrap">Loading...</pre>
+      </div>
+
+      <!-- Core Biometrics -->
+      <div class="border border-slate-800 rounded-lg p-2.5 bg-slate-950 space-y-2">
+        <span class="font-bold text-emerald-400">4. Core Biometrics</span>
+        <div class="space-y-1.5">
+          <div>
+            <div class="flex justify-between"><span class="text-slate-400">Scroll Velocity</span><span id="d-vel" class="font-mono font-bold">0 px/s</span></div>
+            <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden"><div id="bar-vel" class="bg-amber-500 h-full w-0 transition-all duration-75"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between"><span class="text-slate-400">Scroll Depth</span><span id="d-depth" class="font-mono font-bold">0%</span></div>
+            <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden"><div id="bar-depth" class="bg-indigo-500 h-full w-0 transition-all duration-150"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between"><span class="text-slate-400">Cursor Jiggle</span><span id="d-jiggle" class="font-mono font-bold">0 / 100</span></div>
+            <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden"><div id="bar-jiggle" class="bg-red-500 h-full w-0 transition-all duration-75"></div></div>
+          </div>
+          <div class="flex justify-between pt-1 border-t border-slate-800"><span class="text-slate-400">Time-to-First-Action</span><span id="d-first" class="font-mono">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Behavior State</span><span id="d-behavior" class="font-mono">Idle</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Total Clicks</span><span id="d-clicks" class="font-mono">0</span></div>
+        </div>
+      </div>
+
+      <!-- NEW: Enhanced Age Markers -->
+      <div class="border border-indigo-500/30 rounded-lg p-2.5 bg-indigo-500/5 space-y-2">
+        <span class="font-bold text-indigo-400">5. Enhanced Age Markers</span>
+        <div class="space-y-1">
+          <div class="flex justify-between"><span class="text-slate-400">Input Method</span><span id="d-input" class="font-mono">unknown</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Pinch-to-Zoom Count</span><span id="d-pinch" class="font-mono">0</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Tap Miss / Total</span><span id="d-tap" class="font-mono">0 / 0</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Browser Zoom Level</span><span id="d-zoom" class="font-mono">100%</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Zoom Changes</span><span id="d-zoomcount" class="font-mono">0</span></div>
+        </div>
+        <div class="border-t border-slate-800 pt-1 space-y-1">
+          <div class="flex justify-between"><span class="text-slate-400">Avg Dwell / Section</span><span id="d-dwell" class="font-mono">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Longest Dwell Section</span><span id="d-longest" class="font-mono">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Section Dwell Times</span></div>
+          <pre id="d-dwells" class="text-slate-500 font-mono text-[10px] whitespace-pre-wrap">{}</pre>
+        </div>
+        <div class="border-t border-slate-800 pt-1 space-y-1">
+          <div class="flex justify-between"><span class="text-slate-400">Navigation Path</span></div>
+          <div id="d-path" class="text-slate-400 font-mono text-[10px] truncate">[]</div>
+          <div class="flex justify-between"><span class="text-slate-400">Path Linearity</span><span id="d-linear" class="font-mono">100%</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Backtracks</span><span id="d-back" class="font-mono">0</span></div>
+        </div>
+        <div class="border-t border-slate-800 pt-1 space-y-1">
+          <div class="flex justify-between"><span class="text-slate-400">Payment Method</span><span id="d-pay" class="font-mono">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Search Query Style</span><span id="d-querystyle" class="font-mono">none</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Last Query Words</span><span id="d-querywords" class="font-mono">0</span></div>
+        </div>
+        <div class="border-t border-slate-800 pt-1 space-y-1">
+          <div class="flex justify-between"><span class="text-slate-400">Session Duration</span><span id="d-session" class="font-mono">0s</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Lifetime Sessions</span><span id="d-sessions" class="font-mono">1</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Avg Session Duration</span><span id="d-avgsession" class="font-mono">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Days Since First Visit</span><span id="d-days" class="font-mono">0</span></div>
+        </div>
+      </div>
+
+      <!-- Raw JSON dump -->
+      <details class="border border-slate-800 rounded-lg bg-slate-950">
+        <summary class="p-2 text-slate-400 cursor-pointer font-bold">Raw localStorage JSON</summary>
+        <pre id="d-raw" class="p-2 text-[9px] text-slate-500 font-mono overflow-x-auto max-h-64 whitespace-pre-wrap">{}</pre>
+      </details>
+
+    </aside>
+  </div>
+
+  <script src="tracker.js"></script>
+  <script>
+    const USERS = {
+      guest: null,
+      alice: { id: 'usr_101', name: 'Alice Rivera', age: 19 },
+      marcus: { id: 'usr_202', name: 'Marcus Vance', age: 34 },
+      eleanor: { id: 'usr_303', name: 'Eleanor Davies', age: 68 }
+    };
+
+    const collector = new UserDataCollector();
+
+    // Poll the stored data and update the dashboard every 250ms
+    setInterval(refreshDashboard, 250);
+
+    function refreshDashboard() {
+      const d = collector.data;
+
+      // Account
+      document.getElementById('d-account').innerText = d.account ? JSON.stringify(d.account, null, 2) : 'null (Guest)';
+
+      // Pre-Arrival
+      document.getElementById('d-pre').innerText = JSON.stringify(d.preArrival, null, 2);
+
+      // Environmental
+      document.getElementById('d-env').innerText = JSON.stringify(d.environmental, null, 2);
+
+      // Core Biometrics
+      const b = d.biometrics;
+      document.getElementById('d-vel').innerText = b.scrollVelocityPxPerSec + ' px/s';
+      document.getElementById('bar-vel').style.width = Math.min(100, Math.round(b.scrollVelocityPxPerSec / 1200 * 100)) + '%';
+      document.getElementById('d-depth').innerText = b.maxScrollDepthPercent + '%';
+      document.getElementById('bar-depth').style.width = b.maxScrollDepthPercent + '%';
+      document.getElementById('d-jiggle').innerText = b.cursorJiggleScore + ' / 100';
+      document.getElementById('bar-jiggle').style.width = b.cursorJiggleScore + '%';
+      document.getElementById('d-first').innerText = b.timeToFirstActionMs !== null ? b.timeToFirstActionMs + ' ms' : '—';
+      document.getElementById('d-behavior').innerText = b.behaviorState;
+      document.getElementById('d-clicks').innerText = b.totalClicks;
+
+      // Age Markers
+      const a = d.ageMarkers;
+      document.getElementById('d-input').innerText = a.inputMethod;
+      document.getElementById('d-pinch').innerText = a.pinchZoomCount;
+      document.getElementById('d-tap').innerText = a.tapMissCount + ' / ' + a.tapTotalCount;
+      document.getElementById('d-zoom').innerText = a.browserZoomLevel + '%';
+      document.getElementById('d-zoomcount').innerText = a.zoomChangeCount;
+      document.getElementById('d-dwell').innerText = a.avgDwellPerSectionMs > 0 ? (a.avgDwellPerSectionMs / 1000).toFixed(1) + 's' : '—';
+      document.getElementById('d-longest').innerText = a.longestDwellSectionId || '—';
+      document.getElementById('d-dwells').innerText = JSON.stringify(
+        Object.fromEntries(Object.entries(a.sectionDwellTimesMs).map(([k,v]) => [k, (v/1000).toFixed(1)+'s'])),
+        null, 2
+      );
+      document.getElementById('d-path').innerText = JSON.stringify(a.navigationPath);
+      document.getElementById('d-linear').innerText = a.pathLinearityScore + '%';
+      document.getElementById('d-back').innerText = a.backtrackCount;
+      document.getElementById('d-pay').innerText = a.paymentMethodSelected || '—';
+      document.getElementById('d-querystyle').innerText = a.queryStyle;
+      document.getElementById('d-querywords').innerText = a.lastQueryWordCount;
+      document.getElementById('d-session').innerText = a.currentSessionDurationSec + 's';
+      document.getElementById('d-sessions').innerText = a.totalLifetimeSessions;
+      document.getElementById('d-avgsession').innerText = a.avgSessionDurationSec > 0 ? a.avgSessionDurationSec + 's' : '—';
+      document.getElementById('d-days').innerText = a.daysSinceFirstVisit;
+
+      // Raw dump
+      document.getElementById('d-raw').innerText = JSON.stringify(d, null, 2);
+    }
+
+    function setUser(key) {
+      collector.data.account = USERS[key];
+      collector._save();
+    }
+
+    function simUTM(source, campaign, content) {
+      collector.data.preArrival = { utm_source: source, utm_campaign: campaign, utm_content: content, referrer: source === 'direct' ? 'direct' : `https://${source}.com` };
+      collector._save();
+    }
+
+    function handleSearch(val) {
+      collector.recordSearchQuery(val);
+    }
+
+    function setPay(method) {
+      collector.recordPaymentMethod(method);
+    }
+  </script>
+</body>
+</html>
