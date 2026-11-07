@@ -391,9 +391,10 @@ export function BabelProvider(p: BabelProviderProps) {
     "--c-muted": slide.theme.contrast === "high" ? colors.text : colors.muted,
     "--babel-gap": GAP[slide.theme.density],
     "--babel-radius": `${slide.theme.radius}px`,
-    "--font-heading": fonts.heading,
-    fontFamily: fonts.body,
-    background: colors.surface,
+    // --look-* come from the dialect's look in globals.css; the brand fonts/surface are the fallback.
+    "--font-heading": `var(--look-heading, ${fonts.heading})`,
+    fontFamily: `var(--look-body, ${fonts.body})`,
+    background: `var(--look-canvas, ${colors.surface})`,
     color: "var(--c-text)",
   } as CSSProperties;
 
@@ -406,7 +407,7 @@ export function BabelProvider(p: BabelProviderProps) {
   return (
     <Ctx.Provider value={ctx}>
       <MotionConfig reducedMotion={slide.theme.motion === "reduced" ? "always" : "never"}>
-        <div style={style} data-contrast={slide.theme.contrast} className="min-h-screen">
+        <div style={style} data-contrast={slide.theme.contrast} data-dialect={standard ? undefined : slide.persona.dialect} className="min-h-screen">
           {p.children}
           <SlideControl />
           <DebugPanel />
