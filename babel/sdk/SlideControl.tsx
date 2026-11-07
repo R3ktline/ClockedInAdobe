@@ -7,15 +7,18 @@ const CHANGE_CARD_MS = 15_000;
 // The shopper's control over Babel: page through views, see why, or switch personalization off.
 // In ghost (testing) mode it also shows what the agent is doing and what the model answered.
 export function SlideControl() {
-  const { slides, cursor, go, standard, setStandard, slide, ghost, track, agent, lastChange } = useBabel();
+  const { slides, cursor, go, standard, setStandard, slide, ghost, track, agent, lastChange, apply, calm } = useBabel();
   const [whyOpen, setWhyOpen] = useState(false);
   const [changeVisible, setChangeVisible] = useState(false);
   useEffect(() => {
-    if (!lastChange) return;
+    if (!lastChange || (apply !== "live" && !ghost)) return; // a popup is itself a noticeable change; "Why?" still has it
     setChangeVisible(true);
     const id = setTimeout(() => setChangeVisible(false), CHANGE_CARD_MS);
     return () => clearTimeout(id);
-  }, [lastChange]);
+  }, [lastChange, apply, ghost]);
+  const rerun = (mode: string) => { const u = new URL(location.href); u.searchParams.set("apply", mode); location.assign(u); };
+  const noticed = calm.filter((c) => c.status === "seen").length;
+  const WORD = { unseen: "unnoticed", seen: "noticeable", waiting: "waiting", requested: "asked for" } as const;
 
   const btn = "rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 disabled:opacity-35 disabled:hover:bg-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--c-primary)]";
   const box = "w-96 max-w-full rounded-xl border border-black/10 p-4 shadow-xl";
@@ -38,6 +41,27 @@ export function SlideControl() {
             <span className="font-semibold">Babel agent:</span>{" "}
             <span className={agent.state === "thinking" ? "animate-pulse text-amber-300" : "text-white/75"}>{agent.text}</span>
           </p>
+          <div className="mt-2 border-t border-white/15 pt-2 text-sm">
+            <p className="font-semibold">
+              Unnoticed check{ghost.step > 0 && ` · page ${ghost.step + 1}`}{ghost.step < 0 && " · browsing freely, memory kept"}
+              {apply !== "next" && calm.length > 0 && <span className="font-normal text-white/75"> · {noticed} of {calm.length} could be noticed</span>}
+            </p>
+            {apply === "next"
+              ? <p className="mt-1 text-white/75">Nothing changes on this page. The next page opens with what this one learned.</p>
+              : calm.length === 0
+                ? <p className="mt-1 text-white/75">No change yet. {apply === "quiet" ? "Changes wait until they are off screen." : "Changes land at once."}</p>
+                : <ul className="mt-1 list-disc pl-5 text-white/75">
+                    {calm.map((c) => <li key={c.view}><span className="font-semibold text-white">view {c.view} · {WORD[c.status]}</span> {c.text}</li>)}
+                  </ul>}
+            <div className="mt-2 flex gap-1" role="group" aria-label="When changes appear on this page">
+              {(["live", "quiet", "next"] as const).map((m) => (
+                <button key={m} aria-pressed={apply === m} onClick={() => rerun(m)}
+                  className="rounded-full border border-white/30 px-2.5 py-0.5 hover:bg-white/15 aria-pressed:bg-white aria-pressed:text-[#14171f]">
+                  {m === "live" ? "Change live" : m === "quiet" ? "Change quietly" : "Next page only"}
+                </button>
+              ))}
+            </div>
+          </div>
           {agent.llm && (
             <details className="mt-2 text-sm">
               <summary className="cursor-pointer text-white/75">Model&apos;s answer · {agent.llm.model}</summary>

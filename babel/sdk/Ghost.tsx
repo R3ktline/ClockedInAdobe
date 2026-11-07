@@ -9,6 +9,7 @@ import type { EventType, InteractionEvent } from "@/babel/schema";
 export type GhostCursor = { x: number; y: number; label: string; clicks: number; visible: boolean };
 
 const LEAD_MS = 1100; // scroll, then glide onto the target before the event's time
+const WALK_ON_MS = 6000;
 
 const TEXT: Partial<Record<EventType, string>> = {
   page_view: "opens the product page",
@@ -39,7 +40,7 @@ function centre(el: HTMLElement) {
 
 export function runGhost(
   events: InteractionEvent[],
-  io: { push: (e: InteractionEvent) => void; note: (text: string) => void; cursor: (c: (prev: GhostCursor) => GhostCursor) => void },
+  io: { push: (e: InteractionEvent) => void; note: (text: string) => void; cursor: (c: (prev: GhostCursor) => GhostCursor) => void; done?: () => void },
 ): () => void {
   const timers: ReturnType<typeof setTimeout>[] = [];
   const at = (ms: number, fn: () => void) => timers.push(setTimeout(fn, Math.max(0, ms)));
@@ -61,6 +62,8 @@ export function runGhost(
       else io.push(e);
     });
   }
+  // Walks on to the next page a little after the last event, so the agent has had time to answer.
+  if (io.done) at(Math.max(0, ...events.map((e) => e.t)) + WALK_ON_MS, () => { io.note("goes on to the next page"); io.done!(); });
   return () => timers.forEach(clearTimeout);
 }
 

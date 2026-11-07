@@ -1,0 +1,32 @@
+{
+  "id": "gheorghe",
+  "label": "Gheorghe (synthetic): taps miss, goes back a lot, wants returns and warranty spelled out",
+  "expectedPersona": { "dialect": "guided", "need": "reassurance" },
+  "startPath": "/taraba/p/home-dw-01",
+  "partner": {
+    "consent": { "personalization": true, "partnerData": false },
+    "visitor": { "returning": false, "visits": 1 },
+    "device": { "pointer": "fine", "viewportWidth": 1280, "zoom": 1, "prefersReducedMotion": false, "prefersContrast": false }
+  },
+  "events": [
+    { "t": 0, "type": "page_view", "productId": "home-dw-01" },
+    { "t": 2500, "type": "mis_tap", "blockId": "buyBox", "productId": "home-dw-01" },
+    { "t": 4000, "type": "mis_tap", "blockId": "buyBox", "productId": "home-dw-01" },
+    { "t": 5500, "type": "dead_click", "blockId": "gallery", "productId": "home-dw-01" },
+    { "t": 7000, "type": "policy_open", "blockId": "trust", "value": "returns" },
+    { "t": 9000, "type": "policy_open", "blockId": "trust", "value": "warranty" },
+    { "t": 11000, "type": "review_open", "blockId": "trust", "productId": "home-dw-01" },
+    { "t": 13000, "type": "mis_tap", "blockId": "buyBox", "productId": "home-dw-01" }
+  ],
+  "pages": [
+    {
+      "path": "/taraba/p/home-fridge-01",
+      "events": [
+        { "t": 0, "type": "page_view", "productId": "home-fridge-01" },
+        { "t": 3000, "type": "policy_open", "blockId": "trust", "value": "returns" },
+        { "t": 5500, "type": "mis_tap", "blockId": "buyBox", "productId": "home-fridge-01" },
+        { "t": 8000, "type": "policy_open", "blockId": "trust", "value": "delivery" }
+      ]
+    }
+  ]
+}
