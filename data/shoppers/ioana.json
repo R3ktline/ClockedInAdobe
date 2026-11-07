@@ -1,0 +1,32 @@
+{
+  "id": "ioana",
+  "label": "Ioana, 45 (synthetic): monitors for her team; reads the details closely and checks what the terms mean",
+  "expectedPersona": { "dialect": "standard", "need": "specs" },
+  "startPath": "/taraba/p/elec-mon-01",
+  "partner": {
+    "consent": { "personalization": true, "partnerData": false },
+    "visitor": { "returning": true, "visits": 3 },
+    "device": { "pointer": "fine", "viewportWidth": 1440, "prefersReducedMotion": false, "prefersContrast": false }
+  },
+  "events": [
+    { "t": 0, "type": "page_view", "productId": "elec-mon-01" },
+    { "t": 3000, "type": "block_open", "blockId": "specs", "productId": "elec-mon-01" },
+    { "t": 6000, "type": "block_dwell", "blockId": "specs", "productId": "elec-mon-01", "value": 9000 },
+    { "t": 9000, "type": "block_open", "blockId": "specs", "target": "glossary", "productId": "elec-mon-01" },
+    { "t": 12000, "type": "policy_open", "blockId": "trust", "value": "warranty", "productId": "elec-mon-01" }
+  ],
+  "pages": [
+    { "path": "/taraba/search?q=good%20monitor%20for%20my%20team", "events": [
+      { "t": 0, "type": "page_view" },
+      { "t": 1000, "type": "search", "value": "good monitor for my team" },
+      { "t": 4000, "type": "compare_add", "blockId": "productList", "productId": "elec-mon-01" },
+      { "t": 7000, "type": "product_click", "blockId": "productList", "productId": "elec-mon-01" }
+    ] },
+    { "path": "/taraba/p/elec-mon-01", "events": [
+      { "t": 0, "type": "page_view", "productId": "elec-mon-01" },
+      { "t": 3000, "type": "block_open", "blockId": "specs", "productId": "elec-mon-01" },
+      { "t": 6000, "type": "block_open", "blockId": "specs", "target": "glossary", "productId": "elec-mon-01" },
+      { "t": 9000, "type": "add_to_cart", "blockId": "buyBox", "productId": "elec-mon-01", "value": 4 }
+    ] }
+  ]
+}

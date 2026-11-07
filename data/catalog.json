@@ -1,0 +1,1538 @@
+[
+  {
+    "id": "home-wm-01",
+    "category": "home",
+    "name": "WashPro 8 washing machine",
+    "brand": "Brisk",
+    "price": 1899,
+    "stock": 14,
+    "rating": 4.4,
+    "reviewCount": 312,
+    "specs": [
+      {"key":"capacity","label":"Capacity","value":"8 kg"},
+      {"key":"spin","label":"Spin speed","value":"1400 rpm"},
+      {"key":"energy","label":"Energy class","value":"A"},
+      {"key":"noise","label":"Spin noise","value":"72 dB"},
+      {"key":"programs","label":"Programmes","value":"15"},
+      {"key":"size","label":"Dimensions (H×W×D)","value":"85 × 60 × 55 cm"},
+      {"key":"motor","label":"Motor","value":"Inverter, brushless"}
+    ],
+    "copy": {"plain":"Washes a full family load, spins clothes almost dry and uses little electricity.","standard":"An 8 kg front-loader with a quiet inverter motor, 15 programmes and an A energy rating.","technical":"8 kg front-loader, brushless inverter motor, 1400 rpm spin, energy class A, 72 dB at spin, 15 programmes."},
+    "benefits": ["Big enough for a family's weekly wash","Cheap to run (energy class A)","Quiet motor"],
+    "reviewSummary": {"pros":["Quiet","Clothes come out dry"],"cons":["Door seal needs wiping"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "promotion": {"label":"Autumn deals","oldPrice":2199},
+    "reviews": [
+      {"author":"Andreea M.","rating":5,"date":"2026-10-02","title":"Quiet enough to run at night","text":"We run it after 22:00 and can't hear it from the bedroom. The 1400 spin leaves towels nearly dry.","verified":true},
+      {"author":"Sorin T.","rating":4,"date":"2026-09-18","title":"Good machine, wipe the seal","text":"Washes well and the quick 30-minute programme is handy. Water sits in the door seal, so I wipe it after every wash or it starts to smell.","verified":true},
+      {"author":"Cristina V.","rating":4,"date":"2026-08-27","title":"Easy delivery and install","text":"The couriers brought it upstairs and took the old one. Lots of programmes, but we only use three of them.","verified":true},
+      {"author":"Lucian D.","rating":3,"date":"2026-07-11","title":"Walks a bit on spin","text":"Fine results, but it moved a few centimetres on our tiled floor until I levelled the feet properly. Check the feet before the first wash.","verified":true}
+    ]
+  },
+  {
+    "id": "home-wm-02",
+    "category": "home",
+    "name": "EcoWash 7 washing machine",
+    "brand": "Nordwave",
+    "price": 1449,
+    "stock": 6,
+    "rating": 4.1,
+    "reviewCount": 128,
+    "specs": [
+      {"key":"capacity","label":"Capacity","value":"7 kg"},
+      {"key":"spin","label":"Spin speed","value":"1200 rpm"},
+      {"key":"energy","label":"Energy class","value":"B"},
+      {"key":"noise","label":"Spin noise","value":"76 dB"},
+      {"key":"programs","label":"Programmes","value":"12"},
+      {"key":"size","label":"Dimensions (H×W×D)","value":"85 × 60 × 50 cm"},
+      {"key":"motor","label":"Motor","value":"Universal"}
+    ],
+    "copy": {"plain":"A simple washing machine for smaller homes that fits in tight spaces.","standard":"A 7 kg slim front-loader with 12 programmes, good for flats.","technical":"7 kg slim front-loader (50 cm deep), universal motor, 1200 rpm, energy class B, 76 dB at spin."},
+    "benefits": ["Fits narrow bathrooms","Easy to use dial","Lower price"],
+    "reviewSummary": {"pros":["Compact","Simple controls"],"cons":["Louder when spinning"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":3},
+    "reviews": [
+      {"author":"Elena R.","rating":4,"date":"2026-09-30","title":"Does the job for two","text":"Seven kilos is plenty for a couple. Programmes are clear and it uses little power.","verified":true},
+      {"author":"Bogdan S.","rating":3,"date":"2026-08-14","title":"Louder than I hoped","text":"Cleans fine, but the spin is noticeably loud in a small flat. For the price I can live with it.","verified":true},
+      {"author":"Irina P.","rating":4,"date":"2026-06-03","title":"Fits a narrow bathroom","text":"Measured twice and it fit. The eco programme takes almost three hours, so plan ahead.","verified":true}
+    ]
+  },
+  {
+    "id": "home-sofa-01",
+    "category": "home",
+    "name": "Lina three-seat sofa",
+    "brand": "Casa Verde",
+    "price": 2799,
+    "stock": 4,
+    "rating": 4.6,
+    "reviewCount": 87,
+    "specs": [
+      {"key":"seats","label":"Seats","value":"3"},
+      {"key":"fabric","label":"Fabric","value":"Recycled bouclé, removable covers"},
+      {"key":"size","label":"Dimensions (W×D×H)","value":"210 × 92 × 80 cm"},
+      {"key":"frame","label":"Frame","value":"Solid pine"}
+    ],
+    "copy": {"plain":"A soft, deep sofa for three with covers you can take off and wash.","standard":"A three-seat sofa in recycled bouclé with removable, washable covers and a solid pine frame.","technical":"210 cm three-seater, solid pine frame, recycled bouclé upholstery, removable covers (30 °C wash)."},
+    "benefits": ["Washable covers","Deep seats","Solid wood frame"],
+    "reviewSummary": {"pros":["Very comfortable","Covers wash well"],"cons":["Delivery takes over a week"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":10},
+    "reviews": [
+      {"author":"Maria G.","rating":5,"date":"2026-10-12","title":"Comfortable and looks expensive","text":"The fabric feels good and the cushions kept their shape after two months. Delivery took the full ten days.","verified":true},
+      {"author":"Alexandru N.","rating":4,"date":"2026-09-05","title":"Firm seat, soft back","text":"Firmer than in the photos suggested, which I like. Covers come off for washing, which matters with a dog.","verified":true},
+      {"author":"Diana F.","rating":4,"date":"2026-07-22","title":"Check the door width","text":"Lovely sofa, but it only just went through our 80 cm door with the legs off. Measure first.","verified":true}
+    ]
+  },
+  {
+    "id": "elec-lap-01",
+    "category": "electronics",
+    "name": "Aero 14 laptop",
+    "brand": "Voltra",
+    "price": 4299,
+    "stock": 22,
+    "rating": 4.5,
+    "reviewCount": 540,
+    "specs": [
+      {"key":"cpu","label":"Processor","value":"8-core, 4.8 GHz"},
+      {"key":"ram","label":"Memory","value":"16 GB DDR5"},
+      {"key":"storage","label":"Storage","value":"1 TB SSD"},
+      {"key":"screen","label":"Screen","value":"14\" 2.8K OLED, 120 Hz"},
+      {"key":"battery","label":"Battery life","value":"Up to 14 h"},
+      {"key":"weight","label":"Weight","value":"1.3 kg"}
+    ],
+    "copy": {"plain":"A light laptop that lasts a full workday and handles video calls, photos and office work easily.","standard":"A 14-inch OLED laptop with 16 GB of memory, a 1 TB SSD and up to 14 hours of battery.","technical":"8-core 4.8 GHz CPU, 16 GB DDR5, 1 TB NVMe SSD, 14\" 2.8K OLED 120 Hz, 1.3 kg, up to 14 h battery."},
+    "benefits": ["Lasts a full workday","Sharp, bright screen","Light enough to carry daily"],
+    "reviewSummary": {"pros":["Battery life","Screen quality"],"cons":["Few ports"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":1},
+    "reviews": [
+      {"author":"Vlad C.","rating":5,"date":"2026-10-20","title":"Battery lasts a work day","text":"I get about nine hours of browsing and documents. Light enough to carry every day.","verified":true},
+      {"author":"Simona B.","rating":4,"date":"2026-09-09","title":"Great screen, hot under load","text":"The display is sharp and bright. It gets warm and the fan is audible when exporting video.","verified":true},
+      {"author":"Paul I.","rating":4,"date":"2026-08-01","title":"Fast, few ports","text":"Very quick for coding. Only two USB-C ports, so I bought a hub for my monitor and mouse.","verified":true},
+      {"author":"Oana L.","rating":3,"date":"2026-06-15","title":"Keyboard is shallow","text":"Everything works well, but the keys have little travel and took a week to get used to.","verified":true}
+    ]
+  },
+  {
+    "id": "elec-hp-01",
+    "category": "electronics",
+    "name": "Calm 3 noise-cancelling headphones",
+    "brand": "Lumio",
+    "price": 649,
+    "stock": 40,
+    "rating": 4.3,
+    "reviewCount": 1210,
+    "specs": [
+      {"key":"anc","label":"Noise cancelling","value":"Active, 3 levels"},
+      {"key":"battery","label":"Battery life","value":"30 h"},
+      {"key":"codec","label":"Codecs","value":"AAC, LDAC"},
+      {"key":"weight","label":"Weight","value":"250 g"}
+    ],
+    "copy": {"plain":"Comfortable headphones that block out noise and last more than a day on one charge.","standard":"Over-ear noise-cancelling headphones with 30 hours of battery.","technical":"Over-ear, 3-level ANC, AAC/LDAC, 30 h battery, 250 g."},
+    "benefits": ["Blocks out noise on trips","30 hours per charge","Light and comfortable"],
+    "reviewSummary": {"pros":["Comfort","Battery"],"cons":["Case is bulky"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":1},
+    "promotion": {"label":"Autumn deals","oldPrice":749},
+    "reviews": [
+      {"author":"Mihai P.","rating":5,"date":"2026-10-25","title":"Noise cancelling is the real deal","text":"On the tram and on flights the hum disappears. Battery lasted a week of commuting.","verified":true},
+      {"author":"Ana-Maria D.","rating":4,"date":"2026-09-12","title":"Comfortable, ears get warm","text":"I wear them for hours at work. After two hours my ears get warm, which is normal for over-ear.","verified":true},
+      {"author":"George H.","rating":4,"date":"2026-08-19","title":"Good sound, average calls","text":"Music sounds full. On calls people say I sound a little distant when there is wind.","verified":true},
+      {"author":"Teodora S.","rating":2,"date":"2026-05-30","title":"Pairing trouble with my laptop","text":"Works perfectly with my phone, but kept dropping from my laptop until a firmware update. Fixed now, but it took a month.","verified":true}
+    ]
+  },
+  {
+    "id": "elec-mon-01",
+    "category": "electronics",
+    "name": "Clear 27 office monitor",
+    "brand": "Voltra",
+    "price": 999,
+    "stock": 60,
+    "rating": 4.2,
+    "reviewCount": 302,
+    "specs": [
+      {"key":"size","label":"Size","value":"27\""},
+      {"key":"resolution","label":"Resolution","value":"2560 × 1440"},
+      {"key":"panel","label":"Panel","value":"IPS, 75 Hz"},
+      {"key":"ports","label":"Ports","value":"USB-C 65 W, HDMI"}
+    ],
+    "copy": {"plain":"A big, sharp screen for office work that charges your laptop through one cable.","standard":"A 27-inch QHD monitor with USB-C that also charges your laptop.","technical":"27\" 2560×1440 IPS 75 Hz, USB-C with 65 W power delivery, HDMI."},
+    "benefits": ["One cable for screen and charging","Sharp text","Adjustable stand"],
+    "reviewSummary": {"pros":["USB-C charging","Sharp"],"cons":["Speakers are weak"]},
+    "policies": {"returnDays":30,"warrantyMonths":36,"deliveryDays":2},
+    "reviews": [
+      {"author":"Cosmin A.","rating":4,"date":"2026-10-08","title":"Good office screen","text":"Text is crisp and the colours are fine for office work. The stand only tilts, no height adjustment.","verified":true},
+      {"author":"Larisa M.","rating":5,"date":"2026-09-01","title":"One cable for the laptop","text":"USB-C charges my laptop and carries the picture. My desk has one cable now.","verified":true},
+      {"author":"Florin E.","rating":3,"date":"2026-07-03","title":"Slight glow in the corners","text":"In a dark room the corners glow a little. During the day I don't notice it.","verified":true}
+    ]
+  },
+  {
+    "id": "fash-snk-01",
+    "category": "fashion",
+    "name": "Drift low sneakers",
+    "brand": "Kestrel",
+    "price": 389,
+    "stock": 35,
+    "rating": 4.4,
+    "reviewCount": 640,
+    "specs": [
+      {"key":"upper","label":"Upper","value":"Suede and mesh"},
+      {"key":"sole","label":"Sole","value":"Rubber, cushioned"},
+      {"key":"sizes","label":"Sizes","value":"36-46"}
+    ],
+    "copy": {"plain":"Light, comfortable sneakers that go with everything.","standard":"Low-top sneakers in suede and mesh with a cushioned sole.","technical":"Suede/mesh upper, cushioned rubber outsole, sizes 36-46, true to size."},
+    "benefits": ["Comfortable all day","Goes with everything","True to size"],
+    "reviewSummary": {"pros":["Comfort","Look"],"cons":["Suede marks easily"]},
+    "policies": {"returnDays":60,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Raluca T.","rating":5,"date":"2026-10-15","title":"Comfortable from day one","text":"No breaking in needed. I walk 10,000 steps a day in them.","verified":true},
+      {"author":"Andrei V.","rating":4,"date":"2026-09-21","title":"Run half a size small","text":"Ordered my usual 43 and they were tight, swapped for 43.5 for free. Good quality.","verified":true},
+      {"author":"Ioana C.","rating":4,"date":"2026-08-04","title":"White gets dirty fast","text":"Look great but the white sole marks easily. A damp cloth gets most of it off.","verified":true}
+    ]
+  },
+  {
+    "id": "fash-jkt-01",
+    "category": "fashion",
+    "name": "Storm kids' rain jacket",
+    "brand": "Merilo",
+    "price": 179,
+    "stock": 50,
+    "rating": 4.7,
+    "reviewCount": 210,
+    "specs": [
+      {"key":"waterproof","label":"Waterproof rating","value":"10,000 mm"},
+      {"key":"sizes","label":"Sizes","value":"104-152"},
+      {"key":"reflective","label":"Reflective details","value":"Yes"}
+    ],
+    "copy": {"plain":"A warm, waterproof jacket for children that is easy to see in the dark.","standard":"A waterproof kids' jacket with reflective details, sizes 104-152.","technical":"10,000 mm waterproof shell, taped seams, reflective trims, sizes 104-152."},
+    "benefits": ["Keeps children dry","Easy to see in the dark","Machine washable"],
+    "reviewSummary": {"pros":["Really waterproof","Bright colours"],"cons":["Runs slightly small"]},
+    "policies": {"returnDays":60,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Carmen I.","rating":5,"date":"2026-10-28","title":"Kept my son dry on a rainy walk","text":"Two hours of drizzle and his jumper underneath was dry. The reflective strips are bright in car headlights.","verified":true},
+      {"author":"Dan O.","rating":5,"date":"2026-10-03","title":"Easy zip for small hands","text":"My daughter can close it herself. Hood stays on in wind.","verified":true},
+      {"author":"Monica P.","rating":4,"date":"2026-09-14","title":"Size up for layers","text":"Fits true, but with a fleece under it's snug. I'd go one size up for winter.","verified":true}
+    ]
+  },
+  {
+    "id": "groc-coffee-01",
+    "category": "groceries",
+    "name": "Morning roast coffee beans, 1 kg",
+    "brand": "Pepo",
+    "price": 89,
+    "stock": 200,
+    "rating": 4.5,
+    "reviewCount": 980,
+    "specs": [
+      {"key":"weight","label":"Weight","value":"1 kg"},
+      {"key":"roast","label":"Roast","value":"Medium"},
+      {"key":"origin","label":"Origin","value":"Brazil and Colombia"}
+    ],
+    "copy": {"plain":"Smooth everyday coffee beans, not bitter.","standard":"A 1 kg bag of medium-roast beans from Brazil and Colombia.","technical":"1 kg, medium roast, Brazil/Colombia blend, notes of chocolate and nuts."},
+    "benefits": ["Smooth taste","Lasts about a month","Good value per cup"],
+    "reviewSummary": {"pros":["Smooth","Value"],"cons":["Not for dark-roast fans"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Adrian B.","rating":5,"date":"2026-10-18","title":"Smooth, not bitter","text":"Medium roast with a chocolate note. Works well in my espresso machine and in a moka pot.","verified":true},
+      {"author":"Laura N.","rating":4,"date":"2026-09-26","title":"Good value per kilo","text":"Fresh roast date, about three weeks before delivery. The bag has a valve but no zip, so I use a jar.","verified":true},
+      {"author":"Stefan M.","rating":4,"date":"2026-08-10","title":"Too mild for me","text":"Nice beans, but I like darker roasts. My partner loves it.","verified":true}
+    ]
+  },
+  {
+    "id": "groc-olive-01",
+    "category": "groceries",
+    "name": "Extra virgin olive oil, 1 l",
+    "brand": "Pepo",
+    "price": 59,
+    "stock": 150,
+    "rating": 4.6,
+    "reviewCount": 420,
+    "specs": [
+      {"key":"volume","label":"Volume","value":"1 l"},
+      {"key":"origin","label":"Origin","value":"Greece"}
+    ],
+    "copy": {"plain":"Good olive oil for cooking and salads.","standard":"A litre of Greek extra virgin olive oil.","technical":"1 l, extra virgin, cold pressed, Greece."},
+    "benefits": ["For cooking and salads","Cold pressed"],
+    "reviewSummary": {"pros":["Taste"],"cons":["Bottle is not resealable"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Gabriela S.","rating":5,"date":"2026-10-06","title":"Peppery and fresh","text":"Has the bitter, peppery finish good oil should have. Great on salads.","verified":true},
+      {"author":"Nicolae R.","rating":4,"date":"2026-08-22","title":"Dark bottle, good","text":"Nice that it comes in dark glass. Arrived well packed.","verified":true},
+      {"author":"Alina D.","rating":4,"date":"2026-07-14","title":"Pricier than supermarket oil","text":"You can taste the difference, but it isn't cheap. I keep it for cold dishes.","verified":true}
+    ]
+  },
+  {
+    "id": "toy-blocks-01",
+    "category": "toys",
+    "name": "Big builder blocks, 120 pieces",
+    "brand": "Brisk Kids",
+    "price": 149,
+    "stock": 70,
+    "rating": 4.8,
+    "reviewCount": 350,
+    "specs": [
+      {"key":"pieces","label":"Pieces","value":"120"},
+      {"key":"age","label":"Suitable from","value":"3 years"},
+      {"key":"material","label":"Material","value":"BPA-free plastic"}
+    ],
+    "copy": {"plain":"Large, safe building blocks for children from 3 years old.","standard":"A 120-piece set of large building blocks for ages 3 and up.","technical":"120 pieces, BPA-free plastic, compatible with standard large-format blocks, ages 3+."},
+    "benefits": ["Safe for small children","Hours of play","Comes in a storage box"],
+    "reviewSummary": {"pros":["Sturdy","Storage box"],"cons":["Box lid is flimsy"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Roxana E.","rating":5,"date":"2026-10-21","title":"Hours of building","text":"Our three-year-old builds towers every day. The blocks are big enough that I don't worry about small parts.","verified":true},
+      {"author":"Marius G.","rating":5,"date":"2026-09-02","title":"Compatible with older sets","text":"Fits the blocks we already had. Plastic feels solid, no sharp edges.","verified":true},
+      {"author":"Bianca L.","rating":4,"date":"2026-07-27","title":"Box is flimsy","text":"Great blocks, but the storage box split within a month. We use a basket now.","verified":true}
+    ]
+  },
+  {
+    "id": "toy-scooter-01",
+    "category": "toys",
+    "name": "Glide kids' scooter",
+    "brand": "Kestrel",
+    "price": 259,
+    "stock": 18,
+    "rating": 4.5,
+    "reviewCount": 190,
+    "specs": [
+      {"key":"age","label":"Suitable from","value":"5 years"},
+      {"key":"maxLoad","label":"Max load","value":"50 kg"},
+      {"key":"foldable","label":"Foldable","value":"Yes"}
+    ],
+    "copy": {"plain":"A sturdy scooter for children from 5 that folds up for the car.","standard":"A foldable two-wheel scooter for ages 5 and up, up to 50 kg.","technical":"Two-wheel, aluminium deck, 50 kg max load, adjustable bar, folds to 60 cm."},
+    "benefits": ["Folds for the car","Grows with your child","Sturdy"],
+    "reviewSummary": {"pros":["Sturdy","Folds easily"],"cons":["No bell"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Cristian F.","rating":5,"date":"2026-10-11","title":"Steers by leaning, very stable","text":"Our five-year-old was riding confidently on the first afternoon. Folds small for the car boot.","verified":true},
+      {"author":"Daniela H.","rating":4,"date":"2026-08-30","title":"Handlebar height adjusts","text":"Three heights, so it should last a few years. The brake is stiff for small feet at first.","verified":true},
+      {"author":"Tudor M.","rating":4,"date":"2026-07-08","title":"Wheels light up, kids love it","text":"No batteries needed for the light-up wheels. A bit noisy on rough pavement.","verified":true}
+    ]
+  },
+  {
+    "id": "hb-vit-01",
+    "category": "health_beauty",
+    "name": "Vitamin D3 1000 IU, 90 tablets",
+    "brand": "Aria",
+    "price": 39,
+    "stock": 300,
+    "rating": 4.6,
+    "reviewCount": 760,
+    "specs": [
+      {"key":"dose","label":"Dose","value":"1000 IU per tablet"},
+      {"key":"count","label":"Tablets","value":"90"}
+    ],
+    "copy": {"plain":"One small tablet a day. A three-month supply.","standard":"Vitamin D3 food supplement, 90 tablets of 1000 IU.","technical":"Cholecalciferol 1000 IU (25 µg) per tablet, 90 tablets."},
+    "benefits": ["Three-month supply","Small, easy-to-swallow tablets"],
+    "reviewSummary": {"pros":["Easy to swallow"],"cons":["Plain packaging"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Ileana C.","rating":5,"date":"2026-10-09","title":"Small, easy to swallow","text":"Tiny tablets, no taste. Ninety tablets lasts three months at one a day.","verified":true},
+      {"author":"Robert A.","rating":4,"date":"2026-09-03","title":"Good price","text":"Cheaper than the pharmacy brand with the same dose. Packaging is basic.","verified":true},
+      {"author":"Mirela T.","rating":4,"date":"2026-06-21","title":"Easy daily habit","text":"I keep it next to the coffee machine. Nothing special to say, it's a vitamin at a fair price.","verified":true}
+    ]
+  },
+  {
+    "id": "hb-cream-01",
+    "category": "health_beauty",
+    "name": "Gentle daily face cream, 50 ml",
+    "brand": "Aria",
+    "price": 69,
+    "stock": 120,
+    "rating": 4.3,
+    "reviewCount": 410,
+    "specs": [
+      {"key":"volume","label":"Volume","value":"50 ml"},
+      {"key":"skin","label":"Skin type","value":"Sensitive, all ages"},
+      {"key":"fragrance","label":"Fragrance","value":"Fragrance-free"}
+    ],
+    "copy": {"plain":"A light, fragrance-free cream for every day.","standard":"A fragrance-free daily moisturiser for sensitive skin.","technical":"50 ml, fragrance-free, ceramides and glycerin, non-comedogenic."},
+    "benefits": ["No fragrance","Light, not greasy"],
+    "reviewSummary": {"pros":["Gentle"],"cons":["Small tube"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Ana B.","rating":5,"date":"2026-10-14","title":"No reaction on sensitive skin","text":"Most creams sting my cheeks. This one doesn't, and it's fragrance-free.","verified":true},
+      {"author":"Corina V.","rating":4,"date":"2026-09-07","title":"Light, absorbs fast","text":"Works under makeup. In winter I need something richer at night.","verified":true},
+      {"author":"Sabina N.","rating":3,"date":"2026-07-19","title":"Pump stopped working","text":"The cream is fine but the pump jammed with a third left. I had to cut the bottle open.","verified":true}
+    ]
+  },
+  {
+    "id": "elec-phone-01",
+    "category": "electronics",
+    "name": "Nova A5 smartphone",
+    "brand": "Ventro",
+    "price": 1499,
+    "stock": 45,
+    "rating": 4.3,
+    "reviewCount": 860,
+    "specs": [
+      {"key":"screen","label":"Screen","value":"6.6 in OLED, 120 Hz"},
+      {"key":"storage","label":"Storage","value":"128 GB"},
+      {"key":"ram","label":"Memory","value":"8 GB"},
+      {"key":"battery","label":"Battery","value":"5000 mAh"},
+      {"key":"camera","label":"Main camera","value":"50 MP"},
+      {"key":"water","label":"Water resistance","value":"IP54 (splashes)"},
+      {"key":"charging","label":"Charging","value":"33 W, charger not included"}
+    ],
+    "copy": {"plain":"A big, bright phone whose battery lasts all day and then some.","standard":"A 6.6-inch OLED phone with 128 GB storage, a 50 MP camera and a two-day 5000 mAh battery.","technical":"6.6 in 120 Hz OLED, 8 GB RAM, 128 GB storage, 50 MP main sensor, 5000 mAh cell, 33 W wired charging, IP54."},
+    "benefits": ["Battery lasts more than a day","Smooth, bright screen","Plenty of space for photos"],
+    "reviewSummary": {"pros":["Battery life","Screen"],"cons":["Night photos are noisy","No charger in the box"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":1},
+    "reviews": [
+      {"author":"Ionela P.","rating":5,"date":"2026-10-19","title":"Two days on one charge","text":"With normal use I charge every second evening. The screen is lovely outdoors.","verified":true},
+      {"author":"Catalin R.","rating":4,"date":"2026-09-24","title":"Good daytime camera","text":"Photos in daylight are sharp. Indoors at night they get grainy.","verified":true},
+      {"author":"Daria M.","rating":3,"date":"2026-08-16","title":"Buy a charger too","text":"No charger in the box, and my old one charges it slowly. Factor that into the price.","verified":true}
+    ]
+  },
+  {
+    "id": "elec-tv-01",
+    "category": "electronics",
+    "name": "Vista 55 4K smart TV",
+    "brand": "Voltra",
+    "price": 2399,
+    "stock": 12,
+    "rating": 4.2,
+    "reviewCount": 415,
+    "specs": [
+      {"key":"size","label":"Screen size","value":"55 in (139 cm)"},
+      {"key":"resolution","label":"Resolution","value":"3840 × 2160 (4K)"},
+      {"key":"hdr","label":"HDR","value":"HDR10, HLG"},
+      {"key":"refresh","label":"Refresh rate","value":"60 Hz"},
+      {"key":"ports","label":"Ports","value":"3 × HDMI, 2 × USB"},
+      {"key":"audio","label":"Speakers","value":"2 × 10 W"},
+      {"key":"energy","label":"Energy class","value":"F"}
+    ],
+    "copy": {"plain":"A big, sharp TV with the streaming apps built in.","standard":"A 55-inch 4K smart TV with HDR, three HDMI ports and the main streaming apps built in.","technical":"55 in 4K LED panel, 60 Hz, HDR10/HLG, 3 × HDMI 2.0, 2 × USB, 2 × 10 W speakers, energy class F."},
+    "benefits": ["Sharp 4K picture","Streaming apps ready to use","Three HDMI ports"],
+    "reviewSummary": {"pros":["Picture for the price","Easy setup"],"cons":["Weak speakers","Menus are slow"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "promotion": {"label":"Autumn deals","oldPrice":2699},
+    "reviews": [
+      {"author":"Victor S.","rating":4,"date":"2026-10-23","title":"Great picture, buy a soundbar","text":"Football looks crisp and the colours are good. The speakers sound thin, so we added a soundbar.","verified":true},
+      {"author":"Elena C.","rating":4,"date":"2026-09-15","title":"Set up in ten minutes","text":"Logged into the apps and it was ready. The menu can lag when switching inputs.","verified":true},
+      {"author":"Razvan T.","rating":3,"date":"2026-08-02","title":"Viewing angle is narrow","text":"From the side of the sofa the picture washes out. Straight on, it's very good.","verified":true},
+      {"author":"Lavinia O.","rating":5,"date":"2026-06-28","title":"Huge upgrade from our old TV","text":"For this price we expected less. Wall mounting was easy with a standard bracket.","verified":true}
+    ]
+  },
+  {
+    "id": "elec-watch-01",
+    "category": "electronics",
+    "name": "Pulse 2 fitness watch",
+    "brand": "Lumio",
+    "price": 499,
+    "stock": 55,
+    "rating": 4.1,
+    "reviewCount": 1030,
+    "specs": [
+      {"key":"battery","label":"Battery life","value":"Up to 10 days"},
+      {"key":"gps","label":"GPS","value":"Built-in"},
+      {"key":"screen","label":"Screen","value":"1.4 in AMOLED"},
+      {"key":"water","label":"Water resistance","value":"5 ATM (swimming)"},
+      {"key":"sensors","label":"Sensors","value":"Heart rate, SpO2, accelerometer"},
+      {"key":"weight","label":"Weight","value":"32 g"}
+    ],
+    "copy": {"plain":"A light watch that counts your steps and workouts and only needs charging once a week or so.","standard":"A fitness watch with built-in GPS, heart-rate tracking, swim-proofing and up to 10 days of battery.","technical":"1.4 in AMOLED, built-in GPS, optical HR and SpO2 sensors, 5 ATM, up to 10 days typical use, 32 g."},
+    "benefits": ["Charge about once a week","Tracks runs without your phone","Safe for swimming"],
+    "reviewSummary": {"pros":["Battery life","GPS works well"],"cons":["Strap can irritate skin","Sleep tracking is hit and miss"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":1},
+    "promotion": {"label":"Autumn deals","oldPrice":599},
+    "reviews": [
+      {"author":"Teodor B.","rating":5,"date":"2026-10-17","title":"GPS matches my running app","text":"Distances line up with my old running watch. Battery was at 30% after a week with three runs.","verified":true},
+      {"author":"Andra V.","rating":3,"date":"2026-09-20","title":"Strap gave me a rash","text":"The watch itself is great, but the rubber strap irritated my wrist in summer. A fabric strap fixed it.","verified":true},
+      {"author":"Ovidiu L.","rating":4,"date":"2026-08-25","title":"Sleep data is a guess","text":"Steps and heart rate seem right. It sometimes says I fell asleep an hour after I really did.","verified":true},
+      {"author":"Claudia F.","rating":4,"date":"2026-07-12","title":"App asks for a lot of permissions","text":"Syncs fine once set up. I turned off half the notifications in the app.","verified":true}
+    ]
+  },
+  {
+    "id": "elec-tab-01",
+    "category": "electronics",
+    "name": "Slate 11 tablet",
+    "brand": "Ventro",
+    "price": 1299,
+    "stock": 30,
+    "rating": 4.4,
+    "reviewCount": 520,
+    "specs": [
+      {"key":"screen","label":"Screen","value":"11 in, 2000 × 1200"},
+      {"key":"storage","label":"Storage","value":"128 GB, microSD slot"},
+      {"key":"ram","label":"Memory","value":"6 GB"},
+      {"key":"battery","label":"Battery","value":"8000 mAh"},
+      {"key":"audio","label":"Speakers","value":"4 speakers"},
+      {"key":"weight","label":"Weight","value":"490 g"}
+    ],
+    "copy": {"plain":"A big-screen tablet for films, video calls and reading on the sofa.","standard":"An 11-inch tablet with four speakers, 128 GB storage and a battery that lasts a day of use.","technical":"11 in 2000 × 1200 IPS, 6 GB RAM, 128 GB + microSD, 8000 mAh, quad speakers, 490 g."},
+    "benefits": ["Big screen for films","Loud, clear speakers","Room for apps and downloads"],
+    "reviewSummary": {"pros":["Screen and sound","Battery"],"cons":["Slow for heavy games","No stylus or case included"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":1},
+    "reviews": [
+      {"author":"Silvia D.","rating":5,"date":"2026-10-05","title":"Perfect for streaming","text":"Sound is surprisingly full for a tablet. We watch films on it in the kitchen.","verified":true},
+      {"author":"Emil R.","rating":4,"date":"2026-09-11","title":"Good for the kids","text":"Parental controls were easy to set. Heavier games stutter a little.","verified":true},
+      {"author":"Patricia G.","rating":4,"date":"2026-07-30","title":"Get a case","text":"Nothing in the box but the cable. Buy a case before the first drop.","verified":true}
+    ]
+  },
+  {
+    "id": "elec-spk-01",
+    "category": "electronics",
+    "name": "Boom Go portable speaker",
+    "brand": "Lumio",
+    "price": 279,
+    "stock": 80,
+    "rating": 4.5,
+    "reviewCount": 740,
+    "specs": [
+      {"key":"power","label":"Output","value":"20 W"},
+      {"key":"battery","label":"Battery life","value":"Up to 14 hours"},
+      {"key":"water","label":"Water resistance","value":"IP67 (dust and water)"},
+      {"key":"bt","label":"Bluetooth","value":"5.3"},
+      {"key":"weight","label":"Weight","value":"560 g"}
+    ],
+    "copy": {"plain":"A small, tough speaker you can take to the beach or the bathroom.","standard":"A 20 W Bluetooth speaker that survives water and dust and plays for up to 14 hours.","technical":"20 W output, Bluetooth 5.3, IP67, up to 14 h playback, USB-C charging, 560 g."},
+    "benefits": ["Loud for its size","Waterproof and dustproof","Plays all day"],
+    "reviewSummary": {"pros":["Volume","Tough build"],"cons":["No headphone jack input","Bass drops at full volume"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":1},
+    "reviews": [
+      {"author":"Horia N.","rating":5,"date":"2026-09-28","title":"Survived a rainy camping trip","text":"Left it out overnight in the rain and it still works. Loud enough for a group.","verified":true},
+      {"author":"Iulia S.","rating":4,"date":"2026-08-21","title":"Great in the shower","text":"I play podcasts in the shower. Clear voices, decent bass.","verified":true},
+      {"author":"Marcel C.","rating":4,"date":"2026-07-06","title":"Bluetooth only","text":"No cable input, so my old MP3 player is out. Pairing with the phone is instant.","verified":true}
+    ]
+  },
+  {
+    "id": "elec-router-01",
+    "category": "electronics",
+    "name": "Mesh 3 Wi-Fi 6 system, 2 units",
+    "brand": "Ventro",
+    "price": 699,
+    "stock": 25,
+    "rating": 4.3,
+    "reviewCount": 290,
+    "specs": [
+      {"key":"standard","label":"Wi-Fi standard","value":"Wi-Fi 6 (AX3000)"},
+      {"key":"units","label":"Units","value":"2"},
+      {"key":"coverage","label":"Coverage","value":"Up to 250 m²"},
+      {"key":"ports","label":"Ports per unit","value":"3 × gigabit Ethernet"},
+      {"key":"setup","label":"Setup","value":"Phone app"}
+    ],
+    "copy": {"plain":"Two small boxes that spread fast Wi-Fi to every room in your home.","standard":"A two-unit Wi-Fi 6 mesh system that covers up to 250 m² and sets up from a phone app.","technical":"AX3000 dual-band Wi-Fi 6 mesh, 2 nodes, up to 250 m², 3 × GbE per node, app-based setup, WPA3."},
+    "benefits": ["Wi-Fi in every room","Set up from your phone","One network name everywhere"],
+    "reviewSummary": {"pros":["Coverage","Easy setup"],"cons":["App needs an account"]},
+    "policies": {"returnDays":30,"warrantyMonths":36,"deliveryDays":2},
+    "reviews": [
+      {"author":"Robert I.","rating":5,"date":"2026-10-10","title":"No more dead zone upstairs","text":"Bedroom went from one bar to full speed. Took fifteen minutes to set up.","verified":true},
+      {"author":"Nicoleta B.","rating":4,"date":"2026-09-04","title":"Works, but needs an account","text":"You have to create an account in the app before you can configure it. A web page option would be nice.","verified":true},
+      {"author":"Ciprian A.","rating":4,"date":"2026-07-24","title":"Solid speeds","text":"I get close to my full 500 Mbps near the second unit. Ethernet ports are handy for the TV.","verified":true}
+    ]
+  },
+  {
+    "id": "elec-ereader-01",
+    "category": "electronics",
+    "name": "Folio 6 e-reader",
+    "brand": "Corla",
+    "price": 599,
+    "stock": 35,
+    "rating": 4.6,
+    "reviewCount": 380,
+    "specs": [
+      {"key":"screen","label":"Screen","value":"6 in e-ink, 300 ppi"},
+      {"key":"light","label":"Front light","value":"Adjustable warm light"},
+      {"key":"storage","label":"Storage","value":"16 GB"},
+      {"key":"battery","label":"Battery life","value":"Up to 6 weeks"},
+      {"key":"water","label":"Water resistance","value":"IPX8"},
+      {"key":"formats","label":"Formats","value":"EPUB, PDF, MOBI, TXT"}
+    ],
+    "copy": {"plain":"A light reader that looks like paper and is easy on your eyes, even in bed.","standard":"A 6-inch e-ink reader with adjustable warm light, 16 GB storage and weeks of battery.","technical":"6 in 300 ppi e-ink, adjustable colour-temperature front light, 16 GB, IPX8, EPUB/PDF/MOBI/TXT, up to 6 weeks."},
+    "benefits": ["Easy on the eyes","Holds thousands of books","Charge it once a month"],
+    "reviewSummary": {"pros":["Screen","Battery"],"cons":["PDFs are slow and small"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":1},
+    "reviews": [
+      {"author":"Ruxandra M.","rating":5,"date":"2026-10-22","title":"Reads like paper","text":"I read for an hour every night and charged it once in October. The warm light is lovely.","verified":true},
+      {"author":"Liviu P.","rating":5,"date":"2026-08-29","title":"EPUB works out of the box","text":"Copied my library over USB and it showed up straight away.","verified":true},
+      {"author":"Anca J.","rating":3,"date":"2026-07-17","title":"Not for PDFs","text":"Novels are great, but scanned PDFs are tiny and slow to zoom. Fine if you mostly read books.","verified":true}
+    ]
+  },
+  {
+    "id": "fash-jeans-01",
+    "category": "fashion",
+    "name": "Straight-fit jeans",
+    "brand": "Kestrel",
+    "price": 229,
+    "stock": 90,
+    "rating": 4.2,
+    "reviewCount": 530,
+    "specs": [
+      {"key":"fabric","label":"Fabric","value":"98% cotton, 2% elastane"},
+      {"key":"fit","label":"Fit","value":"Straight leg, mid rise"},
+      {"key":"sizes","label":"Sizes","value":"W28–W40, L30/32/34"},
+      {"key":"care","label":"Care","value":"Wash at 30 °C, inside out"}
+    ],
+    "copy": {"plain":"Everyday jeans with a little stretch, in a classic straight cut.","standard":"Straight-leg, mid-rise jeans in stretch cotton, from W28 to W40 in three leg lengths.","technical":"98/2 cotton–elastane denim, 12 oz, straight leg, mid rise, W28–W40, L30/32/34."},
+    "benefits": ["Comfortable stretch","Three leg lengths","Classic cut that goes with anything"],
+    "reviewSummary": {"pros":["Fit","Comfort"],"cons":["Dark dye bleeds at first"]},
+    "policies": {"returnDays":60,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Florin D.","rating":5,"date":"2026-10-01","title":"Finally a leg length that fits","text":"The L30 option means I don't need them shortened. True to size.","verified":true},
+      {"author":"Carmen S.","rating":4,"date":"2026-08-23","title":"Wash separately at first","text":"Turned my white socks blue in the first wash. Fine after that.","verified":true},
+      {"author":"Mihnea V.","rating":4,"date":"2026-07-09","title":"Slight shrink","text":"Lost about a centimetre in length after a warm wash. Stick to 30 °C.","verified":true}
+    ]
+  },
+  {
+    "id": "fash-boot-01",
+    "category": "fashion",
+    "name": "Trail waterproof hiking boots",
+    "brand": "Kestrel",
+    "price": 549,
+    "stock": 28,
+    "rating": 4.5,
+    "reviewCount": 310,
+    "specs": [
+      {"key":"upper","label":"Upper","value":"Suede and mesh"},
+      {"key":"membrane","label":"Membrane","value":"Waterproof, breathable"},
+      {"key":"sole","label":"Sole","value":"Rubber lug sole"},
+      {"key":"sizes","label":"Sizes","value":"36–47"},
+      {"key":"weight","label":"Weight (pair, size 42)","value":"1.1 kg"}
+    ],
+    "copy": {"plain":"Sturdy boots that keep your feet dry on muddy trails.","standard":"Mid-height hiking boots with a waterproof membrane and a grippy rubber sole, sizes 36 to 47.","technical":"Suede/mesh mid-cut upper, waterproof breathable membrane, rubber lug outsole, EVA midsole, 1.1 kg/pair (42)."},
+    "benefits": ["Dry feet in rain and mud","Good grip on rocks","Ankle support"],
+    "reviewSummary": {"pros":["Waterproof","Grip"],"cons":["Need a few walks to break in","Run a little small"]},
+    "policies": {"returnDays":60,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Vasile M.","rating":5,"date":"2026-10-13","title":"Dry after a day in the Bucegi","text":"Walked through snow patches and streams, feet stayed dry. Grip on wet rock is good.","verified":true},
+      {"author":"Alexandra T.","rating":4,"date":"2026-09-17","title":"Break them in first","text":"Rubbed my heels on the first long hike. After three short walks they were comfortable.","verified":true},
+      {"author":"Gabriel N.","rating":4,"date":"2026-08-08","title":"Order half a size up","text":"My usual 44 was tight with thick socks. The exchange was free.","verified":true}
+    ]
+  },
+  {
+    "id": "fash-coat-01",
+    "category": "fashion",
+    "name": "Wool-blend winter coat",
+    "brand": "Merilo",
+    "price": 699,
+    "stock": 20,
+    "rating": 4.4,
+    "reviewCount": 145,
+    "specs": [
+      {"key":"fabric","label":"Outer","value":"60% wool, 40% polyester"},
+      {"key":"lining","label":"Lining","value":"Quilted, full"},
+      {"key":"length","label":"Length","value":"Knee length"},
+      {"key":"sizes","label":"Sizes","value":"XS–XXL"},
+      {"key":"care","label":"Care","value":"Dry clean"}
+    ],
+    "copy": {"plain":"A warm, smart coat for cold winter days.","standard":"A knee-length wool-blend coat with a quilted lining, in sizes XS to XXL.","technical":"60/40 wool–polyester melton, full quilted lining, knee length, two welt pockets, XS–XXL, dry clean only."},
+    "benefits": ["Warm in real winter","Smart enough for the office","Deep pockets"],
+    "reviewSummary": {"pros":["Warmth","Looks smart"],"cons":["Pills where the bag rubs"]},
+    "policies": {"returnDays":60,"warrantyMonths":24,"deliveryDays":3},
+    "reviews": [
+      {"author":"Oana S.","rating":5,"date":"2026-11-02","title":"Warm at minus five","text":"Wore it to the Christmas market at minus five and stayed warm. Looks more expensive than it is.","verified":true},
+      {"author":"Adina R.","rating":4,"date":"2026-10-26","title":"Sleeves are long","text":"Beautiful coat. The sleeves cover half my hands, so I had them taken up.","verified":true},
+      {"author":"Lucia M.","rating":3,"date":"2026-02-14","title":"Pilling under the strap","text":"After one winter there's pilling where my handbag strap sits. A fabric shaver fixed it.","verified":true}
+    ]
+  },
+  {
+    "id": "fash-sweat-01",
+    "category": "fashion",
+    "name": "Merino crew-neck jumper",
+    "brand": "Merilo",
+    "price": 249,
+    "stock": 60,
+    "rating": 4.5,
+    "reviewCount": 270,
+    "specs": [
+      {"key":"fabric","label":"Fabric","value":"100% merino wool"},
+      {"key":"weight","label":"Knit","value":"Fine gauge"},
+      {"key":"sizes","label":"Sizes","value":"XS–XXL"},
+      {"key":"care","label":"Care","value":"Hand wash or wool cycle"}
+    ],
+    "copy": {"plain":"A soft wool jumper that keeps you warm and doesn't itch.","standard":"A fine-knit jumper in 100% merino wool, warm without being bulky.","technical":"100% merino, 18.5 micron, fine-gauge knit, crew neck, XS–XXL, wool-cycle wash."},
+    "benefits": ["Soft, not itchy","Warm but thin under a coat","Doesn't need washing often"],
+    "reviewSummary": {"pros":["Soft","Warm"],"cons":["Needs gentle washing"]},
+    "policies": {"returnDays":60,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Sebastian I.","rating":5,"date":"2026-10-29","title":"Doesn't itch at all","text":"I usually can't wear wool. This one is fine directly on skin.","verified":true},
+      {"author":"Denisa C.","rating":4,"date":"2026-10-04","title":"Wool cycle only","text":"Washed it on the wool programme and it kept its shape. I wouldn't risk a normal wash.","verified":true},
+      {"author":"Toma B.","rating":4,"date":"2026-03-11","title":"Small hole after a season","text":"Wore it most days for a winter, a small hole appeared at the elbow. Fine for the price.","verified":true}
+    ]
+  },
+  {
+    "id": "fash-pack-01",
+    "category": "fashion",
+    "name": "Commute 20 l backpack",
+    "brand": "Zefir",
+    "price": 199,
+    "stock": 75,
+    "rating": 4.6,
+    "reviewCount": 455,
+    "specs": [
+      {"key":"volume","label":"Volume","value":"20 l"},
+      {"key":"laptop","label":"Laptop sleeve","value":"Up to 15.6 in"},
+      {"key":"fabric","label":"Fabric","value":"Water-resistant recycled polyester"},
+      {"key":"weight","label":"Weight","value":"0.8 kg"}
+    ],
+    "copy": {"plain":"A comfortable backpack with a padded spot for your laptop.","standard":"A 20-litre water-resistant backpack with a padded 15.6-inch laptop sleeve.","technical":"20 l, water-resistant recycled polyester, padded 15.6 in sleeve, luggage pass-through, 0.8 kg."},
+    "benefits": ["Protects your laptop","Keeps things dry in light rain","Comfortable straps"],
+    "reviewSummary": {"pros":["Comfort","Laptop sleeve"],"cons":["Side pockets are small"]},
+    "policies": {"returnDays":60,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Costin H.","rating":5,"date":"2026-09-25","title":"Daily commute bag","text":"Laptop, lunch box and a jumper fit fine. Straps don't dig in.","verified":true},
+      {"author":"Andreea G.","rating":4,"date":"2026-08-13","title":"Bottle pocket is tight","text":"My 750 ml bottle barely fits in the side pocket. Otherwise great.","verified":true},
+      {"author":"Mircea D.","rating":5,"date":"2026-06-20","title":"Stayed dry in a downpour","text":"Cycled home in heavy rain, papers inside were dry.","verified":true}
+    ]
+  },
+  {
+    "id": "fash-dress-01",
+    "category": "fashion",
+    "name": "Linen midi dress",
+    "brand": "Merilo",
+    "price": 279,
+    "stock": 32,
+    "rating": 4.3,
+    "reviewCount": 190,
+    "specs": [
+      {"key":"fabric","label":"Fabric","value":"100% linen"},
+      {"key":"length","label":"Length","value":"Midi"},
+      {"key":"sizes","label":"Sizes","value":"XS–XL"},
+      {"key":"care","label":"Care","value":"Wash at 30 °C"}
+    ],
+    "copy": {"plain":"A light, airy dress for warm days.","standard":"A midi dress in 100% linen with pockets, cool on hot days.","technical":"100% European linen, 160 gsm, midi length, side pockets, XS–XL, 30 °C wash."},
+    "benefits": ["Cool in summer heat","Has pockets","Gets softer with every wash"],
+    "reviewSummary": {"pros":["Breathable","Pockets"],"cons":["Creases easily","Light colours are a little sheer"]},
+    "policies": {"returnDays":60,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Irina V.","rating":5,"date":"2026-08-18","title":"Wore it all summer","text":"Cool even at 35 degrees. It has real pockets.","verified":true},
+      {"author":"Bianca T.","rating":4,"date":"2026-07-21","title":"It creases, it's linen","text":"Wrinkles after sitting, which I expected. A quick steam fixes it.","verified":true},
+      {"author":"Madalina P.","rating":3,"date":"2026-06-12","title":"Beige one is see-through","text":"In bright sun the beige is sheer. I wear a slip under it.","verified":true}
+    ]
+  },
+  {
+    "id": "fash-kboot-01",
+    "category": "fashion",
+    "name": "Snowy kids' winter boots",
+    "brand": "Kestrel",
+    "price": 199,
+    "stock": 40,
+    "rating": 4.6,
+    "reviewCount": 230,
+    "specs": [
+      {"key":"lining","label":"Lining","value":"Fleece"},
+      {"key":"temp","label":"Rated to","value":"−20 °C"},
+      {"key":"closure","label":"Closure","value":"Hook-and-loop strap"},
+      {"key":"sizes","label":"Sizes","value":"24–35"},
+      {"key":"sole","label":"Sole","value":"Non-slip rubber"}
+    ],
+    "copy": {"plain":"Warm boots kids can put on by themselves.","standard":"Fleece-lined kids' snow boots with a hook-and-loop strap and a non-slip sole, sizes 24 to 35.","technical":"Fleece lining, rated to −20 °C, water-resistant upper, single hook-and-loop closure, rubber outsole, EU 24–35."},
+    "benefits": ["Warm in deep snow","Easy for kids to put on","Non-slip sole"],
+    "reviewSummary": {"pros":["Warm","Easy on and off"],"cons":["Run a size small"]},
+    "policies": {"returnDays":60,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Loredana F.","rating":5,"date":"2026-01-20","title":"Warm feet after sledging","text":"Two hours on the hill and his feet were warm and dry.","verified":true},
+      {"author":"Ciprian V.","rating":4,"date":"2026-01-08","title":"Size up","text":"Ordered his shoe size and they were snug with thick socks. Swapped for one size up.","verified":true},
+      {"author":"Alina M.","rating":5,"date":"2025-12-15","title":"She does them up herself","text":"One strap, so our four-year-old manages alone. Saves time every morning.","verified":true}
+    ]
+  },
+  {
+    "id": "fash-tee-01",
+    "category": "fashion",
+    "name": "Organic cotton T-shirts, 3-pack",
+    "brand": "Zefir",
+    "price": 129,
+    "stock": 150,
+    "rating": 4.4,
+    "reviewCount": 610,
+    "specs": [
+      {"key":"fabric","label":"Fabric","value":"100% organic cotton"},
+      {"key":"weight","label":"Fabric weight","value":"180 g/m²"},
+      {"key":"sizes","label":"Sizes","value":"S–XXL"},
+      {"key":"colours","label":"Colours","value":"White, grey, black"}
+    ],
+    "copy": {"plain":"Three plain, sturdy T-shirts for every day.","standard":"A pack of three heavyweight T-shirts in organic cotton: white, grey and black.","technical":"3 × crew-neck tee, 100% organic cotton jersey, 180 g/m², S–XXL, white/grey/black."},
+    "benefits": ["Thick, not see-through","Neck keeps its shape","Three colours that go with anything"],
+    "reviewSummary": {"pros":["Thick cotton","Value"],"cons":["Shrink slightly in a warm wash"]},
+    "policies": {"returnDays":60,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Darius A.","rating":5,"date":"2026-09-30","title":"Better than pricier brands","text":"Thick cotton, the white one isn't see-through. Necks still flat after ten washes.","verified":true},
+      {"author":"Ramona L.","rating":4,"date":"2026-08-11","title":"A bit of shrink","text":"Shrank slightly at 40 °C. I'd size up if you like them loose.","verified":true},
+      {"author":"Eugen P.","rating":4,"date":"2026-06-25","title":"Good basics","text":"Exactly what I wanted for under a jumper. Black faded a little.","verified":true}
+    ]
+  },
+  {
+    "id": "home-fridge-01",
+    "category": "home",
+    "name": "FrostFree 360 fridge freezer",
+    "brand": "Nordwave",
+    "price": 2899,
+    "stock": 9,
+    "rating": 4.3,
+    "reviewCount": 265,
+    "specs": [
+      {"key":"capacity","label":"Total capacity","value":"360 l (250 l fridge, 110 l freezer)"},
+      {"key":"nofrost","label":"Defrosting","value":"No Frost (never needs defrosting)"},
+      {"key":"energy","label":"Energy class","value":"E"},
+      {"key":"noise","label":"Noise","value":"38 dB"},
+      {"key":"size","label":"Dimensions (H×W×D)","value":"185 × 60 × 65 cm"},
+      {"key":"door","label":"Door","value":"Reversible"}
+    ],
+    "copy": {"plain":"A big fridge with a freezer that never needs defrosting.","standard":"A 360-litre fridge freezer with No Frost, a quiet 38 dB compressor and a reversible door.","technical":"360 l (250 + 110), total No Frost, energy class E, 38 dB, 185 × 60 × 65 cm, reversible door, multi-airflow."},
+    "benefits": ["Never defrost the freezer","Room for a family's shopping","Quiet in an open kitchen"],
+    "reviewSummary": {"pros":["Space","Quiet"],"cons":["Door handles feel light","Clicks now and then"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":3},
+    "reviews": [
+      {"author":"Emilia N.","rating":5,"date":"2026-10-16","title":"Fits a whole week's shopping","text":"Three drawers in the freezer and plenty of shelf space. We have an open kitchen and barely hear it.","verified":true},
+      {"author":"Sergiu G.","rating":4,"date":"2026-09-08","title":"Occasional click at night","text":"Very quiet, but it gives a soft click when it changes cycle. Only noticeable at night.","verified":true},
+      {"author":"Aurelia C.","rating":4,"date":"2026-07-29","title":"Handles could be sturdier","text":"Works perfectly. The plastic handles flex a bit when you pull.","verified":true}
+    ]
+  },
+  {
+    "id": "home-robot-01",
+    "category": "home",
+    "name": "Roam S7 robot vacuum and mop",
+    "brand": "Brisk",
+    "price": 1599,
+    "stock": 16,
+    "rating": 4.2,
+    "reviewCount": 690,
+    "specs": [
+      {"key":"nav","label":"Navigation","value":"Laser (LiDAR) mapping"},
+      {"key":"suction","label":"Suction","value":"4000 Pa"},
+      {"key":"runtime","label":"Run time","value":"Up to 180 min"},
+      {"key":"bin","label":"Dust bin","value":"0.4 l"},
+      {"key":"mop","label":"Mopping","value":"Water tank, vibrating pad"},
+      {"key":"app","label":"Control","value":"Phone app, no-go zones"}
+    ],
+    "copy": {"plain":"A robot that vacuums and mops your floors while you're out.","standard":"A laser-mapping robot vacuum and mop with 4000 Pa suction, 3-hour run time and app control.","technical":"LiDAR navigation, 4000 Pa suction, up to 180 min, 0.4 l bin, 250 ml water tank, vibrating mop, multi-floor maps."},
+    "benefits": ["Cleans while you're out","Maps every room","Vacuums and mops in one go"],
+    "reviewSummary": {"pros":["Mapping","Pet hair pickup"],"cons":["Gets stuck on cables and rug fringes","Mopping is a light wipe"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "promotion": {"label":"Autumn deals","oldPrice":1899},
+    "reviews": [
+      {"author":"Adrian M.","rating":5,"date":"2026-10-27","title":"Dog hair is under control","text":"Runs every morning while we're at work. The floors finally stay clear of dog hair.","verified":true},
+      {"author":"Simona E.","rating":3,"date":"2026-09-19","title":"Tidy the cables first","text":"Gets tangled in phone chargers and the fringe of our rug. Set a no-go zone around the rug and it's fine.","verified":true},
+      {"author":"Valentin O.","rating":3,"date":"2026-08-06","title":"Lost its map once","text":"After an app update it forgot the map and I had to remap the flat. Works well otherwise.","verified":true},
+      {"author":"Georgiana P.","rating":4,"date":"2026-06-17","title":"Mop is for light dust","text":"The mop freshens the floor but won't remove dried stains. The vacuuming is excellent.","verified":true}
+    ]
+  },
+  {
+    "id": "home-airfryer-01",
+    "category": "home",
+    "name": "Crisp 5.5 l air fryer",
+    "brand": "Brisk",
+    "price": 399,
+    "stock": 65,
+    "rating": 4.4,
+    "reviewCount": 1420,
+    "specs": [
+      {"key":"capacity","label":"Basket","value":"5.5 l"},
+      {"key":"power","label":"Power","value":"1700 W"},
+      {"key":"presets","label":"Presets","value":"8"},
+      {"key":"temp","label":"Temperature","value":"80–200 °C"},
+      {"key":"clean","label":"Cleaning","value":"Dishwasher-safe basket"}
+    ],
+    "copy": {"plain":"Crispy chips and chicken with little or no oil.","standard":"A 5.5-litre air fryer with 8 presets and a dishwasher-safe non-stick basket.","technical":"5.5 l basket, 1700 W, 80–200 °C, 8 presets, 60 min timer, PTFE-free ceramic-coated basket, dishwasher-safe."},
+    "benefits": ["Crispy food with little oil","Faster than heating the oven","Basket goes in the dishwasher"],
+    "reviewSummary": {"pros":["Fast","Easy to clean"],"cons":["Plastic smell the first few times","Fan is audible"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":1},
+    "reviews": [
+      {"author":"Corina D.","rating":5,"date":"2026-10-24","title":"Use it every day","text":"Chips in 18 minutes, chicken thighs in 25. The oven barely gets used now.","verified":true},
+      {"author":"Iosif B.","rating":4,"date":"2026-09-27","title":"Run it empty first","text":"Smelled of plastic the first two times. Ran it empty for ten minutes and the smell went.","verified":true},
+      {"author":"Mara S.","rating":4,"date":"2026-08-31","title":"Big enough for four","text":"5.5 litres does chips for the four of us. The fan is louder than I expected.","verified":true},
+      {"author":"Petru L.","rating":3,"date":"2026-06-09","title":"Be gentle with the coating","text":"Scratched the basket with a metal fork. Use silicone tongs from the start.","verified":true}
+    ]
+  },
+  {
+    "id": "home-espresso-01",
+    "category": "home",
+    "name": "Barista One bean-to-cup coffee machine",
+    "brand": "Nordwave",
+    "price": 1899,
+    "stock": 14,
+    "rating": 4.4,
+    "reviewCount": 375,
+    "specs": [
+      {"key":"pressure","label":"Pump pressure","value":"15 bar"},
+      {"key":"grinder","label":"Grinder","value":"Ceramic, 12 settings"},
+      {"key":"milk","label":"Milk","value":"Automatic frother"},
+      {"key":"tank","label":"Water tank","value":"1.8 l"},
+      {"key":"drinks","label":"Drinks","value":"6 one-touch drinks"}
+    ],
+    "copy": {"plain":"Fresh coffee from beans at the touch of a button, cappuccino included.","standard":"A bean-to-cup machine with a ceramic grinder and automatic milk frother for six one-touch drinks.","technical":"15 bar pump, 12-step ceramic burr grinder, automatic milk system, 1.8 l tank, 250 g bean hopper, 6 presets."},
+    "benefits": ["Fresh-ground coffee every time","Cappuccino with one button","Cheaper per cup than capsules"],
+    "reviewSummary": {"pros":["Coffee quality","Milk foam"],"cons":["Milk system needs daily rinsing","Descales often in hard water"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Ana-Maria T.","rating":5,"date":"2026-10-07","title":"Better than our café","text":"The cappuccino is excellent once you set the grind a bit finer.","verified":true},
+      {"author":"Liviu S.","rating":4,"date":"2026-09-02","title":"Rinse the milk part daily","text":"Takes two minutes a day to clean the milk system. Skip it and it smells.","verified":true},
+      {"author":"Rodica A.","rating":4,"date":"2026-07-15","title":"Descale reminder every month","text":"We have hard water in Cluj, so it asks to descale often. Use a filter.","verified":true}
+    ]
+  },
+  {
+    "id": "home-dw-01",
+    "category": "home",
+    "name": "Clean 60 dishwasher",
+    "brand": "Nordwave",
+    "price": 1799,
+    "stock": 11,
+    "rating": 4.3,
+    "reviewCount": 240,
+    "specs": [
+      {"key":"capacity","label":"Capacity","value":"14 place settings"},
+      {"key":"noise","label":"Noise","value":"44 dB"},
+      {"key":"energy","label":"Energy class","value":"C"},
+      {"key":"programs","label":"Programmes","value":"8"},
+      {"key":"rack","label":"Racks","value":"3, with cutlery tray"},
+      {"key":"size","label":"Dimensions (H×W×D)","value":"85 × 60 × 60 cm"}
+    ],
+    "copy": {"plain":"A quiet dishwasher that takes a whole day's dishes at once.","standard":"A 60 cm freestanding dishwasher for 14 place settings, with a cutlery tray and a 44 dB motor.","technical":"14 place settings, 44 dB, energy class C, 8 programmes, third cutlery rack, 9.5 l per eco cycle."},
+    "benefits": ["Holds a full day's dishes","Quiet enough to run in the evening","Separate cutlery tray"],
+    "reviewSummary": {"pros":["Quiet","Space"],"cons":["Eco programme is long","Plastic comes out wet"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":3},
+    "reviews": [
+      {"author":"Daniel C.","rating":5,"date":"2026-10-21","title":"Silent during dinner","text":"Runs while we eat and we only notice when it beeps.","verified":true},
+      {"author":"Ileana S.","rating":4,"date":"2026-09-13","title":"Eco takes almost four hours","text":"Eco gets everything clean but takes 3 h 45. The 1-hour programme is fine for daily loads.","verified":true},
+      {"author":"Mihai-Andrei F.","rating":3,"date":"2026-07-01","title":"Plastic boxes stay wet","text":"Glass and plates come out dry, plastic containers don't. Opening the door at the end helps.","verified":true}
+    ]
+  },
+  {
+    "id": "home-mattress-01",
+    "category": "home",
+    "name": "Rest pocket-spring mattress, 160 × 200",
+    "brand": "Casa Verde",
+    "price": 1499,
+    "stock": 13,
+    "rating": 4.4,
+    "reviewCount": 320,
+    "specs": [
+      {"key":"size","label":"Size","value":"160 × 200 cm"},
+      {"key":"height","label":"Height","value":"24 cm"},
+      {"key":"firmness","label":"Firmness","value":"Medium-firm"},
+      {"key":"core","label":"Core","value":"Pocket springs and foam"},
+      {"key":"cover","label":"Cover","value":"Removable, washable at 40 °C"}
+    ],
+    "copy": {"plain":"A supportive double mattress with a cover you can wash.","standard":"A 24 cm medium-firm pocket-spring mattress, 160 × 200, with a removable washable cover.","technical":"160 × 200 × 24 cm, 7-zone pocket springs with foam comfort layer, medium-firm, removable 40 °C cover."},
+    "benefits": ["Supports your back","You don't feel your partner move","Washable cover"],
+    "reviewSummary": {"pros":["Support","No partner disturbance"],"cons":["Smell for the first days","Edges are softer"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":7},
+    "reviews": [
+      {"author":"Corneliu I.","rating":5,"date":"2026-10-03","title":"Woke up without back pain","text":"Firmer than our old one, which my back thanks me for.","verified":true},
+      {"author":"Mihaela D.","rating":4,"date":"2026-08-26","title":"Air it out first","text":"Arrived rolled. It had a foam smell for three days with the window open, then gone.","verified":true},
+      {"author":"Sorina B.","rating":4,"date":"2026-07-04","title":"Edges sink a little","text":"Sitting on the edge to put socks on, it sinks more than the middle. Lying down it's great.","verified":true}
+    ]
+  },
+  {
+    "id": "home-chair-01",
+    "category": "home",
+    "name": "Focus ergonomic office chair",
+    "brand": "Casa Verde",
+    "price": 899,
+    "stock": 24,
+    "rating": 4.3,
+    "reviewCount": 480,
+    "specs": [
+      {"key":"back","label":"Back","value":"Mesh, adjustable lumbar support"},
+      {"key":"arms","label":"Armrests","value":"3D adjustable"},
+      {"key":"seat","label":"Seat height","value":"45–55 cm"},
+      {"key":"maxLoad","label":"Max load","value":"120 kg"},
+      {"key":"tilt","label":"Tilt","value":"Lockable, 4 positions"}
+    ],
+    "copy": {"plain":"A comfortable desk chair that supports your lower back.","standard":"A mesh office chair with adjustable lumbar support, 3D armrests and a lockable tilt.","technical":"Breathable mesh back, height-adjustable lumbar, 3D armrests, 45–55 cm seat height, synchro tilt with 4 locks, 120 kg."},
+    "benefits": ["Supports your lower back","Mesh keeps you cool","Adjusts to your desk"],
+    "reviewSummary": {"pros":["Lumbar support","Breathable"],"cons":["Seat gets firm after long days","Assembly takes time"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":3},
+    "reviews": [
+      {"author":"Octavian R.","rating":5,"date":"2026-10-14","title":"My back thanks me","text":"Working from home eight hours a day, the lumbar support made a real difference.","verified":true},
+      {"author":"Delia M.","rating":4,"date":"2026-09-06","title":"30 minutes to build","text":"Clear instructions, all tools included. One screw was hard to line up.","verified":true},
+      {"author":"Cezar T.","rating":3,"date":"2026-07-20","title":"Seat is firm","text":"Back is great, but after six hours the seat feels hard. I added a cushion.","verified":true}
+    ]
+  },
+  {
+    "id": "groc-honey-01",
+    "category": "groceries",
+    "name": "Acacia honey, 500 g",
+    "brand": "Lunca",
+    "price": 45,
+    "stock": 180,
+    "rating": 4.7,
+    "reviewCount": 640,
+    "specs": [
+      {"key":"weight","label":"Weight","value":"500 g"},
+      {"key":"type","label":"Type","value":"Acacia, raw"},
+      {"key":"origin","label":"Origin","value":"Romania"}
+    ],
+    "copy": {"plain":"Light, sweet honey from Romanian acacia trees.","standard":"Raw acacia honey from Romanian beekeepers, light and mild, in a 500 g glass jar.","technical":"500 g raw acacia honey, Romanian origin, unfiltered cold-extracted, glass jar, slow to crystallise."},
+    "benefits": ["Mild, light taste","Stays runny for months","From Romanian beekeepers"],
+    "reviewSummary": {"pros":["Taste","Stays liquid"],"cons":["Jar lid gets sticky"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Viorica H.","rating":5,"date":"2026-10-11","title":"Tastes like my grandparents' honey","text":"Clear and mild, perfect in tea.","verified":true},
+      {"author":"Matei C.","rating":5,"date":"2026-09-16","title":"Still runny after months","text":"Bought it in spring and it hasn't crystallised.","verified":true},
+      {"author":"Lenuta P.","rating":4,"date":"2026-07-02","title":"Messy lid","text":"Lovely honey, but the lid always ends up sticky. A honey dipper helps.","verified":true}
+    ]
+  },
+  {
+    "id": "groc-pasta-01",
+    "category": "groceries",
+    "name": "Bronze-cut spaghetti, 500 g",
+    "brand": "Pepo",
+    "price": 12,
+    "stock": 400,
+    "rating": 4.5,
+    "reviewCount": 520,
+    "specs": [
+      {"key":"weight","label":"Weight","value":"500 g"},
+      {"key":"wheat","label":"Wheat","value":"Durum wheat semolina"},
+      {"key":"cook","label":"Cooking time","value":"11 minutes"},
+      {"key":"cut","label":"Shape","value":"Bronze-die cut"}
+    ],
+    "copy": {"plain":"Good spaghetti that holds on to the sauce.","standard":"Durum wheat spaghetti cut through bronze dies, for a rough surface that holds sauce.","technical":"500 g durum wheat semolina, bronze-die extruded, slow dried, 11 min cooking time, 13% protein."},
+    "benefits": ["Sauce sticks to it","Stays firm when cooked","Simple ingredients"],
+    "reviewSummary": {"pros":["Texture","Holds sauce"],"cons":["Needs a minute more than the pack says"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Gelu A.","rating":5,"date":"2026-10-09","title":"Restaurant texture","text":"Rough surface, the sauce really clings. Our new house pasta.","verified":true},
+      {"author":"Cristiana E.","rating":4,"date":"2026-08-28","title":"Cook a bit longer","text":"At 11 minutes it was still quite firm for us, 12 was perfect.","verified":true},
+      {"author":"Ilie V.","rating":4,"date":"2026-06-30","title":"Good price for quality","text":"Cheaper than imported brands and just as good.","verified":true}
+    ]
+  },
+  {
+    "id": "groc-tea-01",
+    "category": "groceries",
+    "name": "Mountain herbal tea, 20 bags",
+    "brand": "Lunca",
+    "price": 18,
+    "stock": 250,
+    "rating": 4.3,
+    "reviewCount": 310,
+    "specs": [
+      {"key":"count","label":"Bags","value":"20"},
+      {"key":"blend","label":"Blend","value":"Mint, linden, chamomile"},
+      {"key":"caffeine","label":"Caffeine","value":"None"}
+    ],
+    "copy": {"plain":"A gentle herbal tea with no caffeine, nice before bed.","standard":"A caffeine-free blend of mint, linden and chamomile, 20 tea bags.","technical":"20 × 1.5 g bags, peppermint, linden flower and chamomile, caffeine-free, steep 5–7 min at 95 °C."},
+    "benefits": ["No caffeine","Mild, rounded taste","Individually wrapped bags"],
+    "reviewSummary": {"pros":["Taste","Evening drink"],"cons":["Mild, steep longer"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Florica N.","rating":5,"date":"2026-10-30","title":"My evening ritual","text":"A cup after dinner every night. The linden comes through nicely.","verified":true},
+      {"author":"Remus D.","rating":4,"date":"2026-09-22","title":"Steep it long","text":"Weak at three minutes, good at seven.","verified":true},
+      {"author":"Doina T.","rating":4,"date":"2026-08-05","title":"Nice mix","text":"Mint is not overpowering, which I like.","verified":true}
+    ]
+  },
+  {
+    "id": "groc-choc-01",
+    "category": "groceries",
+    "name": "Dark chocolate 70%, 100 g",
+    "brand": "Pepo",
+    "price": 14,
+    "stock": 300,
+    "rating": 4.6,
+    "reviewCount": 870,
+    "specs": [
+      {"key":"weight","label":"Weight","value":"100 g"},
+      {"key":"cocoa","label":"Cocoa","value":"70%"},
+      {"key":"origin","label":"Cocoa origin","value":"Ghana"},
+      {"key":"allergens","label":"May contain","value":"Milk, nuts"}
+    ],
+    "copy": {"plain":"Rich dark chocolate that isn't too bitter.","standard":"A 100 g bar of 70% dark chocolate made with Ghanaian cocoa.","technical":"100 g, 70% cocoa solids, single-origin Ghana, cocoa butter only, may contain traces of milk and nuts."},
+    "benefits": ["Deep cocoa taste","Not too bitter","Short ingredient list"],
+    "reviewSummary": {"pros":["Taste","Price"],"cons":["Can melt in warm-weather delivery"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Paula R.","rating":5,"date":"2026-10-26","title":"Just the right bitterness","text":"Smooth, with a fruity note. I eat two squares with coffee.","verified":true},
+      {"author":"Alin S.","rating":5,"date":"2026-09-10","title":"Good for baking too","text":"Melts evenly for brownies.","verified":true},
+      {"author":"Smaranda G.","rating":3,"date":"2026-07-23","title":"Arrived soft in July","text":"Tasted great once back in the fridge, but it had melted in the heat.","verified":true}
+    ]
+  },
+  {
+    "id": "groc-rice-01",
+    "category": "groceries",
+    "name": "Basmati rice, 1 kg",
+    "brand": "Pepo",
+    "price": 22,
+    "stock": 220,
+    "rating": 4.4,
+    "reviewCount": 410,
+    "specs": [
+      {"key":"weight","label":"Weight","value":"1 kg"},
+      {"key":"type","label":"Variety","value":"Long-grain basmati"},
+      {"key":"origin","label":"Origin","value":"India"},
+      {"key":"cook","label":"Cooking time","value":"12 minutes"}
+    ],
+    "copy": {"plain":"Fluffy, fragrant rice that doesn't stick together.","standard":"Long-grain basmati rice from India, fragrant and fluffy, cooks in 12 minutes.","technical":"1 kg long-grain basmati, Indian origin, aged 12 months, 12 min cooking, 1 : 1.5 rice-to-water."},
+    "benefits": ["Grains stay separate","Lovely aroma","Quick to cook"],
+    "reviewSummary": {"pros":["Fluffy","Fragrant"],"cons":["A few broken grains"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Nicoleta P.","rating":5,"date":"2026-10-01","title":"Fluffy every time","text":"Rinse twice, 1.5 water, 12 minutes. Perfect.","verified":true},
+      {"author":"Gheorghe M.","rating":4,"date":"2026-08-17","title":"Some broken grains","text":"A few broken grains in the bag, but it cooks well.","verified":true},
+      {"author":"Iris C.","rating":4,"date":"2026-06-14","title":"Good with curry","text":"Smells lovely while cooking.","verified":true}
+    ]
+  },
+  {
+    "id": "groc-oats-01",
+    "category": "groceries",
+    "name": "Wholegrain rolled oats, 1 kg",
+    "brand": "Lunca",
+    "price": 15,
+    "stock": 260,
+    "rating": 4.5,
+    "reviewCount": 350,
+    "specs": [
+      {"key":"weight","label":"Weight","value":"1 kg"},
+      {"key":"type","label":"Type","value":"Wholegrain rolled oats"},
+      {"key":"allergens","label":"Allergens","value":"May contain gluten"}
+    ],
+    "copy": {"plain":"Simple oats for porridge or baking.","standard":"One kilo of wholegrain rolled oats for porridge, overnight oats and baking.","technical":"1 kg 100% wholegrain rolled oats, 10.7 g fibre per 100 g, may contain gluten."},
+    "benefits": ["Good for porridge and baking","Just one ingredient","Big bag lasts weeks"],
+    "reviewSummary": {"pros":["Value","Texture"],"cons":["Bag doesn't reseal"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Liliana B.","rating":5,"date":"2026-10-18","title":"Creamy porridge","text":"Cooks in five minutes and turns creamy.","verified":true},
+      {"author":"Valeriu T.","rating":4,"date":"2026-09-03","title":"Use a jar","text":"The bag doesn't reseal, so I pour it into a jar.","verified":true},
+      {"author":"Mariana O.","rating":5,"date":"2026-07-27","title":"Great for oat cookies","text":"Holds its texture in baking.","verified":true}
+    ]
+  },
+  {
+    "id": "groc-water-01",
+    "category": "groceries",
+    "name": "Sparkling mineral water, 6 × 1.5 l",
+    "brand": "Lunca",
+    "price": 21,
+    "stock": 500,
+    "rating": 4.4,
+    "reviewCount": 980,
+    "specs": [
+      {"key":"volume","label":"Pack","value":"6 × 1.5 l"},
+      {"key":"type","label":"Type","value":"Natural mineral, sparkling"},
+      {"key":"origin","label":"Source","value":"Eastern Carpathians"}
+    ],
+    "copy": {"plain":"A six-pack of fizzy mineral water, delivered to your door.","standard":"Six 1.5-litre bottles of naturally sparkling mineral water from the Eastern Carpathians.","technical":"6 × 1.5 l PET, natural mineral water, naturally carbonated, Eastern Carpathian spring, 1,200 mg/l total minerals."},
+    "benefits": ["No carrying heavy packs home","Naturally sparkling","From a Carpathian spring"],
+    "reviewSummary": {"pros":["Taste","Delivered heavy items"],"cons":["Plastic bottles"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Doru F.","rating":5,"date":"2026-10-28","title":"Strong bubbles","text":"Stays fizzy even a day after opening.","verified":true},
+      {"author":"Elisabeta R.","rating":4,"date":"2026-09-14","title":"Saves my back","text":"I order four packs a month and the courier brings them to the fourth floor.","verified":true},
+      {"author":"Claudiu M.","rating":4,"date":"2026-08-09","title":"Wish it came in glass","text":"Great water, but I'd prefer glass bottles.","verified":true}
+    ]
+  },
+  {
+    "id": "groc-nuts-01",
+    "category": "groceries",
+    "name": "Roasted unsalted almonds, 500 g",
+    "brand": "Pepo",
+    "price": 49,
+    "stock": 140,
+    "rating": 4.5,
+    "reviewCount": 290,
+    "specs": [
+      {"key":"weight","label":"Weight","value":"500 g"},
+      {"key":"type","label":"Type","value":"Dry-roasted, unsalted"},
+      {"key":"origin","label":"Origin","value":"Spain"},
+      {"key":"allergens","label":"Allergens","value":"Nuts"}
+    ],
+    "copy": {"plain":"Crunchy roasted almonds with no salt added.","standard":"500 g of dry-roasted Spanish almonds, no salt or oil added, in a resealable bag.","technical":"500 g Marcona-type Spanish almonds, dry-roasted, no added salt or oil, resealable bag, contains nuts."},
+    "benefits": ["No added salt or oil","Fresh and crunchy","Resealable bag"],
+    "reviewSummary": {"pros":["Fresh","Crunchy"],"cons":["The odd bitter almond"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Silviu A.","rating":5,"date":"2026-10-12","title":"Fresh and crunchy","text":"Good roast, not burnt. Great desk snack.","verified":true},
+      {"author":"Ecaterina L.","rating":4,"date":"2026-08-24","title":"One or two bitter ones","text":"Mostly excellent, I found a couple of bitter ones in the bag.","verified":true},
+      {"author":"Tiberiu N.","rating":5,"date":"2026-06-18","title":"Good price per kilo","text":"Cheaper than the small packets and just as fresh.","verified":true}
+    ]
+  },
+  {
+    "id": "toy-bike-01",
+    "category": "toys",
+    "name": "Hop 12 balance bike",
+    "brand": "Brisk Kids",
+    "price": 349,
+    "stock": 22,
+    "rating": 4.7,
+    "reviewCount": 410,
+    "specs": [
+      {"key":"age","label":"Age","value":"2–5 years"},
+      {"key":"wheels","label":"Wheels","value":"12 in, air tyres"},
+      {"key":"seat","label":"Seat height","value":"30–42 cm"},
+      {"key":"weight","label":"Weight","value":"3.5 kg"},
+      {"key":"maxLoad","label":"Max load","value":"30 kg"}
+    ],
+    "copy": {"plain":"A light bike with no pedals that teaches small children to balance.","standard":"A 3.5 kg balance bike with 12-inch air tyres and an adjustable seat, for ages 2 to 5.","technical":"Aluminium frame, 3.5 kg, 12 in pneumatic tyres, 30–42 cm seat height, steering limiter, 30 kg max load."},
+    "benefits": ["Learns balance before pedals","Light enough to carry","Grows with your child"],
+    "reviewSummary": {"pros":["Light","Easy to learn on"],"cons":["Tall kids outgrow it by 5"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Andreea L.","rating":5,"date":"2026-10-08","title":"Gliding within a week","text":"Our three-year-old was lifting her feet and gliding after a week. Went straight to a pedal bike later without stabilisers.","verified":true},
+      {"author":"Victor H.","rating":5,"date":"2026-09-12","title":"Ten-minute assembly","text":"Handlebar and seat, that's it. Light enough to carry home when she's tired.","verified":true},
+      {"author":"Ramona C.","rating":4,"date":"2026-07-18","title":"Check the inseam","text":"Our son is tall and at four he's already at the top seat height. Measure first.","verified":true}
+    ]
+  },
+  {
+    "id": "toy-game-01",
+    "category": "toys",
+    "name": "River Run family board game",
+    "brand": "Pufo",
+    "price": 129,
+    "stock": 55,
+    "rating": 4.5,
+    "reviewCount": 260,
+    "specs": [
+      {"key":"players","label":"Players","value":"2–5"},
+      {"key":"age","label":"Age","value":"7+"},
+      {"key":"time","label":"Game time","value":"30 minutes"},
+      {"key":"language","label":"Language","value":"Romanian and English rules"}
+    ],
+    "copy": {"plain":"A quick family game where you race boats down a river.","standard":"A family board game for 2 to 5 players aged 7 and up, about 30 minutes a game.","technical":"2–5 players, ages 7+, 30 min, modular river tiles, tile placement and push-your-luck, bilingual rules."},
+    "benefits": ["Rules explained in five minutes","Different every game","Fun for kids and adults"],
+    "reviewSummary": {"pros":["Easy rules","Replayable"],"cons":["Thin cardboard pieces"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Cosmina D.","rating":5,"date":"2026-10-19","title":"Our Sunday game","text":"The kids explained it to their grandparents. We play every weekend.","verified":true},
+      {"author":"Ovidiu G.","rating":4,"date":"2026-09-07","title":"Thin tokens","text":"Great game, but the cardboard tokens bend easily.","verified":true},
+      {"author":"Lidia V.","rating":5,"date":"2026-07-31","title":"Never the same twice","text":"The river changes every game, so it doesn't get boring.","verified":true}
+    ]
+  },
+  {
+    "id": "toy-puzzle-01",
+    "category": "toys",
+    "name": "World map puzzle, 500 pieces",
+    "brand": "Pufo",
+    "price": 79,
+    "stock": 70,
+    "rating": 4.6,
+    "reviewCount": 180,
+    "specs": [
+      {"key":"pieces","label":"Pieces","value":"500"},
+      {"key":"age","label":"Age","value":"10+"},
+      {"key":"size","label":"Finished size","value":"49 × 36 cm"},
+      {"key":"finish","label":"Finish","value":"Matte"}
+    ],
+    "copy": {"plain":"A colourful world map puzzle for evenings at the table.","standard":"A 500-piece matte world map puzzle, 49 × 36 cm finished, for ages 10 and up.","technical":"500 pieces, 2 mm recycled board, matte linen finish, 49 × 36 cm, ages 10+."},
+    "benefits": ["Learn geography while you play","Pieces fit snugly","No glare"],
+    "reviewSummary": {"pros":["Piece fit","Educational"],"cons":["Ocean section is hard"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Daniela T.","rating":5,"date":"2026-10-25","title":"Pieces click in","text":"Tight fit, you can lift sections without them falling apart.","verified":true},
+      {"author":"Iulian P.","rating":4,"date":"2026-09-29","title":"The Pacific is tough","text":"Lots of blue in the oceans. A good challenge for our 11-year-old.","verified":true},
+      {"author":"Felicia A.","rating":5,"date":"2026-08-15","title":"Missing piece replaced","text":"One piece was missing, the store sent a new box within days.","verified":true}
+    ]
+  },
+  {
+    "id": "toy-rc-01",
+    "category": "toys",
+    "name": "Dash off-road RC car",
+    "brand": "Brisk Kids",
+    "price": 219,
+    "stock": 38,
+    "rating": 4.2,
+    "reviewCount": 330,
+    "specs": [
+      {"key":"scale","label":"Scale","value":"1:16"},
+      {"key":"speed","label":"Top speed","value":"25 km/h"},
+      {"key":"battery","label":"Run time","value":"20 min, 2 batteries included"},
+      {"key":"radio","label":"Remote","value":"2.4 GHz, 50 m range"},
+      {"key":"age","label":"Age","value":"8+"}
+    ],
+    "copy": {"plain":"A fast, tough remote-control car for the park.","standard":"A 1:16 off-road remote-control car that reaches 25 km/h, with two batteries in the box.","technical":"1:16 4WD, 25 km/h, 2.4 GHz with 50 m range, 2 × 7.4 V Li-ion packs (~20 min each), oil-filled shocks, ages 8+."},
+    "benefits": ["Fast and fun outdoors","Two batteries for longer play","Survives crashes"],
+    "reviewSummary": {"pros":["Speed","Toughness"],"cons":["Each battery lasts 20 minutes"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Sergiu P.","rating":5,"date":"2026-10-04","title":"Survived the curb","text":"My son crashed it into every curb in the park and it's still going.","verified":true},
+      {"author":"Monica L.","rating":3,"date":"2026-09-01","title":"Battery goes fast","text":"Two batteries of 20 minutes each, then an hour to charge. Kids want more.","verified":true},
+      {"author":"Robert V.","rating":4,"date":"2026-07-13","title":"Fast on grass","text":"Handles grass and gravel well. Replacement parts would be nice.","verified":true}
+    ]
+  },
+  {
+    "id": "toy-plush-01",
+    "category": "toys",
+    "name": "Bear plush toy, 40 cm",
+    "brand": "Pufo",
+    "price": 89,
+    "stock": 90,
+    "rating": 4.8,
+    "reviewCount": 520,
+    "specs": [
+      {"key":"size","label":"Height","value":"40 cm"},
+      {"key":"age","label":"Age","value":"From birth"},
+      {"key":"wash","label":"Washing","value":"Machine-washable at 30 °C"},
+      {"key":"eyes","label":"Eyes","value":"Embroidered (no small parts)"}
+    ],
+    "copy": {"plain":"A soft, cuddly bear that's safe for babies.","standard":"A 40 cm plush bear with embroidered eyes, safe from birth and machine-washable.","technical":"40 cm, recycled polyester plush and fill, embroidered features, EN 71 tested, 30 °C machine wash."},
+    "benefits": ["Safe from birth","Washable in the machine","Super soft"],
+    "reviewSummary": {"pros":["Soft","Washable"],"cons":["Smaller than it looks"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Raluca P.","rating":5,"date":"2026-10-17","title":"Survived the washing machine","text":"Washed it three times and it's still fluffy.","verified":true},
+      {"author":"Mihai A.","rating":5,"date":"2026-09-23","title":"Goes everywhere with her","text":"Our baby won't sleep without it now. We bought a spare.","verified":true},
+      {"author":"Loredana S.","rating":4,"date":"2026-08-02","title":"Smaller than I pictured","text":"40 cm includes the ears. Still lovely.","verified":true}
+    ]
+  },
+  {
+    "id": "toy-art-01",
+    "category": "toys",
+    "name": "Big art kit, 150 pieces",
+    "brand": "Pufo",
+    "price": 119,
+    "stock": 60,
+    "rating": 4.3,
+    "reviewCount": 240,
+    "specs": [
+      {"key":"pieces","label":"Pieces","value":"150"},
+      {"key":"contents","label":"Contents","value":"Crayons, markers, coloured pencils, watercolours"},
+      {"key":"age","label":"Age","value":"4+"},
+      {"key":"case","label":"Case","value":"Carry case with handle"}
+    ],
+    "copy": {"plain":"A big box of crayons, pens and paints in one carry case.","standard":"A 150-piece art set with crayons, markers, pencils and watercolours in a carry case, for ages 4 and up.","technical":"150 pieces: 24 crayons, 24 markers, 24 pencils, 24 oil pastels, 12 watercolours, accessories; non-toxic, ages 4+."},
+    "benefits": ["Everything in one case","Non-toxic","Good gift"],
+    "reviewSummary": {"pros":["Variety","Gift value"],"cons":["Markers dry out quickly"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Bianca M.","rating":5,"date":"2026-10-20","title":"Huge hit as a gift","text":"My niece opened it and didn't look up for an hour.","verified":true},
+      {"author":"Catalina R.","rating":3,"date":"2026-09-09","title":"Close the markers","text":"Some markers dried within weeks because the kids left caps off. Pencils and crayons are good.","verified":true},
+      {"author":"Gabriel E.","rating":4,"date":"2026-07-25","title":"Case latch is weak","text":"The latch broke after a month, we keep it closed with an elastic.","verified":true}
+    ]
+  },
+  {
+    "id": "toy-sci-01",
+    "category": "toys",
+    "name": "Crystal growing science kit",
+    "brand": "Brisk Kids",
+    "price": 99,
+    "stock": 45,
+    "rating": 4.1,
+    "reviewCount": 150,
+    "specs": [
+      {"key":"experiments","label":"Experiments","value":"7"},
+      {"key":"age","label":"Age","value":"10+, with an adult"},
+      {"key":"time","label":"Time per crystal","value":"3–5 days"}
+    ],
+    "copy": {"plain":"Grow your own colourful crystals at home.","standard":"A science kit with seven crystal experiments for ages 10 and up, with adult help.","technical":"7 experiments, monoammonium phosphate crystal growth, 3–5 days per crystal, display case, ages 10+ with adult supervision."},
+    "benefits": ["Real science at home","Crystals to keep","Clear safety notes"],
+    "reviewSummary": {"pros":["Impressive results"],"cons":["Takes days","Instructions could be clearer"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":2},
+    "reviews": [
+      {"author":"Viorel D.","rating":5,"date":"2026-10-15","title":"Real crystals!","text":"After four days we had a purple crystal the size of a walnut. My daughter was thrilled.","verified":true},
+      {"author":"Teodora R.","rating":3,"date":"2026-09-18","title":"Instructions are confusing","text":"Step three was unclear, we found a video online. Worked in the end.","verified":true},
+      {"author":"Ion M.","rating":4,"date":"2026-08-12","title":"Patience needed","text":"Each crystal takes days. Good lesson in patience.","verified":true}
+    ]
+  },
+  {
+    "id": "toy-kitchen-01",
+    "category": "toys",
+    "name": "Wooden play kitchen",
+    "brand": "Brisk Kids",
+    "price": 599,
+    "stock": 10,
+    "rating": 4.6,
+    "reviewCount": 200,
+    "specs": [
+      {"key":"material","label":"Material","value":"Wood and MDF"},
+      {"key":"height","label":"Height","value":"85 cm"},
+      {"key":"age","label":"Age","value":"3+"},
+      {"key":"features","label":"Features","value":"Oven, sink, clicking knobs, 2 shelves"},
+      {"key":"assembly","label":"Assembly","value":"About 1.5 hours"}
+    ],
+    "copy": {"plain":"A sturdy wooden kitchen for pretend cooking.","standard":"An 85 cm wooden play kitchen with an oven, sink and clicking knobs, for ages 3 and up.","technical":"Wood and MDF, 85 × 60 × 30 cm, oven with door, removable sink, 4 clicking knobs, 2 shelves, ages 3+, ~1.5 h assembly."},
+    "benefits": ["Solid and stable","Lots of play details","Looks good in the living room"],
+    "reviewSummary": {"pros":["Sturdy","Looks nice"],"cons":["Long assembly"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":5},
+    "reviews": [
+      {"author":"Andrei S.","rating":5,"date":"2026-10-31","title":"Played with every day","text":"Our twins fight over who cooks. Very sturdy.","verified":true},
+      {"author":"Elena V.","rating":4,"date":"2026-09-26","title":"Allow two hours","text":"Took us two hours with a drill. Instructions are pictures only, but clear.","verified":true},
+      {"author":"Oana D.","rating":4,"date":"2026-07-10","title":"Stickers peel","text":"The hob stickers started peeling. Otherwise lovely.","verified":true}
+    ]
+  },
+  {
+    "id": "hb-tooth-01",
+    "category": "health_beauty",
+    "name": "Sonic 5 electric toothbrush",
+    "brand": "Velia",
+    "price": 249,
+    "stock": 70,
+    "rating": 4.5,
+    "reviewCount": 890,
+    "specs": [
+      {"key":"type","label":"Type","value":"Sonic, 31,000 strokes/min"},
+      {"key":"timer","label":"Timer","value":"2 minutes, 30 s pacer"},
+      {"key":"battery","label":"Battery life","value":"4 weeks"},
+      {"key":"modes","label":"Modes","value":"3"},
+      {"key":"heads","label":"Brush heads included","value":"2"}
+    ],
+    "copy": {"plain":"An electric toothbrush that tells you when you've brushed long enough.","standard":"A sonic toothbrush with three modes, a two-minute timer and a battery that lasts four weeks.","technical":"Sonic, 31,000 strokes/min, 3 modes, 2 min timer with 30 s quadrant pacer, Li-ion 4 weeks, USB charging, 2 heads."},
+    "benefits": ["Teeth feel cleaner","Timer shows when to move on","Charge once a month"],
+    "reviewSummary": {"pros":["Clean feeling","Battery"],"cons":["Replacement heads add up","Tickles at first"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":1},
+    "reviews": [
+      {"author":"Laurentiu C.","rating":5,"date":"2026-10-13","title":"Dentist noticed","text":"My dentist said there was less plaque at my check-up. The pacer keeps me honest.","verified":true},
+      {"author":"Ioana R.","rating":4,"date":"2026-09-05","title":"Weird buzz at first","text":"The vibration tickled for the first week. Now I can't go back.","verified":true},
+      {"author":"Stefania M.","rating":4,"date":"2026-07-28","title":"Heads aren't cheap","text":"Two heads included, but replacements every three months add up.","verified":true}
+    ]
+  },
+  {
+    "id": "hb-spf-01",
+    "category": "health_beauty",
+    "name": "Daily sunscreen SPF 50, 50 ml",
+    "brand": "Velia",
+    "price": 59,
+    "stock": 160,
+    "rating": 4.4,
+    "reviewCount": 560,
+    "specs": [
+      {"key":"spf","label":"Protection","value":"SPF 50, UVA"},
+      {"key":"volume","label":"Volume","value":"50 ml"},
+      {"key":"water","label":"Water resistance","value":"40 minutes"},
+      {"key":"fragrance","label":"Fragrance","value":"None"}
+    ],
+    "copy": {"plain":"Light, everyday sun cream for your face that doesn't leave white marks.","standard":"A fragrance-free SPF 50 face sunscreen with UVA protection that leaves no white cast.","technical":"SPF 50, broad-spectrum UVA/UVB, chemical filters, 40 min water resistance, fragrance-free, 50 ml."},
+    "benefits": ["No white marks","Works under makeup","Fragrance-free"],
+    "reviewSummary": {"pros":["No white cast","Light texture"],"cons":["A little shiny on oily skin"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Diana P.","rating":5,"date":"2026-08-20","title":"No white cast at all","text":"Invisible on my skin, even in photos.","verified":true},
+      {"author":"Alexia C.","rating":4,"date":"2026-07-16","title":"Shiny by noon","text":"My T-zone gets shiny by lunch. I use blotting paper.","verified":true},
+      {"author":"Mirabela T.","rating":4,"date":"2026-06-04","title":"Doesn't sting my eyes","text":"Used it at the seaside and it didn't run into my eyes.","verified":true}
+    ]
+  },
+  {
+    "id": "hb-shampoo-01",
+    "category": "health_beauty",
+    "name": "Gentle shampoo, 400 ml",
+    "brand": "Aria",
+    "price": 29,
+    "stock": 220,
+    "rating": 4.2,
+    "reviewCount": 330,
+    "specs": [
+      {"key":"volume","label":"Volume","value":"400 ml"},
+      {"key":"sulfates","label":"Sulfates","value":"Sulfate-free"},
+      {"key":"ph","label":"pH","value":"5.5"},
+      {"key":"fragrance","label":"Fragrance","value":"Light"}
+    ],
+    "copy": {"plain":"A mild shampoo for washing your hair often.","standard":"A sulfate-free shampoo with a pH of 5.5, mild enough for daily washing.","technical":"400 ml, sulfate-free surfactant blend, pH 5.5, silicone-free, light fragrance."},
+    "benefits": ["Mild for daily use","Big bottle","No sulfates"],
+    "reviewSummary": {"pros":["Mild","Value"],"cons":["Foams less than usual"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Roxana I.","rating":5,"date":"2026-10-06","title":"Scalp is calmer","text":"Washing every day and my scalp doesn't itch any more.","verified":true},
+      {"author":"Victoria G.","rating":3,"date":"2026-08-27","title":"Not much foam","text":"Takes getting used to, it barely foams. Hair is clean though.","verified":true},
+      {"author":"Cornel B.","rating":4,"date":"2026-07-08","title":"Lasts ages","text":"The big bottle lasts me three months.","verified":true}
+    ]
+  },
+  {
+    "id": "hb-dryer-01",
+    "category": "health_beauty",
+    "name": "Airlight hair dryer",
+    "brand": "Velia",
+    "price": 299,
+    "stock": 40,
+    "rating": 4.4,
+    "reviewCount": 470,
+    "specs": [
+      {"key":"power","label":"Power","value":"2100 W"},
+      {"key":"ionic","label":"Ionic","value":"Yes"},
+      {"key":"settings","label":"Settings","value":"3 heat, 2 speed, cool shot"},
+      {"key":"cable","label":"Cable","value":"2.5 m"},
+      {"key":"weight","label":"Weight","value":"520 g"}
+    ],
+    "copy": {"plain":"A light, powerful hair dryer that dries hair fast.","standard":"A 2100 W ionic hair dryer with three heat settings, a cool shot and a long 2.5 m cable.","technical":"2100 W AC motor, ionic generator, 3 heat / 2 speed, cool shot, concentrator and diffuser, 2.5 m cable, 520 g."},
+    "benefits": ["Dries hair quickly","Light in the hand","Long cable"],
+    "reviewSummary": {"pros":["Fast drying","Light"],"cons":["Loud on the highest setting"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":1},
+    "reviews": [
+      {"author":"Georgiana D.","rating":5,"date":"2026-10-22","title":"Halved my drying time","text":"My long hair dries in ten minutes instead of twenty, with less frizz.","verified":true},
+      {"author":"Ana V.","rating":4,"date":"2026-09-15","title":"Loud on max","text":"On the top setting it's loud. Medium is enough most days.","verified":true},
+      {"author":"Irina B.","rating":5,"date":"2026-07-19","title":"Light and long cable","text":"Doesn't tire my arm and reaches the mirror from the socket.","verified":true}
+    ]
+  },
+  {
+    "id": "hb-shaver-01",
+    "category": "health_beauty",
+    "name": "Glide 3 electric shaver",
+    "brand": "Velia",
+    "price": 349,
+    "stock": 35,
+    "rating": 4.2,
+    "reviewCount": 410,
+    "specs": [
+      {"key":"type","label":"Type","value":"Foil, 3 blades"},
+      {"key":"wetdry","label":"Use","value":"Wet and dry"},
+      {"key":"battery","label":"Battery","value":"60 min, 1 h charge"},
+      {"key":"trimmer","label":"Trimmer","value":"Pop-up"},
+      {"key":"clean","label":"Cleaning","value":"Fully washable"}
+    ],
+    "copy": {"plain":"A shaver you can use in the shower or dry, and rinse under the tap.","standard":"A three-blade foil shaver for wet or dry use, with a pop-up trimmer and 60 minutes of battery.","technical":"3-blade foil system, wet/dry, IPX7 washable, 60 min Li-ion runtime, 1 h full charge, 5 min quick charge, pop-up trimmer."},
+    "benefits": ["Use it in the shower","Rinse clean under the tap","Trimmer for sideburns"],
+    "reviewSummary": {"pros":["Close shave on cheeks","Easy to clean"],"cons":["Neck irritation for the first weeks"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":1},
+    "reviews": [
+      {"author":"Bogdan-Ionut F.","rating":4,"date":"2026-10-09","title":"Give it three weeks","text":"My neck was red for the first two weeks. After that, smooth and no irritation.","verified":true},
+      {"author":"Marian C.","rating":5,"date":"2026-09-03","title":"Shower shaving is great","text":"Use it with gel in the shower, very close shave.","verified":true},
+      {"author":"Dorin S.","rating":4,"date":"2026-07-14","title":"Battery lasts weeks","text":"About three weeks of daily shaves between charges.","verified":true}
+    ]
+  },
+  {
+    "id": "hb-scale-01",
+    "category": "health_beauty",
+    "name": "Smart bathroom scale",
+    "brand": "Aria",
+    "price": 129,
+    "stock": 85,
+    "rating": 4,
+    "reviewCount": 620,
+    "specs": [
+      {"key":"max","label":"Max weight","value":"180 kg"},
+      {"key":"step","label":"Precision","value":"100 g"},
+      {"key":"connect","label":"Connection","value":"Bluetooth, phone app"},
+      {"key":"metrics","label":"Readings","value":"Weight, plus body composition estimates"}
+    ],
+    "copy": {"plain":"A scale that saves your weight to your phone automatically.","standard":"A Bluetooth bathroom scale that logs your weight in an app and estimates body composition.","technical":"180 kg max, 100 g increments, bioimpedance estimates (body fat, muscle, water), Bluetooth LE, 8 user profiles."},
+    "benefits": ["Weight saved to your phone","Several family profiles","Consistent readings"],
+    "reviewSummary": {"pros":["Consistent weight","Easy app"],"cons":["Body fat numbers jump around"]},
+    "policies": {"returnDays":30,"warrantyMonths":24,"deliveryDays":1},
+    "reviews": [
+      {"author":"Paul T.","rating":4,"date":"2026-10-27","title":"Weight is consistent","text":"Step on three times, same number. Syncs to the app in seconds.","verified":true},
+      {"author":"Simona A.","rating":3,"date":"2026-09-21","title":"Take body fat with a pinch of salt","text":"Body fat changed by 2% between morning and evening. Weight is reliable.","verified":true},
+      {"author":"Razvan M.","rating":4,"date":"2026-08-04","title":"Recognises each of us","text":"Three profiles, it guesses who is on it correctly most of the time.","verified":true}
+    ]
+  },
+  {
+    "id": "hb-mag-01",
+    "category": "health_beauty",
+    "name": "Magnesium + B6, 60 tablets",
+    "brand": "Aria",
+    "price": 35,
+    "stock": 260,
+    "rating": 4.4,
+    "reviewCount": 590,
+    "specs": [
+      {"key":"dose","label":"Per tablet","value":"300 mg magnesium, 1.4 mg vitamin B6"},
+      {"key":"count","label":"Tablets","value":"60"},
+      {"key":"form","label":"Form","value":"Magnesium citrate"}
+    ],
+    "copy": {"plain":"A magnesium supplement, one tablet a day.","standard":"Magnesium citrate with vitamin B6, 300 mg per tablet, a two-month supply.","technical":"300 mg elemental magnesium (citrate) + 1.4 mg B6 per tablet, 60 tablets, one daily with food."},
+    "benefits": ["One tablet a day","Two months' supply","Citrate form"],
+    "reviewSummary": {"pros":["Price","One a day"],"cons":["Large tablets"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Lavinia S.","rating":4,"date":"2026-10-16","title":"Big tablets","text":"They're large, I split them in half. Good value.","verified":true},
+      {"author":"Costel R.","rating":5,"date":"2026-09-11","title":"Fair price","text":"Same dose as the pharmacy brand for less.","verified":true},
+      {"author":"Mihaela G.","rating":4,"date":"2026-07-22","title":"No aftertaste","text":"Easy to take with breakfast.","verified":true}
+    ]
+  },
+  {
+    "id": "hb-lip-01",
+    "category": "health_beauty",
+    "name": "Repair lip balm, 2-pack",
+    "brand": "Aria",
+    "price": 19,
+    "stock": 340,
+    "rating": 4.6,
+    "reviewCount": 450,
+    "specs": [
+      {"key":"count","label":"Pack","value":"2 × 4.8 g"},
+      {"key":"ingredients","label":"Key ingredients","value":"Shea butter, beeswax"},
+      {"key":"fragrance","label":"Fragrance","value":"None"}
+    ],
+    "copy": {"plain":"A simple lip balm for dry, cracked lips.","standard":"Two fragrance-free lip balms with shea butter and beeswax.","technical":"2 × 4.8 g sticks, shea butter, beeswax and vitamin E, fragrance-free, no added colour."},
+    "benefits": ["Soothes dry lips","No fragrance","One for your bag, one for home"],
+    "reviewSummary": {"pros":["Lasts long","No scent"],"cons":["Slightly waxy feel"]},
+    "policies": {"returnDays":14,"warrantyMonths":0,"deliveryDays":1},
+    "reviews": [
+      {"author":"Teodora A.","rating":5,"date":"2026-11-01","title":"Winter essential","text":"My lips crack every winter. This fixes it overnight.","verified":true},
+      {"author":"Adina S.","rating":4,"date":"2026-10-10","title":"A bit waxy","text":"Feels waxy at first, but lasts for hours.","verified":true},
+      {"author":"Florentina V.","rating":5,"date":"2026-01-29","title":"Two-pack is handy","text":"One in my coat, one by the bed.","verified":true}
+    ]
+  }
+]

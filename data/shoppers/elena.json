@@ -1,0 +1,33 @@
+{
+  "id": "elena",
+  "label": "Elena, 34 (synthetic): the weekly grocery order; knows what she wants and adds straight from the list",
+  "expectedPersona": { "dialect": "standard", "need": "quick" },
+  "startPath": "/taraba/c/groceries",
+  "partner": {
+    "consent": { "personalization": true, "partnerData": true },
+    "visitor": { "returning": false, "visits": 1 },
+    "account": { "tenureMonths": 26, "orderCategories": ["groceries", "health_beauty", "home"] },
+    "device": { "pointer": "fine", "viewportWidth": 1440, "prefersReducedMotion": false, "prefersContrast": false }
+  },
+  "events": [
+    { "t": 0, "type": "page_view" },
+    { "t": 2500, "type": "add_to_cart", "blockId": "productList", "productId": "groc-coffee-01" },
+    { "t": 4500, "type": "add_to_cart", "blockId": "productList", "productId": "groc-pasta-01" },
+    { "t": 6500, "type": "add_to_cart", "blockId": "productList", "productId": "groc-rice-01" },
+    { "t": 9000, "type": "scroll", "value": "fast" }
+  ],
+  "pages": [
+    { "path": "/taraba/search?q=olive%20oil", "events": [
+      { "t": 0, "type": "page_view" },
+      { "t": 2500, "type": "add_to_cart", "blockId": "productList", "productId": "groc-olive-01" }
+    ] },
+    { "path": "/taraba", "events": [
+      { "t": 0, "type": "page_view" },
+      { "t": 3000, "type": "add_to_cart", "blockId": "productList", "productId": "groc-honey-01" }
+    ] },
+    { "path": "/taraba/p/groc-tea-01", "events": [
+      { "t": 0, "type": "page_view", "productId": "groc-tea-01" },
+      { "t": 2500, "type": "add_to_cart", "blockId": "buyBox", "productId": "groc-tea-01" }
+    ] }
+  ]
+}

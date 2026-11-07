@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+html { color-scheme: light; }
+body { margin: 0; -webkit-font-smoothing: antialiased; background: #f8fafc; color: #0f172a; }
+
+/* Babel's own controls keep their size whatever text size the page uses. */
+.babel-ui { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+
+/* Blocks the shopper's own request just changed get a brief mark. Nothing moves on its own. */
+.babel-block[data-babel-changed] { animation: babel-changed 2.4s ease-out; border-radius: var(--babel-radius); }
+@keyframes babel-changed {
+  0%, 40% { box-shadow: 0 0 0 3px var(--c-accent), 0 0 0 9px color-mix(in srgb, var(--c-accent) 30%, transparent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+[data-motion="reduced"] .babel-block[data-babel-changed] { animation: none; outline: 3px solid var(--c-accent); }
+@media (prefers-reduced-motion: reduce) { .babel-block[data-babel-changed] { animation: none; outline: 3px solid var(--c-accent); } }
+
+[data-contrast="high"] .border-black\/10 { border-color: rgb(0 0 0 / 0.6); }
+[data-contrast="high"] .text-\[var\(--c-muted\)\] { color: #000; }
+
+/* Ghost shopper click ripple (demo). */
+.babel-ghost-click { animation: babel-ghost-click 600ms ease-out forwards; }
+@keyframes babel-ghost-click { from { transform: scale(0.3); opacity: 1; } to { transform: scale(1.8); opacity: 0; } }
+
+/* ---------------------------------------------------------------------------
+   Taraba's market identity + the four dialect looks (from Ionut's moodboards, expressed inside Taraba's brand).
+   A dialect is chosen from interaction and accessibility signals, never age.
+   --------------------------------------------------------------------------- */
+[data-dialect] {
+  --obor-paper: #f4f0e5; --obor-card: #fffdf7; --obor-ink: #24271f; --obor-muted: #716f63;
+  --obor-green: #294d3b; --obor-red: #b95436; --obor-gold: #e7b84a; --obor-line: #dcd1bc;
+  --look-body: "Trebuchet MS", Arial, sans-serif; --look-heading: Georgia, "Times New Roman", serif; --look-canvas: var(--obor-paper);
+}
+[data-dialect] .babel-block {
+  border: 1px solid var(--obor-line); border-radius: var(--babel-radius); background: var(--obor-card);
+  box-shadow: 0 5px 16px rgb(45 37 22 / 0.055); padding: 1rem;
+}
+[data-dialect] .babel-block .bg-white { background: transparent; border-color: transparent; }
+[data-dialect] :focus-visible { outline: 3px solid var(--obor-gold); outline-offset: 3px; }
+[data-dialect] main h1, [data-dialect] main h2 { font-family: var(--font-heading); letter-spacing: -0.03em; }
+
+[data-dialect="visual"] { --look-body: Inter, -apple-system, "Segoe UI", sans-serif; --look-heading: Inter, -apple-system, "Segoe UI", sans-serif; }
+[data-dialect="visual"] .babel-block { border-radius: 20px; padding: 1.25rem; box-shadow: 0 10px 28px rgb(41 55 42 / 0.09); }
+[data-dialect="visual"] .babel-block button, [data-dialect="visual"] .babel-block summary { border-radius: 999px; }
+
+[data-dialect="guided"] { --look-body: Arial, Helvetica, sans-serif; --look-canvas: #f7f1e7; }
+[data-dialect="guided"] .babel-block { border: 2px solid var(--obor-green); border-radius: 7px; padding: 1.25rem; box-shadow: none; }
+[data-dialect="guided"] .babel-block a:not([class*="bg-"]) { text-decoration: underline; text-decoration-color: var(--obor-red); text-underline-offset: 3px; }
+[data-dialect="guided"] .babel-block summary { border: 2px solid currentColor; border-radius: 6px; padding: .55rem .85rem; display: inline-block; }
+[data-dialect="guided"] .babel-block :focus-visible { outline-width: 4px; }
+
+[data-dialect="dense"] { --look-canvas: #eeece4; }
+[data-dialect="dense"] .babel-block { border-radius: 4px; padding: .75rem 1rem; box-shadow: inset 0 1px 0 #fff, 0 2px 0 rgb(35 48 40 / 0.09); }
+[data-dialect="dense"] .babel-block table th, [data-dialect="dense"] .babel-block table td { padding-block: .3rem; }
+
+[data-dialect="standard"] { --look-canvas: #f8f4ec; }
+[data-dialect="standard"] .babel-block { border-color: #e5dac7; border-radius: 14px; padding: 1.1rem; box-shadow: 0 8px 22px rgb(70 55 34 / 0.07); }
+
+@media (prefers-reduced-motion: reduce) { .babel-ghost-click { animation: none; } }

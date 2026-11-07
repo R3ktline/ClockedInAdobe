@@ -1,0 +1,35 @@
+{
+  "id": "victor",
+  "label": "Victor, 52 (synthetic): a robot vacuum; reads the critical reviews first and distrusts deal badges",
+  "expectedPersona": { "dialect": "dense", "need": "reassurance" },
+  "startPath": "/taraba/p/home-robot-01",
+  "partner": {
+    "consent": { "personalization": true, "partnerData": false },
+    "visitor": { "returning": false, "visits": 1 },
+    "device": { "pointer": "fine", "viewportWidth": 1440, "prefersReducedMotion": false, "prefersContrast": false }
+  },
+  "events": [
+    { "t": 0, "type": "page_view", "productId": "home-robot-01" },
+    { "t": 2500, "type": "review_open", "blockId": "trust", "productId": "home-robot-01" },
+    { "t": 5000, "type": "review_sort", "blockId": "trust", "value": "critical", "productId": "home-robot-01" },
+    { "t": 8000, "type": "policy_open", "blockId": "trust", "value": "warranty", "productId": "home-robot-01" },
+    { "t": 10500, "type": "block_open", "blockId": "specs", "productId": "home-robot-01" },
+    { "t": 13000, "type": "block_dwell", "blockId": "specs", "productId": "home-robot-01", "value": 9500 },
+    { "t": 16000, "type": "block_open", "blockId": "specs", "target": "spec:technical", "productId": "home-robot-01" }
+  ],
+  "pages": [
+    { "path": "/taraba/search?q=robot%20vacuum%202700Pa%20LDS", "events": [
+      { "t": 0, "type": "page_view" },
+      { "t": 1000, "type": "search", "value": "robot vacuum 2700Pa LDS" },
+      { "t": 4000, "type": "filter", "blockId": "filters", "value": "brand:Brisk" },
+      { "t": 7000, "type": "filter", "blockId": "filters", "value": "verified" },
+      { "t": 10000, "type": "product_click", "blockId": "productList", "productId": "home-robot-01" }
+    ] },
+    { "path": "/taraba/p/home-robot-01", "events": [
+      { "t": 0, "type": "page_view", "productId": "home-robot-01" },
+      { "t": 3000, "type": "policy_open", "blockId": "trust", "value": "returns", "productId": "home-robot-01" },
+      { "t": 6000, "type": "block_open", "blockId": "specs", "productId": "home-robot-01" },
+      { "t": 9000, "type": "hover_price", "blockId": "buyBox", "productId": "home-robot-01" }
+    ] }
+  ]
+}

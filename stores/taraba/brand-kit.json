@@ -1,0 +1,26 @@
+{
+  "store": "taraba",
+  "name": "Taraba",
+  "colors": {
+    "primary": "#294d3b",
+    "accent": "#e7b84a",
+    "surface": "#f7f0e4",
+    "text": "#24271f",
+    "muted": "#716f63"
+  },
+  "fonts": {
+    "heading": "Georgia, 'Times New Roman', serif",
+    "body": "'Trebuchet MS', Arial, sans-serif"
+  },
+  "ranges": {
+    "typeScale": [0.95, 1.3],
+    "radius": [6, 16],
+    "density": ["airy", "comfortable", "compact"],
+    "contrast": ["normal", "high"]
+  },
+  "voice": {
+    "do": ["friendly", "plain words", "short sentences"],
+    "dont": ["pressure", "jargon without explanation", "exclamation marks"]
+  },
+  "bannedWords": ["hurry", "only today", "last chance", "don't miss out", "selling fast"]
+}

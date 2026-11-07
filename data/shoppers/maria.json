@@ -1,0 +1,29 @@
+{
+  "id": "maria",
+  "label": "Maria, 67 (synthetic): her usual vitamins (non-prescription); large text is set in her account",
+  "expectedPersona": { "dialect": "guided", "need": "quick" },
+  "startPath": "/taraba/p/hb-vit-01",
+  "partner": {
+    "consent": { "personalization": true, "partnerData": true },
+    "visitor": { "returning": false, "visits": 1 },
+    "account": { "tenureMonths": 40, "orderCategories": ["health_beauty"], "accessibility": { "largeText": true } },
+    "device": { "pointer": "coarse", "viewportWidth": 1024, "prefersReducedMotion": true, "prefersContrast": false }
+  },
+  "events": [
+    { "t": 0, "type": "page_view", "productId": "hb-vit-01" },
+    { "t": 3000, "type": "mis_tap", "blockId": "buyBox", "productId": "hb-vit-01" },
+    { "t": 5000, "type": "mis_tap", "blockId": "buyBox", "productId": "hb-vit-01" },
+    { "t": 7500, "type": "add_to_cart", "blockId": "buyBox", "productId": "hb-vit-01" }
+  ],
+  "pages": [
+    { "path": "/taraba", "events": [
+      { "t": 0, "type": "page_view" },
+      { "t": 3500, "type": "scroll", "value": "slow" },
+      { "t": 7000, "type": "product_click", "blockId": "productList", "productId": "hb-mag-01" }
+    ] },
+    { "path": "/taraba/p/hb-mag-01", "events": [
+      { "t": 0, "type": "page_view", "productId": "hb-mag-01" },
+      { "t": 4000, "type": "add_to_cart", "blockId": "buyBox", "productId": "hb-mag-01" }
+    ] }
+  ]
+}

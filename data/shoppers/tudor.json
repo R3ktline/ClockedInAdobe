@@ -1,0 +1,195 @@
+{
+  "id": "tudor",
+  "label": "Tudor, 16 (synthetic): arrives from a social post, swipes through photos and zooms in on them",
+  "expectedPersona": {
+    "dialect": "visual",
+    "need": "inspiration"
+  },
+  "startPath": "/taraba/p/fash-dress-01",
+  "partner": {
+    "consent": {
+      "personalization": true,
+      "partnerData": false
+    },
+    "visitor": {
+      "returning": false,
+      "visits": 1
+    },
+    "campaign": {
+      "utmSource": "instagram"
+    },
+    "device": {
+      "pointer": "coarse",
+      "viewportWidth": 390,
+      "prefersReducedMotion": false,
+      "prefersContrast": false
+    }
+  },
+  "events": [
+    {
+      "t": 0,
+      "type": "page_view",
+      "productId": "fash-dress-01"
+    },
+    {
+      "t": 2000,
+      "type": "gallery_swipe",
+      "blockId": "gallery",
+      "productId": "fash-dress-01"
+    },
+    {
+      "t": 3500,
+      "type": "image_zoom",
+      "blockId": "gallery",
+      "productId": "fash-dress-01"
+    },
+    {
+      "t": 5500,
+      "type": "gallery_swipe",
+      "blockId": "gallery",
+      "productId": "fash-dress-01"
+    },
+    {
+      "t": 7500,
+      "type": "gallery_swipe",
+      "blockId": "gallery",
+      "productId": "fash-dress-01"
+    },
+    {
+      "t": 9500,
+      "type": "image_zoom",
+      "blockId": "gallery",
+      "productId": "fash-dress-01"
+    }
+  ],
+  "pages": [
+    {
+      "path": "/taraba/c/fashion",
+      "events": [
+        {
+          "t": 0,
+          "type": "page_view"
+        },
+        {
+          "t": 2000,
+          "type": "image_zoom",
+          "blockId": "productList"
+        },
+        {
+          "t": 4500,
+          "type": "image_zoom",
+          "blockId": "productList"
+        },
+        {
+          "t": 7000,
+          "type": "scroll",
+          "value": "slow"
+        },
+        {
+          "t": 9500,
+          "type": "image_zoom",
+          "blockId": "productList"
+        },
+        {
+          "t": 12000,
+          "type": "product_click",
+          "blockId": "productList",
+          "productId": "fash-coat-01"
+        }
+      ]
+    },
+    {
+      "path": "/taraba/p/fash-coat-01",
+      "events": [
+        {
+          "t": 0,
+          "type": "page_view",
+          "productId": "fash-coat-01"
+        },
+        {
+          "t": 2500,
+          "type": "gallery_swipe",
+          "blockId": "gallery",
+          "productId": "fash-coat-01"
+        },
+        {
+          "t": 5000,
+          "type": "image_zoom",
+          "blockId": "gallery",
+          "productId": "fash-coat-01"
+        },
+        {
+          "t": 7500,
+          "type": "gallery_swipe",
+          "blockId": "gallery",
+          "productId": "fash-coat-01"
+        },
+        {
+          "t": 10000,
+          "type": "gallery_swipe",
+          "blockId": "gallery",
+          "productId": "fash-coat-01"
+        }
+      ]
+    },
+    {
+      "path": "/taraba",
+      "events": [
+        {
+          "t": 0,
+          "type": "page_view"
+        },
+        {
+          "t": 2500,
+          "type": "scroll",
+          "value": "slow"
+        },
+        {
+          "t": 5000,
+          "type": "image_zoom",
+          "blockId": "hero"
+        },
+        {
+          "t": 8000,
+          "type": "category_click",
+          "blockId": "productList",
+          "value": "fashion"
+        }
+      ]
+    },
+    {
+      "path": "/taraba/p/fash-boot-01",
+      "events": [
+        {
+          "t": 0,
+          "type": "page_view",
+          "productId": "fash-boot-01"
+        },
+        {
+          "t": 2500,
+          "type": "gallery_swipe",
+          "blockId": "gallery",
+          "productId": "fash-boot-01"
+        },
+        {
+          "t": 5000,
+          "type": "image_zoom",
+          "blockId": "gallery",
+          "productId": "fash-boot-01"
+        },
+        {
+          "t": 7500,
+          "type": "gallery_swipe",
+          "blockId": "gallery",
+          "productId": "fash-boot-01"
+        },
+        {
+          "t": 10500,
+          "type": "image_zoom",
+          "blockId": "gallery",
+          "productId": "fash-boot-01"
+        }
+      ]
+    }
+  ]
+}

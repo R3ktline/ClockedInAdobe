@@ -1,0 +1,38 @@
+{
+  "id": "ana",
+  "label": "Ana, 23 (synthetic): wants the cheapest decent bag, arrives from a price-comparison site",
+  "expectedPersona": { "dialect": "standard", "need": "deals" },
+  "startPath": "/taraba/c/fashion",
+  "partner": {
+    "consent": { "personalization": true, "partnerData": false },
+    "visitor": { "returning": false, "visits": 1 },
+    "campaign": { "utmSource": "pricecompare" },
+    "device": { "pointer": "fine", "viewportWidth": 1440, "prefersReducedMotion": false, "prefersContrast": false }
+  },
+  "events": [
+    { "t": 0, "type": "page_view" },
+    { "t": 2500, "type": "sort", "blockId": "filters", "value": "price_asc" },
+    { "t": 5500, "type": "filter", "blockId": "filters", "value": "price<=300" },
+    { "t": 8500, "type": "hover_price", "blockId": "productList" },
+    { "t": 11000, "type": "product_click", "blockId": "productList", "productId": "fash-pack-01" }
+  ],
+  "pages": [
+    { "path": "/taraba/p/fash-pack-01", "events": [
+      { "t": 0, "type": "page_view", "productId": "fash-pack-01" },
+      { "t": 3000, "type": "hover_price", "blockId": "buyBox", "productId": "fash-pack-01" },
+      { "t": 6500, "type": "review_open", "blockId": "trust", "productId": "fash-pack-01" },
+      { "t": 10000, "type": "product_click", "blockId": "compare", "value": "cheaper", "productId": "fash-kboot-01" }
+    ] },
+    { "path": "/taraba/c/fashion", "events": [
+      { "t": 0, "type": "page_view" },
+      { "t": 3000, "type": "filter", "blockId": "filters", "value": "on_sale" },
+      { "t": 6000, "type": "sort", "blockId": "filters", "value": "price_asc" },
+      { "t": 9000, "type": "product_click", "blockId": "productList", "productId": "fash-tee-01" }
+    ] },
+    { "path": "/taraba/p/fash-tee-01", "events": [
+      { "t": 0, "type": "page_view", "productId": "fash-tee-01" },
+      { "t": 3000, "type": "hover_price", "blockId": "buyBox", "productId": "fash-tee-01" },
+      { "t": 6000, "type": "block_open", "blockId": "specs", "productId": "fash-tee-01" }
+    ] }
+  ]
+}
