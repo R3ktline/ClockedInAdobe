@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   visit.pendingTriggers = [];
   try {
     const prev = visit.slides.at(-1)!;
-    const o = await runDirector(visit, cfg.registry, cfg.brand);
+    const o = await runDirector(visit, cfg.registry, cfg.brand, triggers);
     const common = { at: elapsed(visit), triggers, errors: o.errors, clamps: o.clamps, rounds: o.rounds, ms: o.ms, mocked: o.mocked, llm: o.transcript };
     if (o.decision === "slide" && o.slide) {
       addSlide(visit, o.slide);

@@ -39,3 +39,14 @@ describe("Director", () => {
     expect(o.reason).toMatch(/llm error|timeout/);
   });
 });
+
+describe("Director on zoom", () => {
+  it("answers a zoom-in with bigger, plainer text inside the change budget (mock LLM)", async () => {
+    delete process.env.DEEPSEEK_API_KEY;
+    const o = await runDirector(raduVisit(), registry, brand, ["zoom"]);
+    expect(o.decision).toBe("slide");
+    expect(o.slide!.theme.typeScale).toBeCloseTo(1.1);
+    expect(o.slide!.copyRegister).toBe("plain");
+    expect(o.slide!.blocks.find((b) => b.id === "summary")!.variant).toBe("benefits_plain");
+  });
+});
