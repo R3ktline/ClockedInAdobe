@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Babel - Multi-Tier Age & Intent Detection Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    .pulse-dot { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.9); } }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- TOP HEADER: Simulation Controls -->
+  <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 shadow-md">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">B</div>
+      <div>
+        <h1 class="text-sm font-bold tracking-tight flex items-center gap-2">
+          Babel Adaptive Storefront
+          <span class="text-[11px] px-2 py-0.5 rounded-full font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Hackathon Age & Intent Testbench</span>
+        </h1>
+        <p class="text-xs text-slate-400">Multi-Tier Customer Age & Intent Resolution Engine</p>
+      </div>
+    </div>
+
+    <!-- TIER 1: Account Simulator Dropdown -->
+    <div class="flex items-center gap-2 bg-slate-950/80 p-1.5 rounded-lg border border-slate-800 text-xs">
+      <span class="text-slate-400 font-semibold flex items-center gap-1">
+        <span>👤</span> Account Status:
+      </span>
+      <select id="user-select" onchange="handleAccountChange(this.value)" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded px-2 py-1 focus:outline-none focus:border-indigo-500">
+        <option value="guest">Guest / Not Logged In</option>
+        <option value="alice">Alice Rivera (Age 19 — Student Account)</option>
+        <option value="marcus">Marcus Vance (Age 34 — Audio Engineer)</option>
+        <option value="eleanor">Eleanor Davies (Age 68 — Loyalty Senior Member)</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- CONTROLS BAR: Test Tiers 2, 3, & 4 -->
+  <div class="bg-slate-900/60 border-b border-slate-800 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs">
+    
+    <!-- Tier 2: UTM Campaign Simulator -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="text-slate-400 font-medium">Tier 2 UTMs:</span>
+      <button onclick="applyUTM('tiktok')" class="px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition">
+        📱 TikTok (18-24)
+      </button>
+      <button onclick="applyUTM('audiophile')" class="px-2.5 py-1 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 transition">
+        🎧 Audio Specs (25-40)
+      </button>
+      <button onclick="applyUTM('facebook')" class="px-2.5 py-1 rounded bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 transition">
+        👓 FB Senior (60+)
+      </button>
+      <button onclick="applyUTM('reset')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700">
+        ↺ Reset UTM
+      </button>
+    </div>
+
+    <!-- Tier 3: Hardware text scaling simulation -->
+    <div class="flex items-center gap-2">
+      <label class="flex items-center gap-1.5 cursor-pointer text-slate-300">
+        <input type="checkbox" id="scaling-toggle" onchange="toggleScaling(this.checked)" class="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0">
+        <span>Simulate 150% OS Zoom / Contrast (Tier 3)</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- MAIN DUAL-PANEL WORKBENCH -->
+  <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+    
+    <!-- LEFT 7 COLS: Adaptive Storefront -->
+    <main id="storefront-container" class="lg:col-span-7 border-r border-slate-800 p-4 sm:p-6 overflow-y-auto max-h-[calc(100vh-105px)] space-y-5">
+      
+      <!-- Tier 4: Internal Search Bar (Organic visitor test) -->
+      <div class="rounded-xl border border-slate-800 p-3 bg-slate-900/90 shadow-sm space-y-2">
+        <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
+          <span class="flex items-center gap-1.5">
+            <span>🔍</span> Tier 4: On-Site Search NLP Simulator (If visiting organically via Google)
+          </span>
+          <span class="text-[10px] text-slate-500">Live query syntax classifier</span>
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="search-input" oninput="handleSearchInput(this.value)" placeholder="Type query (e.g. 'headphones that make TV voice clear' or 'ANC LDAC low latency')..." 
+            class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+          <button onclick="clearSearch()" class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700">Clear</button>
+        </div>
+        <!-- Quick search prompts -->
+        <div class="flex items-center gap-1.5 flex-wrap text-[11px] pt-1">
+          <span class="text-slate-500">Quick tests:</span>
+          <button onclick="setSearch('how to make dialogue louder and clear on my TV')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700">"how to make TV dialogue clear"</button>
+          <button onclick="setSearch('ANC 45mm driver beryllium low latency LDAC')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700">"ANC LDAC low latency"</button>
+          <button onclick="setSearch('cheap wireless viral headphones tiktok dupe')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700">"cheap viral tiktok dupe"</button>
+        </div>
+      </div>
+
+      <!-- Storefront Persona Header Announcement -->
+      <div id="persona-badge-banner" class="rounded-lg p-3 bg-slate-900 border border-slate-800 flex items-center justify-between text-xs transition-all">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-dot"></span>
+          <div>
+            <span class="text-slate-400">Resolved View:</span>
+            <span id="active-persona-name" class="font-bold uppercase tracking-wider ml-1 text-indigo-400">BALANCED</span>
+          </div>
+        </div>
+        <div class="text-slate-400 flex items-center gap-2" id="adaptation-trigger-pill">
+          <span>Engine: Default Neutral View</span>
+        </div>
+      </div>
+
+      <!-- Hero Section (Adapts per persona) -->
+      <div id="storefront-hero" class="rounded-xl border border-slate-800 p-6 bg-gradient-to-br from-slate-900 to-slate-950 transition-all duration-300">
+        <div class="max-w-xl space-y-3">
+          <span id="hero-kicker" class="text-xs uppercase tracking-widest font-bold text-indigo-400">Premium Audio Flagship</span>
+          <h2 id="hero-headline" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Vortex Pro Spatial Headphones</h2>
+          <p id="hero-subtext" class="text-sm text-slate-400 leading-relaxed">
+            Studio-grade acoustic response engineered for discerning creators. Precision 45mm beryllium drivers with custom algorithmic DSP.
+          </p>
+          <div class="pt-2 flex items-center gap-3">
+            <span id="hero-price" class="text-2xl font-black">$349.00</span>
+            <span id="hero-discount-pill" class="hidden text-xs bg-red-500/10 text-red-400 font-bold px-2 py-0.5 rounded border border-red-500/20">SAVE $70 TODAY</span>
+            <button id="hero-cta-btn" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs tracking-wide transition shadow-sm">
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Feature Injection Container -->
+      <div id="dynamic-section-container" class="space-y-4"></div>
+
+      <!-- Extra scroll test area -->
+      <div class="space-y-3 pt-4 border-t border-slate-800 text-xs text-slate-500">
+        <div class="flex items-center justify-between">
+          <span class="uppercase tracking-wider font-semibold">Tier 5 Biometric Scroll Gauge (Scroll to test)</span>
+          <span id="scroll-speed-indicator">0 px/s</span>
+        </div>
+        <div class="h-28 flex items-center justify-center border border-dashed border-slate-800 rounded-lg">
+          [ Fast scroll down triggers Skimmer/Youth biometric inference if no account or UTM exists ]
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT 5 COLS: Decision Engine Console -->
+    <aside class="lg:col-span-5 bg-slate-900 p-4 sm:p-5 overflow-y-auto max-h-[calc(100vh-105px)] space-y-4 text-xs">
+      
+      <div class="border-b border-slate-800 pb-3">
+        <h2 class="font-bold text-sm flex items-center justify-between">
+          <span>AI Decision Engine</span>
+          <span id="winning-tier-badge" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            Baseline
+          </span>
+        </h2>
+        <p class="text-slate-400 mt-0.5">Hierarchy of Determination Output</p>
+      </div>
+
+      <!-- WINNING DETERMINATION CARD -->
+      <div class="border border-indigo-500/40 rounded-xl p-4 bg-indigo-500/10 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-300 font-medium">Determination Method:</span>
+          <span id="disp-method" class="font-bold text-indigo-400 font-mono text-[11px]">Baseline</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3 pt-2 border-t border-indigo-500/20">
+          <div>
+            <span class="text-slate-400 block text-[11px]">Resolved Age / Range:</span>
+            <span id="disp-age" class="text-lg font-black text-slate-100">Unknown</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[11px]">Target Cohort:</span>
+            <span id="disp-bracket" class="text-sm font-bold text-slate-200">General Adult</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between pt-2 border-t border-indigo-500/20 text-[11px]">
+          <span class="text-slate-400">Confidence Score:</span>
+          <span id="disp-confidence" class="font-black text-emerald-400 font-mono">50%</span>
+        </div>
+      </div>
+
+      <!-- TIER HIERARCHY EVALUATION LOG -->
+      <div class="border border-slate-800 rounded-lg p-3 bg-slate-950 space-y-2">
+        <span class="font-bold text-slate-300 block">Evaluation Rationale & Evidence:</span>
+        <ul id="disp-reasons" class="text-slate-400 text-[11px] list-disc list-inside space-y-1">
+          <li>No strong signals active. Serving neutral fallback.</li>
+        </ul>
+      </div>
+
+      <!-- STATUS SUMMARY PER TIER -->
+      <div class="border border-slate-800 rounded-lg p-3 bg-slate-950 space-y-2.5 font-mono text-[11px]">
+        <div class="flex items-center justify-between text-slate-400 font-sans font-bold border-b border-slate-800 pb-1.5">
+          <span>Tier Hierarchy Status</span>
+          <span>Status</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-400">Tier 1: Account Profile</span>
+          <span id="status-t1" class="text-slate-500">Not Logged In</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-400">Tier 2: Ad Set UTMs</span>
+          <span id="status-t2" class="text-slate-500">None</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-400">Tier 3: Hardware Zoom</span>
+          <span id="status-t3" class="text-slate-500">Normal (100%)</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-400">Tier 4: Search Query NLP</span>
+          <span id="status-t4" class="text-slate-500">Empty</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-400">Tier 5: Behavioral Biometrics</span>
+          <span id="status-t5" class="text-slate-500">Idle</span>
+        </div>
+      </div>
+
+      <!-- LOCALSTORAGE PERSISTENCE INSPECTOR -->
+      <div class="border border-slate-800 rounded-lg p-3 bg-slate-950 space-y-2">
+        <div class="flex items-center justify-between text-slate-300 font-bold">
+          <span>Tier 6: First-Party LocalStorage Profile</span>
+          <button onclick="clearStorage()" class="text-[10px] text-red-400 hover:underline">Clear</button>
+        </div>
+        <pre id="disp-storage" class="bg-slate-900 p-2 rounded text-[10px] font-mono text-slate-400 overflow-x-auto border border-slate-800">
+{}
+        </pre>
+      </div>
+
+    </aside>
+  </div>
+
+  <script src="tracker.js"></script>
+  <script>
+    // Mock user accounts
+    const MOCK_USERS = {
+      guest: null,
+      alice: { name: 'Alice Rivera', age: 19, tag: 'University Student' },
+      marcus: { name: 'Marcus Vance', age: 34, tag: 'Audio Engineer' },
+      eleanor: { name: 'Eleanor Davies', age: 68, tag: 'Senior Rewards Member' }
+    };
+
+    // Instantiate engine
+    const engine = new BabelAgeAndPersonaEngine({
+      onUpdate: (result) => renderUI(result)
+    });
+
+    const scroller = document.getElementById('storefront-container');
+    engine.initBiometrics(scroller);
+
+    // Handlers
+    function handleAccountChange(val) {
+      const user = MOCK_USERS[val];
+      engine.setAccountUser(user);
+      document.getElementById('status-t1').innerText = user ? `${user.name} (Age: ${user.age})` : 'Not Logged In';
+      document.getElementById('status-t1').className = user ? 'text-emerald-400 font-bold' : 'text-slate-500';
+    }
+
+    function applyUTM(type) {
+      if (type === 'tiktok') {
+        engine.setCampaignParams('tiktok', 'genz_summer_sound', 'ugc_video_18-24', 'https://tiktok.com');
+        document.getElementById('status-t2').innerText = 'TikTok (18-24)';
+        document.getElementById('status-t2').className = 'text-amber-400 font-bold';
+      } else if (type === 'audiophile') {
+        engine.setCampaignParams('google', 'audiophile_specs_25-40', 'search_benchmark', 'https://google.com');
+        document.getElementById('status-t2').innerText = 'Audio Specs (25-40)';
+        document.getElementById('status-t2').className = 'text-blue-400 font-bold';
+      } else if (type === 'facebook') {
+        engine.setCampaignParams('facebook', 'fb_retiree_clarity_60plus', 'feed_ad', 'https://facebook.com');
+        document.getElementById('status-t2').innerText = 'FB Senior (60+)';
+        document.getElementById('status-t2').className = 'text-purple-400 font-bold';
+      } else {
+        engine.setCampaignParams('direct', 'none', 'none', 'direct');
+        document.getElementById('status-t2').innerText = 'None';
+        document.getElementById('status-t2').className = 'text-slate-500';
+      }
+    }
+
+    function toggleScaling(checked) {
+      document.getElementById('status-t3').innerText = checked ? 'Enlarged (150% Zoom)' : 'Normal (100%)';
+      document.getElementById('status-t3').className = checked ? 'text-purple-400 font-bold' : 'text-slate-500';
+      // Mock devicePixelRatio for demonstration
+      if (checked) {
+        window._mockScaling = true;
+        engine.getHardwareTier = () => ({
+          active: true,
+          tier: 'Tier 3: Hardware & OS Ergonomics',
+          age: '60+',
+          bracket: '60+ (Vision Ergonomics Zoom)',
+          persona: 'simple',
+          confidence: 80,
+          reason: 'Detected 150% OS font/display scaling & accessibility mode'
+        });
+      } else {
+        window._mockScaling = false;
+        engine.getHardwareTier = () => ({ active: false });
+      }
+      engine.evaluate();
+    }
+
+    function handleSearchInput(val) {
+      engine.setSearchQuery(val);
+      document.getElementById('status-t4').innerText = val ? `"${val.slice(0, 16)}..."` : 'Empty';
+      document.getElementById('status-t4').className = val ? 'text-indigo-400 font-bold' : 'text-slate-500';
+    }
+
+    function setSearch(text) {
+      document.getElementById('search-input').value = text;
+      handleSearchInput(text);
+    }
+
+    function clearSearch() {
+      document.getElementById('search-input').value = '';
+      handleSearchInput('');
+    }
+
+    function clearStorage() {
+      localStorage.removeItem(engine.storageKey);
+      document.getElementById('disp-storage').innerText = '{}';
+    }
+
+    // Render Storefront and Dashboard
+    function renderUI(res) {
+      // 1. Dashboard updates
+      document.getElementById('winning-tier-badge').innerText = res.tierUsed;
+      document.getElementById('disp-method').innerText = res.tierUsed;
+      document.getElementById('disp-age').innerText = res.estimatedAge || 'Unknown';
+      document.getElementById('disp-bracket').innerText = res.ageBracket;
+      document.getElementById('disp-confidence').innerText = res.confidence + '%';
+      
+      const reasonsList = document.getElementById('disp-reasons');
+      reasonsList.innerHTML = res.reasons.map(r => `<li>${r}</li>`).join('');
+
+      document.getElementById('disp-storage').innerText = JSON.stringify(res, null, 2);
+
+      // 2. Adaptive Storefront Updates
+      const persona = res.inferredPersona;
+      const badge = document.getElementById('active-persona-name');
+      const triggerPill = document.getElementById('adaptation-trigger-pill');
+      const kicker = document.getElementById('hero-kicker');
+      const headline = document.getElementById('hero-headline');
+      const subtext = document.getElementById('hero-subtext');
+      const discountPill = document.getElementById('hero-discount-pill');
+      const secContainer = document.getElementById('dynamic-section-container');
+      const ctaBtn = document.getElementById('hero-cta-btn');
+
+      badge.innerText = persona.toUpperCase();
+      triggerPill.innerHTML = `<span class="text-indigo-400 font-semibold">${res.tierUsed} (${res.confidence}% Conf.)</span>`;
+
+      if (persona === 'deals') {
+        badge.className = 'font-bold uppercase tracking-wider ml-1 text-red-400';
+        kicker.innerText = '⚡ STUDENT & YOUTH FLASH SALE';
+        kicker.className = 'text-xs uppercase tracking-widest font-black text-red-400';
+        headline.innerText = 'Vortex Pro Flagship with Free Carrying Case';
+        subtext.innerText = 'Exclusive 20% discount applied. Split into 4 interest-free payments with Apple Pay or Klarna.';
+        discountPill.classList.remove('hidden');
+        ctaBtn.innerText = 'Claim Deal ($279)';
+        ctaBtn.className = 'px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs tracking-wide transition shadow-sm';
+
+        secContainer.innerHTML = `
+          <div class="rounded-xl border border-red-500/30 p-4 bg-red-500/10 space-y-3">
+            <div class="flex items-center justify-between text-xs font-bold text-red-400">
+              <span>🏷️ PROMO CODE: <strong>CAMPUS20</strong></span>
+              <span>Expires in 18:24</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center text-xs">
+              <div class="border border-slate-800 rounded p-2 bg-slate-900">
+                <div class="text-slate-400">Retail</div>
+                <div class="line-through text-xs">$349</div>
+              </div>
+              <div class="border border-red-500/40 rounded p-2 bg-red-500/20 font-bold text-red-400">
+                <div>Your Price</div>
+                <div class="text-sm font-black">$279</div>
+              </div>
+              <div class="border border-slate-800 rounded p-2 bg-slate-900">
+                <div class="text-slate-400">Klarna</div>
+                <div class="text-xs font-bold text-emerald-400">$69.75 / mo</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (persona === 'specs') {
+        badge.className = 'font-bold uppercase tracking-wider ml-1 text-blue-400';
+        kicker.innerText = '🔬 LABORATORY MEASURED SPECIFICATIONS';
+        kicker.className = 'text-xs uppercase tracking-widest font-mono font-bold text-blue-400';
+        headline.innerText = 'Vortex Pro: Dual 45mm Beryllium Acoustic System';
+        subtext.innerText = 'THD < 0.05% @ 1kHz. 5Hz - 42kHz frequency response curve with linear phase calibration and discrete Class-A amplification.';
+        discountPill.classList.add('hidden');
+        ctaBtn.innerText = 'Configure & Add to Cart';
+        ctaBtn.className = 'px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-wide transition shadow-sm';
+
+        secContainer.innerHTML = `
+          <div class="rounded-xl border border-slate-800 p-4 bg-slate-900 space-y-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-blue-400">Acoustic & Engineering Matrix</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono">
+              <div class="border border-slate-800 rounded p-2 bg-slate-950">
+                <span class="text-slate-400 block">Impedance</span>
+                <span class="font-bold">32 Ohms</span>
+              </div>
+              <div class="border border-slate-800 rounded p-2 bg-slate-950">
+                <span class="text-slate-400 block">Codecs</span>
+                <span class="font-bold">LDAC / aptX HD</span>
+              </div>
+              <div class="border border-slate-800 rounded p-2 bg-slate-950">
+                <span class="text-slate-400 block">Latency</span>
+                <span class="font-bold">18ms (Ultra-Low)</span>
+              </div>
+              <div class="border border-slate-800 rounded p-2 bg-slate-950">
+                <span class="text-slate-400 block">SNR</span>
+                <span class="font-bold">118 dB</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (persona === 'simple') {
+        badge.className = 'font-bold uppercase tracking-wider ml-1 text-purple-400';
+        kicker.innerText = 'COMFORT, CLARITY & DEDICATED PHONE SUPPORT';
+        kicker.className = 'text-xs uppercase tracking-widest font-semibold text-purple-400';
+        headline.innerText = 'Crystal-Clear Dialogue. Effortless TV Connection.';
+        subtext.innerText = 'Engineered for spoken-word clarity and TV dialogue enhancement. Large tactile buttons, lightweight plush memory foam, and zero complicated apps.';
+        discountPill.classList.add('hidden');
+        ctaBtn.innerText = 'Order with 60-Day Trial';
+        ctaBtn.className = 'px-6 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm tracking-wide transition shadow-sm';
+
+        secContainer.innerHTML = `
+          <div class="rounded-xl border border-purple-500/30 p-5 bg-purple-500/10 space-y-3">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">📞</span>
+              <div>
+                <h4 class="text-sm font-bold text-slate-100">Need help setting up? Free 1-on-1 Phone Assistance</h4>
+                <p class="text-xs text-slate-300">Call toll-free anytime: our dedicated support team walks you through connecting to any television or phone.</p>
+              </div>
+            </div>
+            <div class="border-t border-purple-500/20 pt-2 flex items-center justify-between text-xs text-slate-300">
+              <span>✓ 60-Day In-Home Trial</span>
+              <span>✓ 100% Free Returns</span>
+              <span>✓ 3-Year Extended Warranty</span>
+            </div>
+          </div>
+        `;
+      } else {
+        badge.className = 'font-bold uppercase tracking-wider ml-1 text-indigo-400';
+        kicker.innerText = 'PREMIUM AUDIO FLAGSHIP';
+        kicker.className = 'text-xs uppercase tracking-widest font-bold text-indigo-400';
+        headline.innerText = 'Vortex Pro Spatial Headphones';
+        subtext.innerText = 'Studio-grade acoustic response engineered for discerning creators. Precision 45mm beryllium drivers with custom algorithmic DSP.';
+        discountPill.classList.add('hidden');
+        ctaBtn.innerText = 'Add to Cart';
+        ctaBtn.className = 'px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs tracking-wide transition shadow-sm';
+        secContainer.innerHTML = ``;
+      }
+    }
+
+    // Initial evaluation
+    engine.evaluate();
+  </script>
+</body>
+</html>
