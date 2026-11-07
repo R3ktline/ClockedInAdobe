@@ -113,3 +113,41 @@ body {
   padding: 1.25rem;
   box-shadow: 0 14px 32px rgb(120 90 160 / .14);
 }
+
+/* ---------------------------------------------------------------------------
+   The glass curtain (curtain mode, babel/sdk/Curtain.tsx): a pane of blurred glass over the store while Babel
+   makes a big change. The old page stays visible but out of focus; the new page settles in when the glass lifts.
+   --------------------------------------------------------------------------- */
+.babel-curtain {
+  position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center;
+  pointer-events: none; opacity: 0;
+  -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0); background-color: rgb(255 255 255 / 0);
+  transition: opacity .5s ease, backdrop-filter .6s ease, -webkit-backdrop-filter .6s ease, background-color .6s ease;
+}
+.babel-curtain[data-phase="in"], .babel-curtain[data-phase="hold"], .babel-curtain[data-phase="done"] {
+  opacity: 1; pointer-events: auto;
+  -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
+  background-color: rgb(255 255 255 / .3);
+}
+.babel-curtain__card {
+  display: grid; justify-items: center; gap: .5rem; max-width: 24rem; padding: 1.6rem 2.2rem; text-align: center;
+  color: #14171f; background: rgb(255 255 255 / .6); border: 1px solid rgb(255 255 255 / .8); border-radius: 22px;
+  box-shadow: 0 24px 60px rgb(20 23 31 / .18);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  opacity: 0; transform: translateY(8px) scale(.97); transition: opacity .45s ease .1s, transform .45s ease .1s;
+}
+.babel-curtain__card[data-shown] { opacity: 1; transform: none; }
+.babel-curtain__title { margin: 0; font: 600 1.15rem/1.35 system-ui, sans-serif; }
+.babel-curtain__sub { margin: 0; font: 400 .95rem/1.4 system-ui, sans-serif; color: #4a5160; }
+.babel-curtain__ring {
+  width: 28px; height: 28px; border-radius: 50%; border: 3px solid rgb(20 23 31 / .15); border-top-color: #14171f;
+  animation: babel-spin .9s linear infinite;
+}
+@keyframes babel-spin { to { transform: rotate(360deg); } }
+@keyframes babel-pop { from { opacity: .55; transform: scale(.985); } to { opacity: 1; transform: none; } }
+[data-popping] .babel-stage { animation: babel-pop .7s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .babel-curtain, .babel-curtain__card { transition: none; }
+  .babel-curtain__ring { animation: none; }
+  [data-popping] .babel-stage { animation: none; }
+}

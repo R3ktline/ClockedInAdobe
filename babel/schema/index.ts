@@ -148,6 +148,11 @@ export const BlockSpec = z.object({
   neutral: z.string(),
   required: z.boolean().optional(), // may be collapsed, never hidden
   byDialect: z.partialRecord(Dialect, z.string()).optional(), // the store's reading of each dialect
+  // What each variant looks like and what it leaves out, in plain words. The Director reads this to know which
+  // variant answers a request ("smaller photos" -> the one described as the smallest layout).
+  describe: z.record(z.string(), z.string().max(240)).optional(),
+  // Things shoppers may ask for that this block cannot do, so the agent says so instead of guessing.
+  cannot: z.array(z.string().max(120)).optional(),
 });
 // Key order inside a template is the store's default block order.
 export const Registry = z.partialRecord(Template, z.partialRecord(BlockId, BlockSpec));
@@ -182,7 +187,7 @@ export const Slide = z.object({
   index: z.number().int().min(0),
   parentId: z.string().optional(),
   kind: z.enum(["initial", "minor", "major", "explicit"]),
-  trigger: z.enum(["page_load", "revisit", "markers", "chat", "view_switch", "agent_handoff"]),
+  trigger: z.enum(["page_load", "revisit", "markers", "chat", "view_switch", "agent_handoff", "calibration"]),
   template: Template,
   persona: Persona,
   theme: Theme,
@@ -209,8 +214,19 @@ export const Gap = z.object({
   why: z.string().max(200),    // the shopper behaviour behind it
 });
 
+// Interpret first: when the shopper typed a request, the Director lists each separate wish in it, says whether it
+// can be done, and names the block variants that make it true. Code checks the slide against this list and builds
+// the shopper's reply from it, so the answer is never more cheerful than what actually changed.
+export const Understood = z.array(z.object({
+  wanted: z.string().max(120),                       // one wish, in plain words ("photos smaller")
+  status: z.enum(["do", "already", "cannot"]),       // do = this slide makes it true; already = it is true now; cannot = not offered
+  how: z.string().max(160).optional(),               // do: what the slide does. cannot: why not
+  sets: z.array(z.object({ block: BlockId, variant: z.string() })).max(12).optional(), // variants that make it true
+})).max(6);
+
 // What the Director proposes: a change to the current slide. Code assembles the full Slide.
 export const SlideProposal = z.object({
+  understood: Understood.optional(),
   gaps: z.array(Gap).max(2).optional(),
   dialect: Dialect.optional(), // only accepted on a major slide (return visit)
   need: Need.optional(),
@@ -249,4 +265,5 @@ export type Hypothesis = z.infer<typeof Hypothesis>;
 export type Slide = z.infer<typeof Slide>;
 export type Timeline = z.infer<typeof Timeline>;
 export type Gap = z.infer<typeof Gap>;
+export type Understood = z.infer<typeof Understood>;
 export type SlideProposal =z.infer<typeof SlideProposal>;

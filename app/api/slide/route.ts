@@ -26,19 +26,21 @@ export async function POST(req: Request) {
   visit.pendingTriggers = [];
   try {
     const prev = visit.slides.at(-1)!;
-    const o = await runDirector(visit, cfg.registry, cfg.brand, triggers, message);
+    // Curtain mode: a typed request may change the whole page in one step (kind "explicit"), behind the curtain.
+    const o = await runDirector(visit, cfg.registry, cfg.brand, triggers, message, { big: visit.curtain && !!message });
     recordGaps(visit.store, prev.template, o.gaps, o.mocked);
     const common = { at: elapsed(visit), triggers, errors: o.errors, clamps: o.clamps, rounds: o.rounds, ms: o.ms, mocked: o.mocked, llm: o.transcript };
     if (o.decision === "slide" && o.slide) {
       addSlide(visit, o.slide);
+      if (visit.curtain && message) visit.explicitPinned = true; // what the shopper asked for beats our own read
       visit.trace.push({
         ...common, kind: "slide", hypothesis: o.slide.hypothesis, diff: describeDiff(prev, o.slide),
         text: `slide ${o.slide.index} (${o.slide.kind}${message ? ", asked in chat" : ""}): ${o.slide.rationale}`,
       });
-      return Response.json({ decision: "slide", slide: o.slide, llm: o.transcript, urgent: triggers.includes("zoom") || triggers.includes("chat") });
+      return Response.json({ decision: "slide", slide: o.slide, reply: o.reply, understood: o.understood, llm: o.transcript, urgent: triggers.includes("zoom") || triggers.includes("chat") });
     }
     visit.trace.push({ ...common, kind: "hold", text: `hold: ${o.reason}` });
-    return Response.json({ decision: "hold", reason: o.reason, llm: o.transcript });
+    return Response.json({ decision: "hold", reason: o.reason, reply: o.reply, understood: o.understood, llm: o.transcript });
   } finally {
     visit.directorBusy = false;
   }

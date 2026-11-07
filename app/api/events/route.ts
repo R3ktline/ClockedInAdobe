@@ -11,6 +11,6 @@ export async function POST(req: Request) {
   if (!body.success) return bad(body.error.message);
   const visit = getVisit(body.data.visitId);
   if (!visit) return bad("unknown visit", 404);
-  const { trigger } = recordEvents(visit, body.data.events);
-  return Response.json({ trigger, markers: visit.markers });
+  const { trigger, restyle } = recordEvents(visit, body.data.events);
+  return Response.json({ trigger, restyle: !!restyle, markers: visit.markers });
 }
