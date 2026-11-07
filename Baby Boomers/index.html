@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f0e5">
+  <title>Fieldbook 14 — The Study Paper</title>
+
+  <style>
+    :root {
+      --paper: #f5f0e5;
+      --ink: #171717;
+      --muted: #4a4a45;
+      --red: #df3b2f;
+      --blue: #2247d8;
+      --yellow: #f0c84b;
+      --green: #2d673c;
+      --laptop-finish: #b6c0c1;
+      --screen-color: #284653;
+      --page-scale: 1;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image: radial-gradient(#1717170b .65px, transparent .65px);
+      background-size: 5px 5px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: calc(16px * var(--page-scale));
+      line-height: 1.5;
+    }
+
+    body.high-contrast {
+      --paper: #fff;
+      --ink: #000;
+      --muted: #111;
+      --red: #bd160d;
+      --blue: #002db3;
+      --yellow: #ffdf00;
+      --green: #00551a;
+      background-image: none;
+    }
+
+    button, a { font: inherit; }
+
+    button:focus-visible, a:focus-visible, input:focus-visible + label {
+      outline: 4px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    a { color: inherit; }
+
+    .skip-link {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 20;
+      padding: 10px 14px;
+      transform: translateY(-150%);
+      color: #fff;
+      background: var(--ink);
+      font-weight: bold;
+    }
+
+    .skip-link:focus { transform: translateY(0); }
+
+    [hidden] { display: none !important; }
+
+    .page {
+      width: min(1240px, calc(100% - 40px));
+      margin: 0 auto;
+      border-right: 2px solid var(--ink);
+      border-left: 2px solid var(--ink);
+      background: var(--paper);
+      animation: arrive .45s ease-out both;
+    }
+
+    @keyframes arrive {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .utility-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 9px 22px;
+      border-bottom: 2px solid var(--ink);
+      background: var(--yellow);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .utility-controls {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .utility-button {
+      min-width: 39px;
+      min-height: 36px;
+      padding: 5px 9px;
+      border: 2px solid var(--ink);
+      color: var(--ink);
+      background: var(--paper);
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .utility-button:hover { color: white; background: var(--ink); }
+
+    .masthead {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: end;
+      padding: 24px 24px 18px;
+      border-bottom: 7px solid var(--ink);
+    }
+
+    .masthead-kicker {
+      margin: 0 0 5px;
+      color: var(--red);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .wordmark {
+      margin: 0;
+      font-size: clamp(42px, 8vw, 88px);
+      font-weight: 950;
+      letter-spacing: -.085em;
+      line-height: .8;
+      text-transform: uppercase;
+    }
+
+    .wordmark .dot { color: var(--red); }
+
+    .edition {
+      max-width: 210px;
+      padding: 10px 12px;
+      border: 2px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.35;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    .edition strong {
+      display: block;
+      color: var(--blue);
+      font-size: 20px;
+    }
+
+    .main-nav {
+      display: flex;
+      flex-wrap: wrap;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .main-nav a {
+      padding: 12px 19px;
+      border-right: 2px solid var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    .main-nav a:hover { color: white; background: var(--blue); }
+
+    .bag-link { margin-left: auto; }
+
+    .bag-count {
+      display: inline-grid;
+      width: 22px;
+      height: 22px;
+      margin-left: 5px;
+      place-items: center;
+      color: var(--ink);
+      background: var(--yellow);
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      font-size: 11px;
+    }
+
+    .notice {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 22px;
+      border-bottom: 2px solid var(--ink);
+      color: white;
+      background: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .notice-label {
+      padding: 3px 7px;
+      color: var(--ink);
+      background: var(--yellow);
+      font-size: 10px;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    main { padding: 24px; }
+
+    .crumb {
+      margin-bottom: 15px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .crumb a { text-underline-offset: 3px; }
+
+    .lead-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(235px, .7fr);
+      border: 2px solid var(--ink);
+    }
+
+    .lead {
+      position: relative;
+      min-height: 205px;
+      padding: clamp(22px, 4vw, 40px);
+      overflow: hidden;
+      border-right: 2px solid var(--ink);
+      background: var(--paper);
+    }
+
+    .lead::after {
+      position: absolute;
+      right: -25px;
+      bottom: -100px;
+      width: 220px;
+      height: 220px;
+      border: 27px solid var(--red);
+      border-radius: 50%;
+      content: "";
+      opacity: .9;
+      pointer-events: none;
+    }
+
+    .section-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 9px;
+      color: white;
+      background: var(--red);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .lead h2 {
+      position: relative;
+      z-index: 1;
+      max-width: 690px;
+      margin: 0;
+      font-size: clamp(38px, 6vw, 72px);
+      font-weight: 950;
+      letter-spacing: -.075em;
+      line-height: .91;
+      text-transform: uppercase;
+    }
+
+    .lead h2 em { color: var(--blue); font-style: normal; }
+
+    .lead p {
+      position: relative;
+      z-index: 1;
+      max-width: 570px;
+      margin: 14px 0 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .lead-side {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 18px;
+      color: white;
+      background: var(--ink);
+    }
+
+    .side-stamp {
+      align-self: flex-start;
+      padding: 6px 9px;
+      transform: rotate(-3deg);
+      border: 2px solid white;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .lead-side p {
+      margin: 20px 0 0;
+      color: #eee;
+      font: 20px/1.2 Georgia, "Times New Roman", serif;
+    }
+
+    .lead-side p strong {
+      display: block;
+      margin-top: 8px;
+      color: var(--yellow);
+      font: 12px Arial, sans-serif;
+      text-transform: uppercase;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(310px, .85fr);
+      gap: 20px;
+      align-items: stretch;
+      margin-top: 24px;
+    }
+
+    .product-art {
+      position: relative;
+      display: grid;
+      min-height: 400px;
+      place-items: center;
+      overflow: hidden;
+      border: 2px solid var(--ink);
+      background:
+        linear-gradient(90deg, transparent 49.8%, #17171713 50%, transparent 50.2%),
+        linear-gradient(0deg, transparent 49.8%, #17171713 50%, transparent 50.2%),
+        #e7e1d3;
+      background-size: 34px 34px;
+    }
+
+    .art-label {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      padding: 5px 8px;
+      border: 2px solid var(--ink);
+      background: var(--yellow);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .art-index {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+    }
+
+    /* A laptop illustration made entirely with CSS. */
+    .laptop {
+      width: min(82%, 500px);
+      filter: drop-shadow(0 18px 10px #17171730);
+      transform: perspective(900px) rotateX(3deg);
+      transition: transform .3s ease, filter .3s ease;
+    }
+
+    .product-art:hover .laptop {
+      transform: perspective(900px) rotateX(0) translateY(-4px);
+      filter: drop-shadow(0 23px 13px #17171738);
+    }
+
+    .laptop-screen {
+      width: 78%;
+      height: clamp(165px, 24vw, 250px);
+      margin: 0 auto;
+      padding: 9px;
+      border: 7px solid #626c70;
+      border-bottom-width: 11px;
+      border-radius: 12px 12px 4px 4px;
+      background: #222;
+      box-shadow: 0 1px 0 white inset, 0 0 0 2px var(--ink);
+    }
+
+    .screen-image {
+      display: flex;
+      height: 100%;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 14px;
+      color: white;
+      background:
+        radial-gradient(circle at 75% 22%, #f3cb65 0 7%, transparent 7.5%),
+        linear-gradient(145deg, transparent 0 48%, #ffffff24 48% 49%, transparent 49%),
+        linear-gradient(155deg, var(--screen-color), #15272e 68%, #121b20);
+      transition: background .3s;
+    }
+
+    .screen-kicker {
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .2em;
+    }
+
+    .screen-title {
+      max-width: 240px;
+      font-size: clamp(17px, 3vw, 30px);
+      font-weight: 900;
+      letter-spacing: -.06em;
+      line-height: .95;
+      text-transform: uppercase;
+    }
+
+    .screen-bottom {
+      display: flex;
+      justify-content: space-between;
+      color: #e7eded;
+      font-size: 8px;
+      font-weight: bold;
+      letter-spacing: .08em;
+    }
+
+    .laptop-base {
+      position: relative;
+      height: 28px;
+      margin-top: -1px;
+      clip-path: polygon(8% 0, 92% 0, 100% 74%, 95% 100%, 5% 100%, 0 74%);
+      border-top: 2px solid white;
+      background: linear-gradient(180deg, #e1e3df, var(--laptop-finish) 46%, #f5f5ee 53%, #969e9f);
+      transition: background .3s;
+    }
+
+    .laptop-base::after {
+      position: absolute;
+      top: 2px;
+      left: 42%;
+      width: 16%;
+      height: 4px;
+      border-radius: 0 0 5px 5px;
+      background: #7d8586;
+      content: "";
+    }
+
+    .art-caption {
+      position: absolute;
+      bottom: 13px;
+      left: 15px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .product-info {
+      border: 2px solid var(--ink);
+      background: #fffdf7;
+      box-shadow: 7px 7px 0 var(--ink);
+    }
+
+    .info-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 15px;
+      border-bottom: 2px solid var(--ink);
+      color: white;
+      background: var(--blue);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .info-topline span:last-child {
+      padding: 3px 6px;
+      color: var(--ink);
+      background: var(--yellow);
+      letter-spacing: .04em;
+    }
+
+    .info-body { padding: 19px; }
+
+    .eyebrow {
+      margin: 0 0 4px;
+      color: var(--red);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .product-info h2 {
+      margin: 0;
+      font-size: clamp(36px, 5vw, 55px);
+      font-weight: 950;
+      letter-spacing: -.075em;
+      line-height: .95;
+    }
+
+    .product-subtitle {
+      margin: 8px 0 13px;
+      color: var(--muted);
+      font: italic 16px Georgia, "Times New Roman", serif;
+    }
+
+    .description {
+      margin: 0 0 14px;
+      font-size: 13px;
+      font-weight: 550;
+      line-height: 1.6;
+    }
+
+    .price-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 10px;
+      padding: 12px 0;
+      border-top: 2px solid var(--ink);
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .price { font-size: 28px; font-weight: 950; letter-spacing: -.05em; }
+    .price-note { color: var(--muted); font-size: 11px; font-weight: 700; }
+
+    .demo-note {
+      margin: 12px 0;
+      padding: 9px 11px;
+      border-left: 5px solid var(--green);
+      background: #e8eee1;
+      font-size: 11px;
+      font-weight: 650;
+      line-height: 1.5;
+    }
+
+    .option-label {
+      display: block;
+      margin: 15px 0 8px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .finish-name { color: var(--blue); }
+
+    .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .swatch {
+      min-height: 37px;
+      padding: 6px 10px;
+      border: 2px solid var(--ink);
+      background: white;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .swatch[aria-pressed="true"] {
+      box-shadow: 4px 4px 0 var(--ink);
+      transform: translate(-2px, -2px);
+    }
+
+    .swatch::before {
+      display: inline-block;
+      width: 13px;
+      height: 13px;
+      margin-right: 6px;
+      border: 1px solid var(--ink);
+      vertical-align: -2px;
+      background: var(--swatch-color);
+      content: "";
+    }
+
+    .swatch.silver { --swatch-color: #b6c0c1; }
+    .swatch.blue { --swatch-color: #526a7c; }
+    .swatch.copper { --swatch-color: #b47b5b; }
+
+    .purchase-row {
+      display: flex;
+      gap: 9px;
+      margin-top: 18px;
+    }
+
+    .action-button {
+      min-height: 45px;
+      padding: 10px 14px;
+      border: 2px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      color: var(--ink);
+      background: var(--yellow);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      transition: transform .12s, box-shadow .12s;
+    }
+
+    .action-button:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--ink);
+    }
+
+    .action-button:active {
+      transform: translate(4px, 4px);
+      box-shadow: none;
+    }
+
+    .add-button { flex: 1; }
+
+    .save-button {
+      min-width: 48px;
+      background: white;
+      font-size: 19px;
+    }
+
+    .save-button[aria-pressed="true"] { color: var(--red); }
+
+    .no-pressure {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 34px 0 13px;
+      padding-bottom: 8px;
+      border-bottom: 4px solid var(--ink);
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: clamp(25px, 4vw, 39px);
+      font-weight: 950;
+      letter-spacing: -.06em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .section-heading span {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(230px, .6fr);
+      gap: 18px;
+    }
+
+    .detail-card, .sidebar-card {
+      border: 2px solid var(--ink);
+      background: #fffdf7;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .tab {
+      padding: 10px 14px;
+      border: 0;
+      border-right: 2px solid var(--ink);
+      color: var(--ink);
+      background: #e8e4d8;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .tab.active { color: white; background: var(--red); }
+
+    .tab-panel {
+      min-height: 124px;
+      padding: 17px;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .tab-panel strong { font-size: 15px; }
+
+    .sidebar-card { margin-bottom: 13px; }
+
+    .sidebar-title {
+      margin: 0;
+      padding: 9px 12px;
+      border-bottom: 2px solid var(--ink);
+      color: white;
+      background: var(--ink);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-content { padding: 13px; }
+
+    .sidebar-content p {
+      margin: 0;
+      font: bold 18px/1.3 Georgia, "Times New Roman", serif;
+    }
+
+    .sidebar-content small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .tip-card { background: var(--yellow); }
+
+    .bag-view { max-width: 880px; margin: auto; }
+
+    .bag-view h1 {
+      margin: 12px 0 4px;
+      font-size: clamp(38px, 6vw, 60px);
+      font-weight: 950;
+      letter-spacing: -.07em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .bag-intro { margin: 0 0 20px; color: var(--muted); font: italic 15px Georgia, serif; }
+
+    .bag-card {
+      margin-bottom: 15px;
+      border: 2px solid var(--ink);
+      background: #fffdf7;
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+
+    .bag-item {
+      display: grid;
+      grid-template-columns: 90px 1fr auto;
+      gap: 15px;
+      align-items: center;
+      padding: 17px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .mini-art {
+      display: grid;
+      width: 90px;
+      height: 68px;
+      place-items: center;
+      border: 2px solid var(--ink);
+      background: #e7e1d3;
+    }
+
+    .mini-computer {
+      position: relative;
+      width: 57px;
+      height: 37px;
+      border: 4px solid #626c70;
+      border-radius: 5px 5px 2px 2px;
+      background: linear-gradient(145deg, var(--screen-color), #15272e);
+    }
+
+    .mini-computer::after {
+      position: absolute;
+      right: -8px;
+      bottom: -8px;
+      left: -8px;
+      height: 5px;
+      border: 1px solid var(--ink);
+      background: var(--laptop-finish);
+      content: "";
+    }
+
+    .bag-item h2 { margin: 0 0 4px; font-size: 19px; letter-spacing: -.04em; }
+    .bag-item p { margin: 0; color: var(--muted); font-size: 12px; }
+    .bag-item-price { font-size: 16px; font-weight: 900; white-space: nowrap; }
+
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 9px;
+    }
+
+    .quantity-control button {
+      width: 30px;
+      height: 30px;
+      border: 2px solid var(--ink);
+      color: var(--ink);
+      background: white;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .remove-button {
+      width: auto !important;
+      margin-left: 5px;
+      padding: 0 8px;
+      color: var(--red) !important;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    .summary { padding: 17px; }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 6px 0;
+      font-size: 13px;
+    }
+
+    .summary-row.total {
+      margin-top: 6px;
+      padding-top: 12px;
+      border-top: 2px solid var(--ink);
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .bag-note { margin: 10px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+
+    .bag-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+
+    .empty-bag { padding: 32px 20px; text-align: center; }
+
+    .empty-bag h2 { margin: 0 0 8px; font-size: 25px; letter-spacing: -.04em; }
+    .empty-bag p { max-width: 420px; margin: 0 auto 15px; color: var(--muted); font-size: 13px; }
+
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 34px;
+      padding: 14px 0 4px;
+      border-top: 4px solid var(--ink);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .footer strong { color: var(--ink); }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 10;
+      max-width: min(360px, calc(100vw - 40px));
+      padding: 13px 16px;
+      transform: translateY(12px);
+      opacity: 0;
+      border: 2px solid white;
+      color: white;
+      background: var(--ink);
+      box-shadow: 5px 5px 0 var(--red);
+      font-size: 12px;
+      font-weight: 700;
+      transition: opacity .2s, transform .2s;
+      pointer-events: none;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 760px) {
+      .page { width: min(100% - 20px, 640px); }
+      .masthead { grid-template-columns: 1fr; }
+      .edition { text-align: left; }
+      .lead-grid, .product-grid, .detail-grid { grid-template-columns: 1fr; }
+      .lead { border-right: 0; border-bottom: 2px solid var(--ink); }
+      .lead-side { min-height: 175px; }
+      .product-art { min-height: 340px; }
+      .main-nav a { flex: 1; text-align: center; }
+      .bag-link { margin-left: 0; }
+    }
+
+    @media (max-width: 520px) {
+      .page { width: 100%; border-right: 0; border-left: 0; }
+      .utility-bar { align-items: flex-start; flex-direction: column; padding: 9px 14px; }
+      .utility-controls { flex-wrap: wrap; }
+      .masthead { padding: 20px 15px 15px; }
+      main { padding: 16px 14px; }
+      .main-nav a { padding: 10px 6px; font-size: 10px; }
+      .notice { align-items: flex-start; padding: 10px 14px; }
+      .lead { min-height: 245px; padding: 23px 18px; }
+      .product-art { min-height: 290px; }
+      .info-body { padding: 15px; }
+      .bag-item { grid-template-columns: 65px 1fr auto; gap: 10px; padding: 12px; }
+      .mini-art { width: 65px; height: 58px; }
+      .mini-computer { transform: scale(.8); }
+      .bag-item h2 { font-size: 16px; }
+      .bag-item-price { font-size: 13px; }
+      .remove-button { display: block; margin: 7px 0 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#main-content">Skip to the main content</a>
+
+  <div class="page">
+    <div class="utility-bar">
+      <span>Independent laptop review &amp; buying desk · Issue 04</span>
+      <div class="utility-controls" aria-label="Reading preferences">
+        <span>Text size</span>
+        <button class="utility-button" id="smaller-text" type="button" aria-label="Decrease text size">A−</button>
+        <button class="utility-button" id="larger-text" type="button" aria-label="Increase text size">A+</button>
+        <button class="utility-button" id="contrast-toggle" type="button" aria-pressed="false">High contrast</button>
+      </div>
+    </div>
+
+    <header class="masthead">
+      <div>
+        <p class="masthead-kicker">The considered technology paper</p>
+        <h1 class="wordmark">Good<br>Machine<span class="dot">.</span></h1>
+      </div>
+      <div class="edition">
+        <strong>Field notes</strong>
+        A laptop for everyday life<br>
+        Read. Compare. Decide.
+      </div>
+    </header>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="#product">The laptop</a>
+      <a href="#details">The details</a>
+      <a href="#about">Our approach</a>
+      <a class="bag-link" href="#bag" aria-label="Check your bag">
+        Your bag <span class="bag-count" id="bag-count">0</span>
+      </a>
+    </nav>
+
+    <div class="notice">
+      <span><span class="notice-label">A note from the desk</span> &nbsp; No countdowns. No pressure. Just a laptop to look at.</span>
+      <span aria-hidden="true">✳</span>
+    </div>
+
+    <main id="main-content">
+      <!-- Laptop product view -->
+      <section id="shop-view">
+        <div class="crumb">Home <span aria-hidden="true">›</span> Computers <span aria-hidden="true">›</span> Fieldbook 14</div>
+
+        <section class="lead-grid" aria-labelledby="headline">
+          <div class="lead">
+            <span class="section-label">The everyday computer</span>
+            <h2 id="headline">A good laptop<br>should feel like <em>yours.</em></h2>
+            <p>
+              Enough power for work, family photos, video calls, and all the tabs
+              you meant to close. Nothing to prove. Just a thoughtful little machine.
+            </p>
+          </div>
+          <aside class="lead-side">
+            <span class="side-stamp">Field notes · No. 04</span>
+            <p>“The best feature is the one that makes your day easier.”<strong>— Good Machine, buying desk</strong></p>
+          </aside>
+        </section>
+
+        <section class="product-grid" id="product" aria-label="Fieldbook 14 laptop">
+          <div class="product-art">
+            <span class="art-label">A closer look</span>
+            <span class="art-index">FIG. 01 / FIELDBOOK 14</span>
+
+            <div class="laptop" role="img" aria-label="Illustration of a silver laptop showing a landscape on its screen">
+              <div class="laptop-screen">
+                <div class="screen-image" id="screen-image">
+                  <span class="screen-kicker">GOOD MACHINE · FIELD NOTES</span>
+                  <span class="screen-title">A little more<br>room to think.</span>
+                  <span class="screen-bottom"><span>FIELDBOOK 14</span><span>01 — 04</span></span>
+                </div>
+              </div>
+              <div class="laptop-base"></div>
+            </div>
+
+            <div class="art-caption">An illustration, not a product photograph.</div>
+          </div>
+
+          <article class="product-info">
+            <div class="info-topline">
+              <span>Our everyday pick</span>
+              <span>Made-up demo product</span>
+            </div>
+
+            <div class="info-body">
+              <p class="eyebrow">Good Machine · Series 04</p>
+              <h2>Fieldbook 14</h2>
+              <p class="product-subtitle">A dependable little powerhouse.</p>
+
+              <p class="description">
+                A bright 14-inch display, a comfortable keyboard, and a solid
+                aluminum body. Designed for everyday work and the things you
+                enjoy doing when work is done.
+              </p>
+
+              <div class="price-row">
+                <span class="price">$899</span>
+                <span class="price-note">Illustrative demo price · no purchase available</span>
+              </div>
+
+              <p class="demo-note">
+                This is a fictional concept for a design demo. Its price and specifications
+                are illustrative, not a real offer.
+              </p>
+
+              <span class="option-label">Choose a finish: <span class="finish-name" id="finish-name">Silver</span></span>
+              <div class="swatches" role="group" aria-label="Choose laptop finish">
+                <button class="swatch silver" type="button" aria-pressed="true"
+                  data-finish="Silver" data-color="#b6c0c1" data-screen="#284653">Silver</button>
+                <button class="swatch blue" type="button" aria-pressed="false"
+                  data-finish="Slate blue" data-color="#526a7c" data-screen="#263d55">Slate blue</button>
+                <button class="swatch copper" type="button" aria-pressed="false"
+                  data-finish="Warm copper" data-color="#b47b5b" data-screen="#563d36">Warm copper</button>
+              </div>
+
+              <div class="purchase-row">
+                <button class="action-button add-button" id="add-to-bag" type="button">
+                  Add to bag · $899
+                </button>
+                <button class="action-button save-button" id="save-item" type="button"
+                  aria-label="Save Fieldbook 14 for later" aria-pressed="false">♡</button>
+              </div>
+
+              <p class="no-pressure">Take your time. This demo has no checkout and collects no data.</p>
+            </div>
+          </article>
+        </section>
+
+        <section id="details" aria-labelledby="details-title">
+          <div class="section-heading">
+            <h2 id="details-title">The useful details</h2>
+            <span>Clear answers, no tiny print</span>
+          </div>
+
+          <div class="detail-grid">
+            <section class="detail-card" aria-label="Laptop information">
+              <div class="tabs" role="tablist" aria-label="Laptop details">
+                <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="everyday">Everyday use</button>
+                <button class="tab" type="button" role="tab" aria-selected="false" data-tab="specifications">Specifications</button>
+                <button class="tab" type="button" role="tab" aria-selected="false" data-tab="box">In the box</button>
+              </div>
+
+              <div class="tab-panel" id="tab-panel" role="tabpanel" aria-live="polite">
+                <strong>A good fit for ordinary, busy days.</strong><br>
+                Email, browsing, video calls, writing, streaming, and light creative work.
+                If you need specialist software or high-end gaming, check those requirements
+                before choosing any laptop.
+              </div>
+            </section>
+
+            <aside>
+              <section class="sidebar-card">
+                <h3 class="sidebar-title">A buying thought</h3>
+                <div class="sidebar-content">
+                  <p>Start with what you do—not the biggest number on the box.</p>
+                  <small>Comfort, screen size, keyboard, and support matter too.</small>
+                </div>
+              </section>
+
+              <section class="sidebar-card tip-card" id="about">
+                <h3 class="sidebar-title">About this page</h3>
+                <div class="sidebar-content">
+                  <p>Fictional product. Independent design concept.</p>
+                  <small>No tracking, fake reviews, or made-up “only two left” warnings.</small>
+                </div>
+              </section>
+            </aside>
+          </div>
+        </section>
+      </section>
+
+      <!-- Bag view, still part of this same index.html -->
+      <section class="bag-view" id="bag-view" hidden>
+        <div class="crumb"><a href="#shop">Home</a> <span aria-hidden="true">›</span> Your bag</div>
+        <h1>Your bag</h1>
+        <p class="bag-intro">A quiet place to look things over. You can change your mind.</p>
+        <div id="bag-content"></div>
+      </section>
+
+      <footer class="footer">
+        <span><strong>Good Machine</strong> · Independent design concept</span>
+        <span>Designed for clear reading and calm browsing.</span>
+        <span>Fictional product · No orders taken</span>
+      </footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const BAG_KEY = "good-machine-fieldbook-bag";
+    const toast = document.getElementById("toast");
+    let toastTimer;
+
+    function readBag() {
+      try {
+        const value = JSON.parse(localStorage.getItem(BAG_KEY) || "[]");
+        return Array.isArray(value) ? value : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveBag(items) {
+      try {
+        localStorage.setItem(BAG_KEY, JSON.stringify(items));
+      } catch {
+        // The bag still works for the current page view if storage is unavailable.
+      }
+    }
+
+    function money(value) {
+      return "$" + Number(value).toLocaleString("en-US");
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    function updateBagCount() {
+      const total = readBag().reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById("bag-count").textContent = total;
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[character]);
+    }
+
+    function renderBag() {
+      const container = document.getElementById("bag-content");
+      const items = readBag();
+
+      if (!items.length) {
+        container.innerHTML = `
+          <section class="bag-card empty-bag">
+            <h2>Nothing in the bag. No problem.</h2>
+            <p>Have another look at the Fieldbook whenever you like. There’s no rush and no checkout in this demo.</p>
+            <a class="action-button" href="#shop">Back to the laptop</a>
+          </section>`;
+        return;
+      }
+
+      const rows = items.map((item) => `
+        <article class="bag-item">
+          <div class="mini-art" aria-hidden="true"><div class="mini-computer"></div></div>
+          <div>
+            <h2>${escapeHtml(item.name)}</h2>
+            <p>Finish: ${escapeHtml(item.finish)}</p>
+            <div class="quantity-control" aria-label="Change item quantity">
+              <button type="button" data-action="decrease" aria-label="Decrease quantity">−</button>
+              <span>${item.quantity}</span>
+              <button type="button" data-action="increase" aria-label="Increase quantity">+</button>
+              <button class="remove-button" type="button" data-action="remove">Remove</button>
+            </div>
+          </div>
+          <div class="bag-item-price">${money(item.price * item.quantity)}</div>
+        </article>
+      `).join("");
+
+      const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+      container.innerHTML = `
+        <section class="bag-card" aria-label="Items in your bag">${rows}</section>
+        <section class="bag-card summary" aria-label="Bag summary">
+          <div class="summary-row"><span>Subtotal</span><strong>${money(subtotal)}</strong></div>
+          <div class="summary-row"><span>Shipping</span><span>Not applicable in this demo</span></div>
+          <div class="summary-row total"><span>Estimated total</span><span>${money(subtotal)}</span></div>
+          <p class="bag-note">This is a fictional demo. No order, payment, or purchase can be made here.</p>
+          <div class="bag-actions">
+            <a class="action-button" href="#shop">Keep looking</a>
+            <button class="action-button" id="demo-finish" type="button">That’s all for now</button>
+          </div>
+        </section>`;
+
+      container.querySelectorAll("[data-action]").forEach((button) => {
+        button.addEventListener("click", () => changeBag(button.dataset.action));
+      });
+
+      document.getElementById("demo-finish").addEventListener("click", () => {
+        showToast("Thanks for visiting. This demo does not take orders.");
+      });
+    }
+
+    function changeBag(action) {
+      let items = readBag();
+      const laptop = items.find((item) => item.id === "fieldbook-14");
+      if (!laptop) return;
+
+      if (action === "increase") laptop.quantity += 1;
+      if (action === "decrease") laptop.quantity -= 1;
+
+      if (action === "remove" || laptop.quantity <= 0) {
+        items = items.filter((item) => item.id !== "fieldbook-14");
+      }
+
+      saveBag(items);
+      updateBagCount();
+      renderBag();
+    }
+
+    function showView() {
+      const showingBag = location.hash === "#bag";
+      document.getElementById("shop-view").hidden = showingBag;
+      document.getElementById("bag-view").hidden = !showingBag;
+      if (showingBag) renderBag();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Accessible text-size controls.
+    document.getElementById("larger-text").addEventListener("click", () => {
+      const current = Number(getComputedStyle(document.documentElement)
+        .getPropertyValue("--page-scale")) || 1;
+      document.documentElement.style.setProperty("--page-scale", Math.min(1.3, current + 0.1).toFixed(1));
+    });
+
+    document.getElementById("smaller-text").addEventListener("click", () => {
+      const current = Number(getComputedStyle(document.documentElement)
+        .getPropertyValue("--page-scale")) || 1;
+      document.documentElement.style.setProperty("--page-scale", Math.max(0.9, current - 0.1).toFixed(1));
+    });
+
+    document.getElementById("contrast-toggle").addEventListener("click", (event) => {
+      const enabled = document.body.classList.toggle("high-contrast");
+      event.currentTarget.setAttribute("aria-pressed", String(enabled));
+      event.currentTarget.textContent = enabled ? "Standard contrast" : "High contrast";
+    });
+
+    // Finish selector changes the laptop illustration.
+    document.querySelectorAll(".swatch").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".swatch").forEach((swatch) => {
+          swatch.setAttribute("aria-pressed", "false");
+        });
+
+        button.setAttribute("aria-pressed", "true");
+        document.getElementById("finish-name").textContent = button.dataset.finish;
+        document.documentElement.style.setProperty("--laptop-finish", button.dataset.color);
+        document.documentElement.style.setProperty("--screen-color", button.dataset.screen);
+      });
+    });
+
+    // Add the selected finish to this page's bag.
+    document.getElementById("add-to-bag").addEventListener("click", () => {
+      const items = readBag();
+      const finish = document.getElementById("finish-name").textContent;
+      const laptop = items.find((item) => item.id === "fieldbook-14");
+
+      if (laptop) {
+        laptop.quantity += 1;
+        laptop.finish = finish;
+      } else {
+        items.push({
+          id: "fieldbook-14",
+          name: "Fieldbook 14",
+          finish,
+          price: 899,
+          quantity: 1
+        });
+      }
+
+      saveBag(items);
+      updateBagCount();
+      showToast("Added to your demo bag. Nothing has been purchased.");
+    });
+
+    // Save-for-later is a small local interaction.
+    document.getElementById("save-item").addEventListener("click", (event) => {
+      const button = event.currentTarget;
+      const saved = button.getAttribute("aria-pressed") !== "true";
+      button.setAttribute("aria-pressed", String(saved));
+      button.textContent = saved ? "♥" : "♡";
+      showToast(saved ? "Saved while you browse this page." : "Removed from saved items.");
+    });
+
+    // Product details tabs.
+    const details = {
+      everyday: "<strong>A good fit for ordinary, busy days.</strong><br>Email, browsing, video calls, writing, streaming, and light creative work. If you need specialist software or high-end gaming, check those requirements before choosing any laptop.",
+      specifications: "<strong>Illustrative specifications for this fictional concept.</strong><br>14-inch display · 16 GB memory · 512 GB storage · Up to 16 hours of battery · Wi-Fi 6 · 1.4 kg. Please check a real manufacturer’s specifications before buying a real device.",
+      box: "<strong>The imagined box contains:</strong><br>Fieldbook 14 laptop · USB-C charger · Braided USB-C cable · A plain-language setup guide · A little welcome note."
+    };
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((item) => {
+          item.classList.remove("active");
+          item.setAttribute("aria-selected", "false");
+        });
+
+        tab.classList.add("active");
+        tab.setAttribute("aria-selected", "true");
+        document.getElementById("tab-panel").innerHTML = details[tab.dataset.tab];
+      });
+    });
+
+    window.addEventListener("hashchange", showView);
+    updateBagCount();
+    showView();
+  </script>
+</body>
+</html>
