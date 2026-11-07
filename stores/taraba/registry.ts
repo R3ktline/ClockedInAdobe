@@ -6,24 +6,24 @@ export const registry: Registry = {
   home: {
     hero: {
       label: "Featured",
-      variants: ["banner_promo", "category_tiles"],
+      variants: ["banner_promo", "category_tiles", "collage"],
       neutral: "banner_promo",
-      byDialect: { guided: "category_tiles", dense: "category_tiles" },
+      byDialect: { guided: "category_tiles", dense: "category_tiles", visual: "collage" },
     },
     productList: {
       label: "Products",
-      variants: ["grid_standard", "grid_dense", "list_guided"],
+      variants: ["grid_standard", "grid_dense", "list_guided", "bento_visual"],
       neutral: "grid_standard",
-      byDialect: { guided: "list_guided", dense: "grid_dense" },
+      byDialect: { guided: "list_guided", dense: "grid_dense", visual: "bento_visual" },
     },
   },
   category: {
     productList: {
       label: "Products",
-      variants: ["grid_standard", "grid_dense", "list_guided"],
+      variants: ["grid_standard", "grid_dense", "list_guided", "bento_visual"],
       neutral: "grid_standard",
       required: true,
-      byDialect: { guided: "list_guided", dense: "grid_dense" },
+      byDialect: { guided: "list_guided", dense: "grid_dense", visual: "bento_visual" },
     },
   },
   product: {

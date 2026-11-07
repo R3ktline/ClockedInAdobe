@@ -202,8 +202,16 @@ export const Timeline = z.object({
   cursor: z.number().int().min(0),
 });
 
+// "I wanted a variant the registry does not have." Never rendered; saved for a human to build (rule 1).
+export const Gap = z.object({
+  block: BlockId,
+  wanted: z.string().max(140), // what the block should look like or do
+  why: z.string().max(200),    // the shopper behaviour behind it
+});
+
 // What the Director proposes: a change to the current slide. Code assembles the full Slide.
 export const SlideProposal = z.object({
+  gaps: z.array(Gap).max(2).optional(),
   dialect: Dialect.optional(), // only accepted on a major slide (return visit)
   need: Need.optional(),
   changes: z.array(z.object({
@@ -240,4 +248,5 @@ export type SlideBlock = z.infer<typeof SlideBlock>;
 export type Hypothesis = z.infer<typeof Hypothesis>;
 export type Slide = z.infer<typeof Slide>;
 export type Timeline = z.infer<typeof Timeline>;
-export type SlideProposal = z.infer<typeof SlideProposal>;
+export type Gap = z.infer<typeof Gap>;
+export type SlideProposal =z.infer<typeof SlideProposal>;
