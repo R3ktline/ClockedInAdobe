@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { BrandKit, Registry } from "@/babel/schema";
 import { buildSlide, initialPersona, NEUTRAL_PERSONA } from "@/babel/persona";
 import { addSlide, createVisit, type Visit } from "@/babel/session";
-import { activeDefaults, listDefaults, revertDefault, withDefaults } from "@/babel/session/defaults";
+import { activeDefaults, approveDefault, listDefaults, revertDefault, withDefaults } from "@/babel/session/defaults";
 import { shoppers } from "@/data/shoppers";
 import { taraba } from "@/stores/taraba/config";
 import { applyProposal } from "./director";
@@ -40,10 +40,13 @@ describe("Insights", () => {
     expect(eligible(aggregate([visit(true), visit(true), visit(false), visit(false)])[0])).toEqual([]); // 2 sessions: not enough
   });
 
-  it("applies a frequent change as the start view of new visits, and revert takes it back", async () => {
+  it("suggests a frequent change; once approved it is the start view of new visits, and revert takes it back", async () => {
     const [g] = aggregate([visit(true), visit(true), visit(true), visit(false)]);
     const r = await proposeForGroup(g, { registry, brand });
-    expect(r.outcome).toBe("applied");
+    expect(r.outcome).toBe("suggested");
+    expect(activeDefaults("taraba", "product")).toEqual([]); // a suggestion changes nothing until approved
+    expect(eligible(g)).toEqual([]); // and is not suggested twice
+    expect(approveDefault(r.suggested!.id)).toBe(true);
     expect(activeDefaults("taraba", "product")[0].evidence[0]).toMatch(/3 of 4 sessions/);
 
     const neutral = buildSlide({ persona: NEUTRAL_PERSONA, template: "product", registry, brand });
@@ -51,7 +54,7 @@ describe("Insights", () => {
     expect(start.blocks.find((b) => b.id === "trust")).toMatchObject({ order: 2, variant: "returns_warranty_first" });
 
     expect(eligible(g)).toEqual([]); // already a default: not proposed again
-    expect(revertDefault(r.applied!.id)).toBe(true);
+    expect(revertDefault(r.suggested!.id)).toBe(true);
     expect(activeDefaults("taraba", "product")).toEqual([]);
   });
 
