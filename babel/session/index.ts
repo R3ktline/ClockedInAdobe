@@ -1,4 +1,7 @@
-// In-memory visit state shared by the API routes (demo scope: one Node process, no database).
+// Visit state shared by the API routes (demo scope: one Node process, no database), plus the per-visitor
+// memory that survives restarts.
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
 import type {
   Hypothesis, InteractionEvent, MarkerId, Markers, PartnerContext, Persona, Slide, Template,
 } from "@/babel/schema";
@@ -54,21 +57,67 @@ export type Visit = {
   standardView: boolean;
 };
 
-const MIN_GAP_MS = Number(process.env.BABEL_MIN_SLIDE_GAP_MS ?? 20_000);
-const MAX_MINOR_SLIDES = 5;
+// How much the agent is let loose (BABEL_INTERVENTION): "normal" is the original pacing, "high" (default) lets it
+// look sooner and change the page more often. The change budget per slide (validateSlide) is the same at both.
+const HIGH = (process.env.BABEL_INTERVENTION ?? "high") !== "normal";
+const MIN_GAP_MS = Number(process.env.BABEL_MIN_SLIDE_GAP_MS ?? (HIGH ? 8_000 : 20_000));
+const MAX_MINOR_SLIDES = HIGH ? 12 : 5;
 // The agent also takes a look on its own after this long with new activity, so changes are not only
 // threshold-driven. 0 turns check-ins off.
-const CHECKIN_MS = Number(process.env.BABEL_CHECKIN_MS ?? 15_000);
-const CHECKIN_MIN_EVENTS = 3;
+const CHECKIN_MS = Number(process.env.BABEL_CHECKIN_MS ?? (HIGH ? 8_000 : 15_000));
+const CHECKIN_MIN_EVENTS = HIGH ? 2 : 3;
 
-const g = globalThis as unknown as { __babelVisits?: Map<string, Visit>; __babelMemory?: Map<string, Groups> };
+// A visitor who comes back after this long is a return visit (the only time a major slide is allowed).
+const RETURN_AFTER_MS = Number(process.env.BABEL_RETURN_AFTER_MS ?? 30 * 60_000);
+
+// Cross-visit memory, consented visitors only: per random visitor id, what the signal model learned, the
+// last view the agent chose for each page type, and when we last saw them. Kept in .babel/memory.json so a
+// server restart does not wipe it (BABEL_MEMORY_FILE overrides; off under vitest).
+// shortcut: one JSON file, one process, no locking; swap for a database when there is more than one server.
+type Remembered = { groups?: Groups; slides: Partial<Record<Template, Slide>>; visits: number; lastSeenAt: number };
+const memoryFile = () => process.env.BABEL_MEMORY_FILE ?? (process.env.VITEST ? "" : path.join(process.cwd(), ".babel", "memory.json"));
+
+function readMemory(): Map<string, Remembered> {
+  try {
+    const all = JSON.parse(readFileSync(memoryFile(), "utf8")) as Record<string, Remembered>;
+    return new Map(Object.entries(all).filter(([, r]) => r && typeof r.slides === "object" && typeof r.lastSeenAt === "number"));
+  } catch { return new Map(); } // no file yet, or unreadable: start empty
+}
+
+const g = globalThis as unknown as { __babelVisits?: Map<string, Visit>; __babelRemembered?: Map<string, Remembered>; __babelSave?: ReturnType<typeof setTimeout> };
 const visits: Map<string, Visit> = (g.__babelVisits ??= new Map());
+const memory: Map<string, Remembered> = (g.__babelRemembered ??= readMemory());
 
-// Cross-page memory: per visitor, the signal model's group sums at the end of the last page. Demo scope:
-// in memory, consented visitors only. The next page's slide 0 starts from it (rules, no LLM).
-const memory: Map<string, Groups> = (g.__babelMemory ??= new Map());
-export const recall = (visitorId?: string) => (visitorId ? memory.get(visitorId) : undefined);
-export const forget = (visitorId: string) => memory.delete(visitorId);
+export function writeMemory() {
+  const f = memoryFile();
+  if (!f) return;
+  try { mkdirSync(path.dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(Object.fromEntries(memory))); } catch { /* best effort */ }
+}
+export function reloadMemory() { memory.clear(); for (const [k, v] of readMemory()) memory.set(k, v); }
+const save = () => { g.__babelSave ??= setTimeout(() => { g.__babelSave = undefined; writeMemory(); }, 500); };
+
+function remember(id: string, patch: Partial<Remembered>) {
+  memory.set(id, { slides: {}, visits: 1, lastSeenAt: Date.now(), ...memory.get(id), ...patch });
+  save();
+}
+
+// What is kept about a visitor, for the debug panel.
+export const memoryOf = (visitorId?: string) => {
+  const r = visitorId ? memory.get(visitorId) : undefined;
+  return r && { visits: r.visits, lastSeenAt: r.lastSeenAt, hasProfile: !!r.groups, remembered: Object.keys(r.slides).filter((t) => r.slides[t as Template]) };
+};
+export const recall = (visitorId?: string) => (visitorId ? memory.get(visitorId)?.groups : undefined);
+export const recallSlide = (visitorId: string | undefined, template: Template) => (visitorId ? memory.get(visitorId)?.slides[template] : undefined);
+export const forget = (visitorId: string) => { const had = memory.delete(visitorId); save(); return had; };
+
+// Called when a page opens. Coming back after a long gap makes this a return visit.
+export function startSession(visitorId: string, now = Date.now()): { returning: boolean; visits: number } {
+  const r = memory.get(visitorId);
+  const returning = !!r && now - r.lastSeenAt > RETURN_AFTER_MS;
+  const n = r ? r.visits + (returning ? 1 : 0) : 1;
+  remember(visitorId, { visits: n, lastSeenAt: now });
+  return { returning, visits: n };
+}
 
 export const getVisit = (id: string) => visits.get(id);
 export const listVisits = () => [...visits.values()].sort((a, b) => b.startedAt - a.startedAt);
@@ -93,7 +142,7 @@ export function createVisit(init: {
     slides: [init.slide],
     slideAt: { [init.slide.id]: { t: 0, markers: {} } },
     scored: [],
-    trace: [{ at: 0, kind: "visit", text: `slide 0 from rules: ${init.persona.dialect} × ${init.persona.need}`, diff: init.reasons }],
+    trace: [{ at: 0, kind: "visit", text: `slide 0 from ${init.slide.source === "cache" ? "memory" : "rules"}: ${init.persona.dialect} × ${init.persona.need}`, diff: init.reasons }],
     pendingTriggers: [],
     lastLookAt: 0,
     eventsAtLastLook: 0,
@@ -127,7 +176,9 @@ export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: b
   const prev = v.markers;
   v.markers = computeMarkers(v.events, now);
   v.shopper = readShopper(v.partner, v.events, v.prior);
-  if (v.visitorId && v.shopper.profile) memory.set(v.visitorId, v.shopper.profile.groups);
+  if (v.visitorId && v.shopper.profile) remember(v.visitorId, { groups: v.shopper.profile.groups, lastSeenAt: Date.now() });
+  // Going back from a view is a "no": do not bring it back as this page type's starting view.
+  if (v.visitorId && events.some((e) => e.type === "slide_prev")) remember(v.visitorId, { slides: { ...memory.get(v.visitorId)?.slides, [v.template]: undefined } });
   scoreHypotheses(v, now);
 
   const crossed: Trigger[] = [...findTriggers(prev, v.markers), ...(zoomedIn ? ["zoom" as const] : [])];
@@ -174,6 +225,8 @@ export function addSlide(v: Visit, slide: Slide) {
   v.slideAt[slide.id] = { t: now, markers: structuredClone(v.markers) };
   v.lastDirectorSlideAt = now;
   if (slide.kind === "minor") v.minorCount++;
+  // The agent's latest accepted view becomes what this page type opens with next time.
+  if (v.visitorId && slide.source === "director") remember(v.visitorId, { slides: { ...memory.get(v.visitorId)?.slides, [v.template]: slide } });
 }
 
 export { describeDiff } from "@/babel/schema/diff";
