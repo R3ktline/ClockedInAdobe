@@ -5,8 +5,20 @@ import Link from "next/link";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { MarkerId, Markers, Persona } from "@/babel/schema";
 import type { TraceEntry } from "@/babel/session";
+import { breakEvenLiftPp } from "@/babel/llm/cost";
+
+type Cost = {
+  liveCalls: number;
+  usd: number;
+  cacheSavedUsd: number;
+  visits: number;
+  perVisitUsd: number | null;
+  per1000VisitsUsd: number | null;
+  prices: { hit: number; miss: number; out: number };
+};
 
 type Feed = {
+  cost: Cost;
   llm: {
     mocked: boolean;
     model: string;
@@ -788,6 +800,8 @@ export default function Merchant() {
             />
           </section>
 
+          {feed?.cost && <CostValue cost={feed.cost} mocked={feed.llm.mocked} />}
+
           {/* OVERVIEW & VISITS CONTENT */}
           {(tab === "overview" || tab === "visits") && (
             <>
@@ -1446,5 +1460,78 @@ function GapsList({
         </li>
       ))}
     </ul>
+  );
+}
+
+const usd = (n: number) => (n === 0 ? "$0" : n < 0.01 ? `$${n.toFixed(5)}` : `$${n.toFixed(2)}`);
+
+// Cost vs value: measured model cost per adapted visit, and the conversion lift that would pay for it.
+// The inputs are the merchant's own assumptions; no lift is claimed (AGENTS.md rule 12).
+function CostValue({ cost, mocked }: { cost: Cost; mocked: boolean }) {
+  const [orderLei, setOrderLei] = useState(300);
+  const [marginPct, setMarginPct] = useState(20);
+  const [visitsMonth, setVisitsMonth] = useState(100_000);
+  const [leiPerUsd, setLeiPerUsd] = useState(4.6);
+  const per = cost.perVisitUsd;
+  const lift = per === null || leiPerUsd === 0 ? null : breakEvenLiftPp(per, orderLei / leiPerUsd, marginPct / 100);
+  const digits = lift !== null && lift < 0.01 ? 4 : 2;
+  const field = (label: string, value: number, set: (n: number) => void, step = 1) => (
+    <label className="flex flex-col gap-1 text-xs text-[#6c746f]">
+      {label}
+      <input
+        type="number" min={0} step={step} value={value}
+        onChange={(e) => set(Math.max(0, Number(e.target.value) || 0))}
+        className="w-28 rounded-lg border border-[#d4d2c9] px-2 py-1 text-sm text-[#161c1a] tabular-nums focus:outline-2 focus:outline-[#116b5f]"
+      />
+    </label>
+  );
+  const stat = (label: string, value: string, sub: string) => (
+    <div>
+      <p className="text-xs text-[#6c746f]">{label}</p>
+      <p className="text-xl font-bold tracking-tight text-[#161c1a] tabular-nums">{value}</p>
+      <p className="text-[11px] text-[#707873]">{sub}</p>
+    </div>
+  );
+  return (
+    <section aria-label="Cost versus value" className="rounded-2xl border border-[#e6e4dc] bg-white p-5 shadow-[0_1px_2px_rgba(16,24,20,0.03)]">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-sm font-semibold text-[#161c1a]">Cost vs value</h2>
+        <span className="text-[11px] text-[#707873]">
+          DeepSeek list price ${cost.prices.hit} cache hit · ${cost.prices.miss} miss · ${cost.prices.out} output per 1M tokens (peak; off-peak is half)
+        </span>
+      </div>
+      {mocked || cost.liveCalls === 0 ? (
+        <p className="mt-3 text-sm text-[#6c746f]">
+          Mock LLM: no real tokens spent, so there is no measured cost yet. Run the store with a DeepSeek key to measure it.
+        </p>
+      ) : (
+        <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {stat("Spent (measured)", usd(cost.usd), `${cost.liveCalls} live model calls`)}
+          {stat("Per adapted visit", per === null ? "—" : usd(per), `${cost.visits} visits the agent worked on`)}
+          {stat("Per 1,000 visits", cost.per1000VisitsUsd === null ? "—" : usd(cost.per1000VisitsUsd), "every agent's calls counted")}
+          {stat("Saved by prompt cache", usd(cost.cacheSavedUsd), "cache-hit tokens vs the miss price")}
+        </div>
+      )}
+      <div className="mt-4 border-t border-[#efede6] pt-4">
+        <p className="text-xs font-medium text-[#454d48]">Your numbers (assumptions, edit them)</p>
+        <div className="mt-2 flex flex-wrap gap-3">
+          {field("Average order (lei)", orderLei, setOrderLei)}
+          {field("Gross margin (%)", marginPct, setMarginPct)}
+          {field("Visits / month", visitsMonth, setVisitsMonth, 1000)}
+          {field("Lei per USD", leiPerUsd, setLeiPerUsd, 0.1)}
+        </div>
+        <p className="mt-3 text-sm text-[#161c1a]">
+          {per === null || lift === null ? (
+            "The break-even line appears once there is a measured cost per visit."
+          ) : (
+            <>
+              Model cost ≈ <b>{usd(per * visitsMonth)}/month</b> ({Math.round(per * visitsMonth * leiPerUsd)} lei). Babel pays for it if
+              adapted visits convert <b>+{lift.toFixed(digits)} percentage points</b> better (e.g. 2.00% → {(2 + lift).toFixed(digits)}%).
+              That is the bar a Standard-view holdout has to clear, not a measured result.
+            </>
+          )}
+        </p>
+      </div>
+    </section>
   );
 }

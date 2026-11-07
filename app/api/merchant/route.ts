@@ -1,5 +1,6 @@
 // Merchant panel feed: live visits, markers, Director trace, LLM usage.
 import { usageLog, isMocked } from "@/babel/llm";
+import { costOf, prices } from "@/babel/llm/cost";
 import { elapsed, listVisits, shopperSummary } from "@/babel/session";
 import { listDefaults } from "@/babel/session/defaults";
 import { listGaps } from "@/babel/session/gaps";
@@ -8,7 +9,12 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const usage = usageLog();
+  const all = listVisits();
+  // Visits where the Director actually looked (slide or hold): the visits the model cost is spent on.
+  const adapted = all.filter((v) => v.trace.some((t) => t.kind === "slide" || t.kind === "hold")).length;
+  const p = prices();
   return Response.json({
+    cost: { ...costOf(usage, p, adapted), prices: p },
     llm: {
       mocked: isMocked(),
       model: isMocked() ? "mock" : process.env.DEEPSEEK_MODEL ?? "",
@@ -20,7 +26,7 @@ export async function GET() {
     },
     defaults: listDefaults(),
     gaps: listGaps(),
-    visits: listVisits().slice(0, 20).map((v) => ({
+    visits: all.slice(0, 20).map((v) => ({
       id: v.id,
       store: v.store,
       template: v.template,
