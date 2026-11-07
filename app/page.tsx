@@ -9,18 +9,16 @@ const NUM_LEVELS = 8;
 
 const TIMING = {
   hold: 1.0,           // Initial static hold
-  zoomOut: 6.0,        // Duration of the fractal zoom
-  fadeBlack: 0.8,      // Buttery smooth crossfade to black while still zooming
-  blackGap: 0.5,       // Cinematic pause in pure darkness before text appears
-  textIn: 1.2,         // How long the text takes to fade and rise in
-  textHold: 2.2,       // How long the text stays on screen
-  textOut: 1.2,        // The cinematic fly-out into the camera
+  zoomOut: 6.5,        // Zoom-ul fractal continuu și lin
+  blackGap: 0.4,       // Pauză scurtă în întuneric absolut
+  textIn: 1.2,         // Apariția textului
+  textHold: 2.2,       // Cât stă textul pe ecran
+  textOut: 1.2,        // Fly-out spre cameră
 } as const;
 
 const TOTAL_TIME = 
   TIMING.hold + 
   TIMING.zoomOut + 
-  TIMING.fadeBlack + 
   TIMING.blackGap +
   TIMING.textIn +
   TIMING.textHold + 
@@ -198,11 +196,10 @@ export default function IntroPage() {
       ctx!.fillRect(0, 0, STAGE.width, STAGE.height);
 
       const timeZoomEnd = TIMING.hold + TIMING.zoomOut;
-      const timeFadeEnd = timeZoomEnd + TIMING.fadeBlack;
-      const timeGapEnd = timeFadeEnd + TIMING.blackGap;
+      const timeGapEnd = timeZoomEnd + TIMING.blackGap;
 
-      // --- PHASE 1: ZOOM & FADE ---
-      if (elapsed < timeFadeEnd) {
+      // --- PHASE 1: ZOOM & SEAMLESS FADE TO BLACK ---
+      if (elapsed < timeZoomEnd) {
         ctx!.save();
         
         const progress = Math.max(0, (elapsed - TIMING.hold) / TIMING.zoomOut);
@@ -223,23 +220,18 @@ export default function IntroPage() {
           ctx!.restore();
         }
 
-        const vignetteAlpha = Math.min(1, progress * 0.85);
-        const grad = ctx!.createRadialGradient(0, 0, STAGE.height * 0.3, 0, 0, STAGE.width * 0.7);
-        grad.addColorStop(0, "rgba(0,0,0,0)");
-        grad.addColorStop(1, `rgba(0,0,0,${vignetteAlpha})`);
+        // Vignetă cinematografică masivă care închide totul în negru lin pe măsură ce progresul avansează
+        const globalFade = Math.pow(progress, 1.8); // Se întunecă natural pe parcursul zoom-ului
+        const grad = ctx!.createRadialGradient(0, 0, STAGE.height * 0.1, 0, 0, STAGE.width * 0.8);
+        grad.addColorStop(0, `rgba(0,0,0,${Math.min(1, globalFade * 0.5)})`);
+        grad.addColorStop(1, `rgba(0,0,0,${Math.min(1, globalFade * 1.2)})`);
         ctx!.fillStyle = grad;
         ctx!.fillRect(-STAGE.width, -STAGE.height, STAGE.width*2, STAGE.height*2);
         
         ctx!.restore();
 
-        if (elapsed > timeZoomEnd) {
-          const fadeProgress = (elapsed - timeZoomEnd) / TIMING.fadeBlack;
-          ctx!.fillStyle = `rgba(0,0,0,${Math.min(1, fadeProgress)})`;
-          ctx!.fillRect(0, 0, STAGE.width, STAGE.height);
-        }
-
       } 
-      // --- PHASE 2: CINEMATIC SILENCE ---
+      // --- PHASE 2: CINEMATIC SILENCE (BLACK GAP) ---
       else if (elapsed < timeGapEnd) {
         ctx!.fillStyle = "#000000";
         ctx!.fillRect(0, 0, STAGE.width, STAGE.height);
@@ -343,7 +335,7 @@ export default function IntroPage() {
         Skip intro
       </button>
 
-      {/* Ecranul final: Butoane poziționate cinematic exact la mijloc, cu animație lină de apariție */}
+      {/* Ecranul final: Butoane poziționate cinematic exact la mijloc */}
       {ended && (
         <div className="end-controls-center">
           <div className="end-buttons-wrapper">
@@ -372,7 +364,6 @@ export default function IntroPage() {
           aspect-ratio: 16 / 9; background: #000;
         }
         
-        /* Skip Button (Fin și minimalist în colț) */
         .skip {
           position: fixed; z-index: 5; top: 20px; right: 20px;
           padding: 8px 16px; border: 1px solid rgba(255,255,255,0.2);
@@ -384,13 +375,11 @@ export default function IntroPage() {
           background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.5);
         }
 
-        /* Animație de apariție (Fade in + Slide down) pentru meniul de final */
         @keyframes menuAppear {
           0% { opacity: 0; transform: translate(-50%, -40%); }
           100% { opacity: 1; transform: translate(-50%, -50%); }
         }
 
-        /* Containerul de final centrat perfect pe mijlocul ecranului */
         .end-controls-center {
           position: fixed;
           z-index: 10;
@@ -407,7 +396,6 @@ export default function IntroPage() {
           justify-content: center;
         }
 
-        /* Stiluri pentru butoanele de la final (Interactive, moderne, cu hover efecte gen Awwwards) */
         .cta-btn {
           padding: 16px 32px;
           font-size: 16px;
@@ -437,7 +425,7 @@ export default function IntroPage() {
           border: 1px solid #ffffff;
         }
         .cta-btn.continue:hover {
-          background: #d7f477; /* Acid lime matching the SLOP accent */
+          background: #d7f477; 
           border-color: #d7f477;
           transform: translateY(-3px) scale(1.03);
           box-shadow: 0 15px 35px rgba(215, 244, 119, 0.3);
