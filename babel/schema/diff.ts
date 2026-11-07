@@ -67,6 +67,7 @@ export function describeDiff(
   if (prev.persona.dialect !== next.persona.dialect) out.push(line("diff.style", { from: prev.persona.dialect, to: next.persona.dialect }, `view style: ${prev.persona.dialect} → ${next.persona.dialect}`));
   if (prev.persona.need !== next.persona.need) out.push(line("diff.focus", { from: prev.persona.need, to: next.persona.need }, `focus: ${prev.persona.need} → ${next.persona.need}`));
   if (prev.copyRegister !== next.copyRegister) out.push(line("diff.wording", { from: prev.copyRegister, to: next.copyRegister }, `wording: ${prev.copyRegister} → ${next.copyRegister}`));
+  if ((prev.skin ?? "none") !== (next.skin ?? "none")) out.push(line("diff.skin", { from: prev.skin ?? "none", to: next.skin ?? "none" }, `look and feel: ${prev.skin ?? "none"} → ${next.skin ?? "none"}`));
   for (const k of Object.keys(next.theme) as (keyof Slide["theme"])[]) {
     if (prev.theme[k] !== next.theme[k]) out.push(line("diff.theme", { key: k, from: human(prev.theme[k]), to: human(next.theme[k]) }, `${k}: ${human(prev.theme[k])} → ${human(next.theme[k])}`));
   }

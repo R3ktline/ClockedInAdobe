@@ -96,17 +96,27 @@ describe("persistence and return visits", () => {
 describe("zoom", () => {
   const zoom = (t: number, value: number): InteractionEvent => ({ t, type: "page_zoom", value });
 
-  it("zooming in triggers the agent right away, even right after another slide", () => {
+  it("a zoom alone does not call the agent: it is interest in an element, not a request", () => {
     const v = visit();
-    v.lastDirectorSlideAt = 1000; // a slide just landed; markers would have to wait 20 s
-    expect(recordEvents(v, [zoom(2000, 1.25)]).trigger).toBe(true);
-    expect(v.pendingTriggers).toContain("zoom");
+    expect(recordEvents(v, [zoom(2000, 1.25)]).trigger).toBe(false);
+    expect(v.pendingTriggers).toEqual([]);
+    expect(v.zoom).toBe(1.25);
   });
+});
 
-  it("zooming back out does not trigger", () => {
+describe("business outcome bets", () => {
+  const scored = (events: InteractionEvent[], outcome: "cart" | "no_back") => {
     const v = visit();
-    recordEvents(v, [zoom(1000, 1.25)]);
-    v.pendingTriggers = [];
-    expect(recordEvents(v, [zoom(25_000, 1)]).trigger).toBe(false);
+    const base = v.slides[0];
+    addSlide(v, { ...base, id: "s1", index: 1, parentId: base.id, kind: "minor", source: "director", hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 5, outcome } });
+    recordEvents(v, [...events, { t: 6000, type: "block_view", blockId: "specs" }]); // past the window: the bet is scored
+    return v.trace.find((t) => t.kind === "result")?.outcome;
+  };
+  it("counts an add to cart that stays as the cart outcome", () => {
+    expect(scored([{ t: 1000, type: "add_to_cart" }], "cart")).toEqual({ id: "cart", met: true });
+    expect(scored([{ t: 1000, type: "add_to_cart" }, { t: 2000, type: "remove_from_cart" }], "cart")).toEqual({ id: "cart", met: false });
+  });
+  it("counts pressing back as a missed no_back outcome", () => {
+    expect(scored([{ t: 1000, type: "slide_prev" }], "no_back")).toEqual({ id: "no_back", met: false });
   });
 });

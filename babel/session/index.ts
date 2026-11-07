@@ -11,8 +11,8 @@ import { restyleDecision } from "./calibration";
 import { TRAIT_NAMES, TRAITS, type Groups } from "@/babel/persona/signalModel";
 import type { LlmTranscript } from "@/babel/agents/director";
 
-// "checkin" = a routine look by the agent; "zoom" = the shopper zoomed the page in; "chat" = the shopper typed a request.
-export type Trigger = MarkerId | "checkin" | "zoom" | "chat";
+// "checkin" = a routine look by the agent; "chat" = the shopper typed a request.
+export type Trigger = MarkerId | "checkin" | "chat";
 
 export type TraceEntry = {
   at: number; // ms since visit start
@@ -28,6 +28,7 @@ export type TraceEntry = {
   ms?: number;
   mocked?: boolean;
   met?: boolean;
+  outcome?: { id: NonNullable<Hypothesis["outcome"]>; met: boolean }; // on "result": the business-outcome bet, if one was made
   slideIndex?: number; // on "result": which slide the bet was about (Insights reads it)
   llm?: LlmTranscript;
 };
@@ -177,14 +178,8 @@ const values = (m: Markers) =>
 // Append events, recompute markers, score due hypotheses, and decide whether a slide is due.
 export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: boolean; restyle?: boolean } {
   v.events.push(...events);
-  // Zooming in is a direct sign the text is too small: act on it now, don't wait for a threshold.
-  let zoomedTo = 0; // highest zoom-in in this batch, 0 if none
-  for (const e of events) {
-    if (e.type !== "page_zoom" || typeof e.value !== "number") continue;
-    if (e.value >= v.zoom + 0.1) zoomedTo = Math.max(zoomedTo, e.value);
-    v.zoom = e.value;
-  }
-  const zoomedIn = zoomedTo > 0;
+  // A zoom is interest in the element zoomed on (markers read it via `target`), never a request for bigger text.
+  for (const e of events) if (e.type === "page_zoom" && typeof e.value === "number") v.zoom = e.value;
   if (events.some((e) => e.type === "view_switch" && e.value === "standard")) v.standardView = true;
   if (!v.partner.consent.personalization) return { trigger: false }; // no consent: no markers (GUARDRAILS §2)
 
@@ -205,12 +200,12 @@ export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: b
     restyle = restyleDecision(v, now).ok;
   }
 
-  // In curtain mode only a zoom (something the shopper asked for) moves the page live.
-  const crossed: Trigger[] = v.curtain ? (zoomedIn ? ["zoom"] : []) : [...findTriggers(prev, v.markers), ...(zoomedIn ? ["zoom" as const] : [])];
+  // In curtain mode nothing moves the page live; only chat and the restyle decision do.
+  const crossed: Trigger[] = v.curtain ? [] : findTriggers(prev, v.markers);
   const fresh = v.events.length - v.eventsAtLastLook;
   const checkin = !v.curtain && !crossed.length && CHECKIN_MS > 0 && now - v.lastLookAt >= CHECKIN_MS && fresh >= CHECKIN_MIN_EVENTS;
   if ((!crossed.length && !checkin) || v.standardView) return { trigger: false, restyle };
-  const tooSoon = !zoomedIn && v.lastDirectorSlideAt !== undefined && now - v.lastDirectorSlideAt < MIN_GAP_MS;
+  const tooSoon = v.lastDirectorSlideAt !== undefined && now - v.lastDirectorSlideAt < MIN_GAP_MS;
   if (tooSoon || v.minorCount >= MAX_MINOR_SLIDES) {
     if (!checkin) v.trace.push({ at: now, kind: "skip", text: `${crossed.join(", ")} crossed, but ${tooSoon ? "the last slide was too recent" : "the slide limit is reached"}`, triggers: crossed });
     return { trigger: false, restyle };
@@ -222,24 +217,37 @@ export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: b
   v.trace.push({
     at: now, kind: "trigger", triggers, markers: values(v.markers),
     text: checkin ? `check-in: ${fresh} new events, the agent takes a look`
-      : crossed.map((t) => (t === "zoom" ? `zoomed in to ${Math.round(zoomedTo * 100)}%` : `${t} crossed 0.6`)).join(", "),
+      : crossed.map((t) => `${t} crossed 0.6`).join(", "),
   });
   return { trigger: true, restyle };
+}
+
+// Did the business outcome the agent bet on happen in the window after the slide? Counted in code from events.
+// shortcut: "time" is a proxy (still active half the window later); swap for real dwell once the SDK reports it.
+function outcomeMet(id: NonNullable<Hypothesis["outcome"]>, events: InteractionEvent[], from: number, withinMs: number): boolean {
+  const after = events.filter((e) => e.t >= from && e.t < from + withinMs);
+  if (id === "cart") return after.filter((e) => e.type === "add_to_cart" || e.type === "remove_from_cart").at(-1)?.type === "add_to_cart";
+  if (id === "checkout") return after.some((e) => e.type === "checkout_start");
+  if (id === "time") return Math.max(from, ...after.map((e) => e.t)) - from >= withinMs / 2;
+  return !after.some((e) => e.type === "slide_prev" || e.type === "slide_undo" || e.type === "back_nav");
 }
 
 function scoreHypotheses(v: Visit, now: number) {
   for (const s of v.slides) {
     const at = v.slideAt[s.id];
     if (!s.hypothesis || !at || v.scored.includes(s.id)) continue;
-    const { marker, expect, withinSeconds } = s.hypothesis;
+    const { marker, expect, withinSeconds, outcome } = s.hypothesis;
     if (now - at.t < withinSeconds * 1000) continue;
     const before = at.markers[marker]?.value ?? 0;
     const after = v.markers[marker]?.value ?? 0;
     const met = expect === "down" ? after < before : after > before;
     v.scored.push(s.id);
+    const hit = outcome ? outcomeMet(outcome, v.events, at.t, withinSeconds * 1000) : undefined;
     v.trace.push({
       at: now, kind: "result", met, hypothesis: s.hypothesis, slideIndex: s.index,
-      text: `slide ${s.index}: ${marker} ${before.toFixed(2)} → ${after.toFixed(2)}, expected ${expect}: ${met ? "met" : "not met"}`,
+      ...(outcome ? { outcome: { id: outcome, met: !!hit } } : {}),
+      text: `slide ${s.index}: ${marker} ${before.toFixed(2)} → ${after.toFixed(2)}, expected ${expect}: ${met ? "met" : "not met"}` +
+        (outcome ? ` · outcome "${outcome.replace("_", " ")}": ${hit ? "met" : "not met"}` : ""),
     });
   }
 }

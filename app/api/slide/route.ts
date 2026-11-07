@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         ...common, kind: "slide", hypothesis: o.slide.hypothesis, diff: describeDiff(prev, o.slide),
         text: `slide ${o.slide.index} (${o.slide.kind}${message ? ", asked in chat" : ""}): ${o.slide.rationale}`,
       });
-      return Response.json({ decision: "slide", slide: o.slide, reply: o.reply, understood: o.understood, llm: o.transcript, urgent: triggers.includes("zoom") || triggers.includes("chat") });
+      return Response.json({ decision: "slide", slide: o.slide, reply: o.reply, understood: o.understood, llm: o.transcript, urgent: triggers.includes("chat") });
     }
     visit.trace.push({ ...common, kind: "hold", text: `hold: ${o.reason}` });
     return Response.json({ decision: "hold", reason: o.reason, reply: o.reply, understood: o.understood, llm: o.transcript });

@@ -9,7 +9,7 @@ import { validateSlide, type ValidateResult } from "@/babel/guardrails/validateS
 import { changedBlocks } from "@/babel/schema/diff";
 import { markerKinds } from "@/babel/markers";
 import { buildSlide, moveBlock } from "@/babel/persona";
-import { Gap, SlideProposal, Understood, type BlockId, type BrandKit, type Registry, type Slide } from "@/babel/schema";
+import { Gap, SlideProposal, Understood, type BlockId, type BrandKit, type Registry, type Skin, type Slide } from "@/babel/schema";
 import { checkUnderstood, replyFrom } from "@/babel/agents/understanding";
 import { elapsed, shopperSummary, type Trigger, type Visit } from "@/babel/session";
 
@@ -130,7 +130,7 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
       const parsed = SlideProposal.safeParse(safeJson(call.function.arguments));
       let result: ValidateResult = parsed.success
         // The validator also refuses these unless the shopper asks in their own words.
-        ? validateSlide({ slide: applyProposal(prev, parsed.data, kind), prev, lastChanged: message ? [] : lastChanged, registry, brand, returning: visit.returning })
+        ? validateSlide({ slide: applyProposal(prev, parsed.data, skinOnly(parsed.data, message) ? "explicit" : kind), prev, lastChanged: message ? [] : lastChanged, registry, brand, returning: visit.returning })
         : { ok: false as const, clamps: [], errors: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`) };
       // Interpret first, then check: what the model says it understood must be what the slide does.
       if (parsed.success && result.ok && message) {
@@ -160,24 +160,28 @@ function observation(visit: Visit, prev: Slide, kind: Slide["kind"], triggers: T
     page: prev.template,
     allowedSlideKind: kind,
     triggers,
-    pageZoom: visit.zoom,
     markers: visit.markers,
     markerKinds: markerKinds(),
     shopperModel: shopperSummary(visit),
     // Your previous slide just changed these; the validator refuses to touch them again this turn.
     coolingDown: lastChanged.length ? lastChanged : undefined,
     currentSlide: {
-      persona: prev.persona, theme: prev.theme, copyRegister: prev.copyRegister,
+      persona: prev.persona, theme: prev.theme, skin: prev.skin, copyRegister: prev.copyRegister,
       blocks: prev.blocks.map(({ id, variant, order, collapsed }) => ({ id, variant, order, collapsed })),
       keep: prev.keep, hypothesis: prev.hypothesis,
     },
     // What the shopper just did, newest last, so the agent can react to specific behaviour and not only to scores.
-    recentEvents: visit.events.slice(-15).map((e) => ({ type: e.type, block: e.blockId, value: e.value, secondsAgo: Math.max(0, Math.round((elapsed(visit) - e.t) / 1000)) })),
+    recentEvents: visit.events.slice(-15).map((e) => ({ type: e.type, block: e.blockId, target: e.target, value: e.value, secondsAgo: Math.max(0, Math.round((elapsed(visit) - e.t) / 1000)) })),
     lastHypothesisResult: lastScored?.text ?? null,
     wentBack: visit.events.filter((e) => e.type === "slide_prev").length,
     slidesSoFar: visit.slides.length,
   };
 }
+
+// The shopper typed a request and the only thing the proposal changes is the skin: that is their explicit ask,
+// so it is not held to the minor-slide budget (nothing else moves, so nothing else can slip through).
+const skinOnly = (p: SlideProposal, message?: string) =>
+  !!message && !!p.skin && !p.changes.length && !p.theme && !p.dialect && !p.need && !p.copyRegister;
 
 export function applyProposal(prev: Slide, p: SlideProposal, kind: Slide["kind"]): Slide {
   let blocks = structuredClone(prev.blocks);
@@ -201,6 +205,7 @@ export function applyProposal(prev: Slide, p: SlideProposal, kind: Slide["kind"]
       confidence: Math.max(prev.persona.confidence, 0.7),
     },
     theme: { ...prev.theme, ...p.theme },
+    skin: kind !== "minor" ? (p.skin ?? prev.skin) : prev.skin, // the whole look moves only on a major or explicit slide
     copyRegister: p.copyRegister ?? prev.copyRegister,
     blocks,
     rationale: p.rationale,
@@ -214,6 +219,18 @@ function safeJson(s: string): Record<string, unknown> | undefined {
   try { return JSON.parse(s); } catch { return undefined; }
 }
 
+// The page's visual identity (a skin) a chat message asks for; asking for the one already on is not a change.
+const SKIN_WORDS: [RegExp, Skin, string][] = [
+  [/\bdark\b/i, "alphadark", "the dark bento look"], [/pastel|soft colou?rs/i, "millennial", "the pastel look"],
+  [/glossy|gloss/i, "genx", "the glossy look"], [/y2k|retro|windows/i, "xp", "the Y2K desktop look"],
+  [/\bprint\b|newspaper|bold outlines/i, "print", "the print look"], [/\bbento\b/i, "alpha", "the bento look"],
+  [/store (default|look)|original look/i, "none", "the store's own look"],
+];
+function skinWishOf(message: string, prev: Slide) {
+  const w = SKIN_WORDS.find(([re]) => re.test(message));
+  return w && w[1] !== (prev.skin ?? "none") ? w : undefined;
+}
+
 // Deterministic stand-in used without an API key: answers trust or hesitation spikes on a product page.
 function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: BrandKit, message = "", coolingDown: BlockId[] = [], bigRegistry?: Registry): ChatCompletionMessage {
   const cooling = (id: BlockId) => coolingDown.includes(id);
@@ -223,14 +240,23 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
   });
   const asked = (re: RegExp) => triggers.includes("chat") && re.test(message);
   if (bigRegistry && triggers.includes("chat")) return mockBig(call, prev, message, brand, bigRegistry);
-  if ((triggers.includes("zoom") || asked(/bigger|larger|small text|hard to read|simpl|plain/i)) && !cooling("summary")) {
+  if (asked(/bigger|larger|small text|hard to read|simpl|plain/i) && !cooling("summary")) {
     const plain = prev.blocks.find((b) => b.id === "summary") ? [{ id: "summary", variant: "benefits_plain" }] : [];
     return call("proposeSlide", {
       changes: plain,
       theme: { typeScale: Math.min(brand.ranges.typeScale[1], Math.round((prev.theme.typeScale + 0.1) * 100) / 100) },
       copyRegister: "plain",
       ...(message ? { understood: [{ wanted: "larger, simpler text", status: "do", how: "a slightly larger type size and a plainer description", sets: plain.map((c) => ({ block: c.id, variant: c.variant })) }] } : {}),
-      rationale: "You zoomed in, so the text is now larger and the description shorter and plainer.",
+      rationale: "You asked for larger, simpler text, so the text is now larger and the description shorter and plainer.",
+      hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30, outcome: "cart" },
+    });
+  }
+  const wantSkin = triggers.includes("chat") ? skinWishOf(message, prev) : undefined;
+  if (wantSkin) {
+    return call("proposeSlide", {
+      changes: [], skin: wantSkin[1],
+      understood: [{ wanted: wantSkin[2], status: "do", how: "colours, type and shapes of the whole page; the store itself is the same" }],
+      rationale: `You asked for ${wantSkin[2]}, so the whole page now wears it. Same store, same prices.`,
       hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30 },
     });
   }
@@ -243,7 +269,7 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
   }
   const m = visit.markers;
   // Like the live Director, the mock also follows the signal model's read when it is confident and
-  // differs from what is on screen (minor slide: ≤ 4 blocks; the dialect may change).
+  // differs from what is on screen (minor slide: ≤ 4 blocks; the dialect stays).
   const model = shopperSummary(visit)?.suggested;
   const modelSays = (need: string) => !!model && model.need === need && model.confidence >= 0.55 && prev.persona.need !== need;
   const trustUp = prev.blocks.find((b) => b.id === "trust")?.order === 2;
@@ -256,7 +282,7 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
       changes: [{ id: "trust", order: 2, variant: "returns_warranty_first" }, { id: "buyBox", variant: "calm" }],
       rationale: wantsTrust ? "You asked about returns and reviews, so returns, warranty and reviews now sit right under the photos."
         : "You checked returns and reviews, so returns, warranty and reviews now sit right under the photos.",
-      hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30 },
+      hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30, outcome: "cart" },
     });
   }
   const specsUp = prev.blocks.find((b) => b.id === "specs");
@@ -266,14 +292,14 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
       ...(message ? { understood: [{ wanted: "the full specifications up front", status: "do", sets: [{ block: "specs", variant: "table_full" }] }] } : {}),
       changes: [{ id: "specs", order: 2, variant: "table_full" }],
       rationale: "You opened the details and read them, so all the specifications are now open, right under the photos.",
-      hypothesis: { marker: "infoAppetite", expect: "up", withinSeconds: 30 },
+      hypothesis: { marker: "infoAppetite", expect: "up", withinSeconds: 30, outcome: "cart" },
     });
   }
   // Layout: the section the shopper looked at last goes right next to the photos (two blocks: the photos
   // narrow, that section beside them), unless it is already there.
   const SIDE = { trust: "side_reviews", specs: "side_key", buyBox: "side_standard" } as const;
   const looked = visit.events.slice(-15).reverse()
-    .map((e) => (e.type === "review_open" || e.type === "policy_open" ? "trust" : e.type === "block_open" || e.type === "block_dwell" ? e.blockId : undefined))
+    .map((e) => (e.type === "review_open" || e.type === "policy_open" ? "trust" : e.type === "block_open" || e.type === "block_dwell" || e.type === "page_zoom" ? e.blockId : undefined))
     .find((id): id is keyof typeof SIDE => !!id && id in SIDE);
   const gallery = prev.blocks.find((b) => b.id === "gallery");
   const target = looked && prev.blocks.find((b) => b.id === looked);
@@ -281,7 +307,7 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
     return call("proposeSlide", {
       changes: [{ id: "gallery", variant: "side_large" }, { id: looked, variant: SIDE[looked], order: gallery.order + 1 }],
       rationale: `You looked at the ${{ trust: "reviews", specs: "details", buyBox: "price" }[looked]}, so that section now sits next to the photos.`,
-      hypothesis: { marker: looked === "specs" ? "infoAppetite" : "hesitation", expect: looked === "specs" ? "up" : "down", withinSeconds: 30 },
+      hypothesis: { marker: looked === "specs" ? "infoAppetite" : "hesitation", expect: looked === "specs" ? "up" : "down", withinSeconds: 30, outcome: "cart" },
     });
   }
   return call("hold", {
@@ -339,6 +365,9 @@ function mockBig(call: (name: string, args: unknown) => ChatCompletionMessage, p
     parts.push({ wanted: "returns and reviews up front", status: "do", how: "returns, warranty and reviews right under the photos" });
   }
 
+  const newSkin = skinWishOf(message, prev);
+  if (newSkin) parts.push({ wanted: newSkin[2], status: "do", how: "colours, type and shapes of the whole page; the store itself is the same" });
+
   if (!parts.length) {
     return call("hold", { reason: "mock: not recognised", understood: [{ wanted: message.slice(0, 80), status: "cannot", how: "the offline stand-in did not recognise that request" }] });
   }
@@ -349,7 +378,7 @@ function mockBig(call: (name: string, args: unknown) => ChatCompletionMessage, p
   if (!doing.length) return call("hold", { reason: `mock: ${parts.map((x) => `${x.wanted} ${x.status}`).join(", ")}`, understood: parts, gaps });
 
   // Start from the look's slide when a look was asked for, otherwise from what is on screen; photo wishes win.
-  const base = look ? buildSlide({ persona: { ...look, confidence: 0.7 }, template: prev.template, registry, brand })
+  const base = look ? buildSlide({ persona: { ...look, confidence: 0.7 }, template: prev.template, registry, brand, skin: prev.skin })
     : needOnly && has("trust") ? { ...prev, blocks: moveBlock(prev.blocks, "trust", 2) } : prev;
   const wanted = base.blocks.map((b) => ({ ...b, variant: forced[b.id] ?? lookForced[b.id] ?? b.variant }));
   const changes = wanted
@@ -359,8 +388,9 @@ function mockBig(call: (name: string, args: unknown) => ChatCompletionMessage, p
   const withSets = parts.map((x) => (x.status === "do" && !x.sets ? { ...x, sets: lookSets } : x));
   return call("proposeSlide", {
     ...(look ? { dialect: look.dialect, need: look.need, theme: base.theme, copyRegister: base.copyRegister } : needOnly ? { need: needOnly } : {}),
+    ...(newSkin ? { skin: newSkin[1] } : {}),
     changes, understood: withSets, gaps,
     rationale: "Changed what you asked for and said what I could not do.",
-    hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30 },
+    hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30, outcome: "cart" },
   });
 }

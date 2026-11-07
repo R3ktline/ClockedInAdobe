@@ -104,6 +104,8 @@ export const InteractionEvent = z.object({
   blockId: BlockId.optional(),
   productId: z.string().optional(),
   value: z.union([z.string().max(200), z.number()]).optional(),
+  // WHAT was looked at or zoomed on, as the store labelled it ("price", "spec:battery", "photo"). Never free text.
+  target: z.string().regex(/^[a-z0-9_:.-]{1,60}$/).optional(),
 });
 
 // ---------- Markers (docs/MARKERS.md) ----------
@@ -167,6 +169,9 @@ export const Theme = z.object({
   motion: z.enum(["full", "reduced"]),
 });
 
+// A skin is a visual identity for the store frame (app/skins.css). "alpha" is Bento, the default; "none" is the store's own look.
+export const Skin = z.enum(["none", "genx", "alpha", "alphadark", "millennial", "xp", "print"]);
+
 export const SlideBlock = z.object({
   id: BlockId,
   variant: z.string(),
@@ -180,6 +185,10 @@ export const Hypothesis = z.object({
   marker: MarkerId,
   expect: z.enum(["up", "down"]),
   withinSeconds: z.number().int().min(5).max(300),
+  // The business result the agent also bets on, measured in code from what the shopper does next (never by the model):
+  // cart = adds to cart and keeps it, checkout = starts checkout, time = still active half the window later,
+  // no_back = does not press back / undo. Optional: a slide without one is judged on its marker only.
+  outcome: z.enum(["cart", "checkout", "time", "no_back"]).optional(),
 });
 
 export const Slide = z.object({
@@ -191,6 +200,7 @@ export const Slide = z.object({
   template: Template,
   persona: Persona,
   theme: Theme,
+  skin: Skin.optional(), // absent = the store's own look
   copyRegister: CopyRegister,
   blocks: z.array(SlideBlock).min(1),
   keep: z.array(BlockId),
@@ -237,11 +247,13 @@ export const SlideProposal = z.object({
     collapsed: z.boolean().optional(),
   })).max(11),
   theme: Theme.partial().optional(),
+  skin: Skin.optional(), // the visual identity of the whole page: accepted on a major or explicit slide only, never a minor one
   copyRegister: CopyRegister.optional(),
   rationale: z.string().max(240),
   hypothesis: Hypothesis,
 });
 
+export type Skin = z.infer<typeof Skin>;
 export type Dialect = z.infer<typeof Dialect>;
 export type Need = z.infer<typeof Need>;
 export type Persona = z.infer<typeof Persona>;

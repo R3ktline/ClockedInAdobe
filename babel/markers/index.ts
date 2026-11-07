@@ -11,12 +11,14 @@ const isTrustPolicy = (e: InteractionEvent) => e.type === "policy_open" && (e.va
 
 export const RULES: Partial<Record<MarkerId, Rule>> = {
   trustNeed: {
+    halfLifeMs: 180_000, // slow: a worry settles if no new reassurance-seeking follows
     weight: (e) =>
       isTrustPolicy(e) ? 0.45
       : e.type === "policy_open" ? 0.2
       : e.type === "review_open" ? 0.35
       : e.type === "block_open" && e.blockId === "trust" ? 0.3
       : e.type === "block_dwell" && e.blockId === "trust" ? Math.min(Number(e.value ?? 0) / 20000, 0.3)
+      : e.type === "page_zoom" && e.blockId === "trust" ? 0.3 // zoomed on the returns/reviews text: reading it closely
       : 0,
   },
   hesitation: {
@@ -31,15 +33,17 @@ export const RULES: Partial<Record<MarkerId, Rule>> = {
   },
   // Only opening or reading detail counts. Page views alone never raise it ("volume is not interest").
   infoAppetite: {
+    halfLifeMs: 120_000,
     weight: (e) =>
       e.type === "block_open" && e.blockId === "specs" ? 0.4
       : e.type === "block_dwell" && e.blockId === "specs" ? Math.min(Number(e.value ?? 0) / 15000, 0.4)
       : e.type === "compare_add" ? 0.3
+      : e.type === "page_zoom" && e.blockId === "specs" ? 0.3 // zoomed on the details: interested in them
       : 0,
   },
 };
 
-// Fading markers can go down; session totals only rise. The Director needs this to place sensible bets.
+// Fading markers can go down; "accumulates" markers (none have a rule yet) only rise. The Director needs this to place sensible bets.
 export const markerKinds = () =>
   Object.fromEntries(Object.entries(RULES).map(([id, r]) => [id, r!.halfLifeMs ? "fades" : "accumulates"]));
 

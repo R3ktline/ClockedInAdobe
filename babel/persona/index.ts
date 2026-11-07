@@ -1,8 +1,9 @@
 // Slide 0 and the fallback (SPEC §3.5). Instant, no LLM. Every later slide is the Director's.
 import type {
-  BlockId, BrandKit, CopyRegister, Dialect, InteractionEvent, Need, PartnerContext, Persona, Registry, Slide, SlideBlock, Template, Theme,
+  BlockId, BrandKit, CopyRegister, Dialect, InteractionEvent, Need, PartnerContext, Persona, Registry, Skin, Slide, SlideBlock, Template, Theme,
 } from "@/babel/schema";
 import { modelInputs } from "./modelInputs";
+import { pickSkin } from "./skin";
 import { buildProfile, personaOf, type Groups } from "./signalModel";
 
 export const CONFIDENCE_THRESHOLD = 0.55;
@@ -86,6 +87,7 @@ export type BuildArgs = {
   source?: Slide["source"];
   parentId?: string;
   copyRegister?: CopyRegister; // the signal model's read; otherwise derived from the persona
+  skin?: Skin;                 // otherwise Bento, with a weighted chance of another (pickSkin)
 };
 
 // Deterministic slide for a persona. Callers still run it through validateSlide.
@@ -107,6 +109,8 @@ export function buildSlide(a: BuildArgs): Slide {
     template: a.template,
     persona: a.persona,
     theme: themeFor(a.persona.dialect, a.brand, a.ctx),
+    // Declined personalisation = the store's own look, nothing adapted.
+    skin: a.skin ?? (a.ctx && !a.ctx.consent.personalization ? "none" : pickSkin(a.persona)),
     copyRegister: a.copyRegister ??
       (a.persona.dialect === "guided" ? "plain"
       : a.persona.dialect === "dense" || a.persona.need === "specs" ? "technical"

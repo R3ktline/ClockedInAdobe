@@ -120,10 +120,11 @@ function checkBudget(slide: Slide, prev: Slide | undefined, returning: boolean, 
         if (hot.length) errors.push(`fresh from the last slide, leave for this one: ${hot.join(", ")}`);
       }
       const a = prev.theme, b = slide.theme;
-      if (Math.abs(DENSITY.indexOf(a.density) - DENSITY.indexOf(b.density)) > 2) errors.push("density may move two steps at most");
+      if (Math.abs(DENSITY.indexOf(a.density) - DENSITY.indexOf(b.density)) > 1) errors.push("density may move one step at most");
       if (Math.abs(a.typeScale - b.typeScale) > 0.2 + 1e-9) errors.push("typeScale may move by 0.2 at most");
       if (Math.abs(a.radius - b.radius) > 8) errors.push("radius may move by 8px at most");
       if (a.contrast !== b.contrast || a.motion !== b.motion) errors.push("minor slides may not change contrast or motion");
+      if ((prev.skin ?? "none") !== (slide.skin ?? "none")) errors.push("minor slides may not change the skin (the whole look)");
       return errors;
     }
   }

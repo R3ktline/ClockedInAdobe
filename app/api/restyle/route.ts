@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   const prev = visit.slides.at(-1)!;
   const built = buildSlide({
     persona: d.persona, template: prev.template, registry: cfg.registry, brand: cfg.brand, ctx: visit.partner,
-    copyRegister: visit.shopper!.model.copyRegister,
+    copyRegister: visit.shopper!.model.copyRegister, skin: prev.skin,
     index: prev.index + 1, parentId: prev.id, kind: "major", trigger: "calibration", source: "rules",
   });
   const slide = { ...built, rationale: `Set up from how you have been browsing. ${built.rationale}`.slice(0, 240) };

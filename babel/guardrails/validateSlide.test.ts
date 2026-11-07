@@ -21,6 +21,15 @@ const brand: BrandKit = {
   bannedWords: [],
 };
 const base = (): Slide => buildSlide({ persona: NEUTRAL_PERSONA, template: "product", registry, brand });
+describe("skin", () => {
+  it("a minor slide may not change the whole look, an explicit one may", () => {
+    const prev = { ...base(), skin: "alpha" as const };
+    const next = { ...structuredClone(prev), index: 1, kind: "minor" as const, parentId: prev.id, skin: "print" as const };
+    expect(validateSlide({ slide: next, prev, registry, brand, returning: false }).ok).toBe(false);
+    expect(validateSlide({ slide: { ...next, kind: "explicit" as const }, prev, registry, brand, returning: false }).ok).toBe(true);
+  });
+});
+
 const ok = (r: ReturnType<typeof validateSlide>) => { if (!r.ok) throw new Error(r.errors.join("; ")); return r; };
 const minorFrom = (prev: Slide, patch: (s: Slide) => void): Slide => {
   const s = structuredClone(prev);
@@ -101,6 +110,16 @@ describe("validateSlide", () => {
     expect(again.ok).toBe(false);
     const elsewhere = validateSlide({ slide: minorFrom(prev, (x) => { x.blocks.find((b) => b.id === "buyBox")!.variant = "calm"; }), prev, lastChanged, registry, brand, returning: false });
     ok(elsewhere);
+  });
+
+  it("lets a minor slide move density one step, not two", () => {
+    const wide: BrandKit = { ...brand, ranges: { ...brand.ranges, density: ["airy", "comfortable", "compact"] } };
+    const prev = base();
+    prev.theme.density = "airy";
+    ok(validateSlide({ slide: minorFrom(prev, (s) => { s.theme.density = "comfortable"; }), prev, registry, brand: wide, returning: false }));
+    const r = validateSlide({ slide: minorFrom(prev, (s) => { s.theme.density = "compact"; }), prev, registry, brand: wide, returning: false });
+    expect(r.ok).toBe(false);
+    expect(!r.ok && r.errors).toContain("density may move one step at most");
   });
 
   it("allows a major slide only on a return visit", () => {

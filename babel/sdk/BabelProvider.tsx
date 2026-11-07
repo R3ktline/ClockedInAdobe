@@ -70,6 +70,9 @@ const IDLE_MS = 5000;
 const FLUSH_MS = 800;
 const NOISY = new Set<EventType>(["hover_price", "image_zoom", "gallery_swipe"]);
 const NOISY_GAP_MS = 10_000;
+// The store's label for what an element is, cleaned to what the schema accepts (a bad label must not drop the batch).
+const focusOf = (el: Element | null | undefined) =>
+  el?.closest("[data-babel-focus]")?.getAttribute("data-babel-focus")?.toLowerCase().replace(/[^a-z0-9_:.-]/g, "-").slice(0, 60) || undefined;
 const GAP: Record<Slide["theme"]["density"], string> = { airy: "2rem", comfortable: "1.25rem", compact: "0.75rem" };
 
 export type BabelProviderProps = {
@@ -130,6 +133,8 @@ export function BabelProvider(p: BabelProviderProps) {
   const lastActiveAt = useRef(0);
   const idleSent = useRef(false);
   const hoveredBlock = useRef<BlockId | undefined>(undefined);
+  // What the pointer rests on, as the store labelled it (data-babel-focus), and since when.
+  const hoveredFocus = useRef<{ target: string; block?: BlockId; since: number } | undefined>(undefined);
   const slideWanted = useRef(false);
   // Curtain mode (?curtain=1, sticky for the tab): no live reorders while the profile forms; one big change behind a
   // glass curtain when it is clear, or when the shopper asks in chat. Off by default.
@@ -142,7 +147,8 @@ export function BabelProvider(p: BabelProviderProps) {
   const [ready, setReady] = useState(false);     // the visit starts once the opt-in is settled
   const [ask, setAsk] = useState(false);
   const [txlab, setTxlab] = useState(false);
-  const [skin, setSkin] = useState<Skin>("none"); // the visual identity of the store frame (?skin=genx|alpha|alphadark|millennial|xp|print)
+  // A skin picked by hand (switcher, ?skin=...) wins over the one Babel chose on the slide.
+  const [skin, setSkin] = useState<Skin | null>(null);
   const [notice, setNotice] = useState<{ id: string; dialect: Slide["persona"]["dialect"] } | null>(null);
   const profiledKey = `babel.profiled.${p.store}`;
   const markProfiled = useCallback(() => { try { localStorage.setItem(profiledKey, "1"); } catch { /* ignore */ } }, [profiledKey]);
@@ -165,6 +171,7 @@ export function BabelProvider(p: BabelProviderProps) {
   }, []);
 
   const slide = standard ? neutral : slides[cursor] ?? neutral;
+  const activeSkin: Skin = standard ? "none" : skin ?? slide.skin ?? "none";
 
   const push = useCallback((e: InteractionEvent) => { buffer.current.push(e); }, []);
   const lastNoisy = useRef(new Map<string, number>());
@@ -202,7 +209,7 @@ export function BabelProvider(p: BabelProviderProps) {
     return [...l.filter((x) => x.view !== e.view), e].sort((a, b) => a.view - b.view);
   }), []);
   const noticeable = (prev: Slide, next: Slide) => {
-    const theme = JSON.stringify(prev.theme) !== JSON.stringify(next.theme);
+    const theme = JSON.stringify(prev.theme) !== JSON.stringify(next.theme) || prev.skin !== next.skin;
     const seen = changedBlocks(prev.blocks, next.blocks).filter((id) => {
       const r = document.querySelector(`[data-babel-block="${id}"]`)?.getBoundingClientRect();
       return !!r && r.bottom > 0 && r.top < innerHeight;
@@ -480,6 +487,7 @@ export function BabelProvider(p: BabelProviderProps) {
     const next = buildSlide({
       persona: { dialect, need: "balanced", confidence: 1 }, template: p.template, registry: p.registry, brand: p.brand, ctx: p.partner,
       index: slidesRef.current.length, kind: "explicit", trigger: "view_switch", source: "explicit", parentId: slidesRef.current.at(-1)?.id,
+      skin: slidesRef.current.at(-1)?.skin,
     });
     void changeWith("Setting the page up in the new look…", async () => next, (s) => { applyBehind(s); return true; }, 1100)
       .finally(() => { txMode.current = prevTx; });
@@ -532,18 +540,29 @@ export function BabelProvider(p: BabelProviderProps) {
       active();
       const el = (e.target as Element | null)?.closest?.("[data-babel-block]");
       hoveredBlock.current = (el?.getAttribute("data-babel-block") as BlockId) ?? undefined;
+      const target = focusOf(e.target as Element | null);
+      if (target === hoveredFocus.current?.target) return;
+      endLook();
+      hoveredFocus.current = target ? { target, block: hoveredBlock.current, since: performance.now() } : undefined;
+    };
+    // A look of 1.5 s or more on something becomes an event saying WHAT was looked at and for how long.
+    const endLook = () => {
+      const f = hoveredFocus.current;
+      const ms = f ? Math.round(performance.now() - f.since) : 0;
+      if (f && ms >= 1500) track("block_dwell", { blockId: f.block, productId: p.productId, target: f.target, value: ms });
     };
     lastActiveAt.current = performance.now();
     addEventListener("scroll", onScroll, { passive: true });
     addEventListener("pointermove", onMove, { passive: true });
     addEventListener("keydown", active);
     return () => {
+      endLook();
       clearInterval(flush);
       removeEventListener("scroll", onScroll);
       removeEventListener("pointermove", onMove);
       removeEventListener("keydown", active);
     };
-  }, [p.ghost, requestSlide, track]);
+  }, [p.ghost, p.productId, requestSlide, track]);
 
   // A ghost stays on when you click through the store: internal links carry it along, without replaying
   // its script (step=free), so you can browse as that shopper and see the adaptation is persistent.
@@ -567,7 +586,8 @@ export function BabelProvider(p: BabelProviderProps) {
   }, [p.ghost]);
 
   // Page zoom: browser zoom changes devicePixelRatio; pinch zoom shows up as visualViewport.scale.
-  // Reported relative to page load, in steps of at least 10%, so the agent can react to zooming in.
+  // Reported relative to page load, in steps of at least 10%, with WHAT is being zoomed on (the element under the
+  // pointer, else the middle of the screen). It means interest in that element, never "needs bigger text".
   useEffect(() => {
     const base = devicePixelRatio;
     let last = 1;
@@ -575,7 +595,13 @@ export function BabelProvider(p: BabelProviderProps) {
       const zoom = Math.round((devicePixelRatio / base) * (visualViewport?.scale ?? 1) * 100) / 100;
       if (Math.abs(zoom - last) < 0.1) return;
       last = zoom;
-      track("page_zoom", { value: zoom });
+      if (zoom < last) { last = zoom; return; } // zooming back out says nothing
+      last = zoom;
+      const f = hoveredFocus.current;
+      const mid = document.elementFromPoint(innerWidth / 2, innerHeight / 2);
+      const target = f?.target ?? focusOf(mid);
+      const block = f?.block ?? (mid?.closest("[data-babel-block]")?.getAttribute("data-babel-block") as BlockId | null) ?? undefined;
+      track("page_zoom", { value: zoom, blockId: block, productId: p.productId, target });
     };
     // A DPR change doesn't always come with a resize; a resolution media query always fires.
     let mq: MediaQueryList;
@@ -592,7 +618,7 @@ export function BabelProvider(p: BabelProviderProps) {
       removeEventListener("resize", check);
       visualViewport?.removeEventListener("resize", check);
     };
-  }, [track]);
+  }, [track, p.productId]);
 
   // 4. Type scale applies to the whole page, so rem-based sizes follow it.
   useEffect(() => {
@@ -656,7 +682,7 @@ export function BabelProvider(p: BabelProviderProps) {
   return (
     <Ctx.Provider value={ctx}>
       <MotionConfig reducedMotion={slide.theme.motion === "reduced" ? "always" : "never"}>
-        <div style={style} data-contrast={slide.theme.contrast} data-dialect={standard ? undefined : slide.persona.dialect} data-skin={skin === "none" ? undefined : skin} data-popping={popping || undefined} className={`min-h-screen ${lab ? "babel-lab pl-[370px]" : ""}`}>
+        <div style={style} data-contrast={slide.theme.contrast} data-dialect={standard ? undefined : slide.persona.dialect} data-skin={activeSkin === "none" ? undefined : activeSkin} data-popping={popping || undefined} className={`min-h-screen ${lab ? "babel-lab pl-[370px]" : ""}`}>
           <div className="babel-stage" inert={curtain.phase === "in" || curtain.phase === "hold" || curtain.phase === "done"}>{p.children}</div>
           <SlideControl />
           <ChatBox />
@@ -669,7 +695,7 @@ export function BabelProvider(p: BabelProviderProps) {
             notice={notice} dialect={slide.persona.dialect} standard={standard} optedIn={optinRef.current !== "no"}
             onKeep={() => track("view_switch", { value: "keep" })} onBack={() => go(-1)}
           />
-          {txlab && <TransitionLab current={standard ? "standard" : slide.persona.dialect} onPreview={previewLook} skin={skin} onSkin={previewSkin} />}
+          {txlab && <TransitionLab current={standard ? "standard" : slide.persona.dialect} onPreview={previewLook} skin={activeSkin} onSkin={previewSkin} />}
         </div>
       </MotionConfig>
     </Ctx.Provider>

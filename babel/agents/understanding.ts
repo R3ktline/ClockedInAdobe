@@ -39,7 +39,7 @@ export function checkUnderstood({ understood, prev, registry, proposal, slide }:
         covered.add(s.block);
         if (after(s.block) !== s.variant) errors.push(`${name} is marked do, but in your slide ${s.block} is "${after(s.block)}", not "${s.variant}".`);
       }
-      const otherLever = !!proposal && (!!proposal.theme || !!proposal.copyRegister || !!proposal.dialect || !!proposal.need);
+      const otherLever = !!proposal && (!!proposal.theme || !!proposal.copyRegister || !!proposal.dialect || !!proposal.need || !!proposal.skin);
       if (!part.sets?.length && !otherLever) errors.push(`${name} is marked do, but nothing in your slide does it.`);
     }
   }
