@@ -1,6 +1,6 @@
 # Demo and presentation plan
 
-*Proposal, not yet decided (see [DECISIONS.md](DECISIONS.md) → Open).* It assumes the session agent and optimizer from [PLANNING-NOTES §6](PLANNING-NOTES.md#6-making-it-agentic). Without them, drop those beats and use the shorter script in [SPEC §9](../SPEC.md).
+*Proposal, not yet decided (see [DECISIONS.md](DECISIONS.md) → Open).* The full run assumes the session agent and optimizer from [PLANNING-NOTES §6](PLANNING-NOTES.md#6-making-it-agentic). Without them, use the [short version](#short-version-3-minutes-no-session-agent-or-optimizer).
 
 ## The core problem
 
@@ -48,6 +48,17 @@ Personalization is invisible by design: each person only sees their own version.
 | 3:45 | **Close:** "Target personalizes content. We personalize complexity." Plus how it fits with Adobe | One slide |
 
 The app is the slides. A hidden presenter bar with keys 1–7 jumps between beats. Only the opening and closing need real slides.
+
+### Short version (3 minutes, no session agent or optimizer)
+
+| Time | Beat | On screen |
+|---|---|---|
+| 0:00 | **Hook:** "Your grandma and a hardware reviewer land on the same laptop store. Today they get the same page. Neither is happy." | Static page |
+| 0:20 | **Instant adapt:** large font + mobile → `simple` view; desktop + tech-review referrer → `specs` view. Same products, different shape | Visitor Simulator |
+| 1:00 | **Progressive:** browse as balanced, linger on spec tables, the page settles into the detailed view. Click "Why this view?" | Explainer |
+| 1:20 | **Chat as slides:** "Best for video editing under €1200?" → comparison scene. "Just show me the cheapest one, simply" → focus scene. Click back through the scene strip | Chat + scene strip |
+| 2:20 | **Safety:** same as the full run | Guardrail log |
+| 2:50 | **Close:** pitch line + roadmap (Target / Shopify as renderers of the same PageSpec) | One slide |
 
 ## Making it survive the stage
 

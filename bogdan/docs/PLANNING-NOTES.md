@@ -1,17 +1,14 @@
 # Planning notes (2026-11-07)
 
-A record of the planning conversation: what we looked at, what we set aside and why, and what's still open. Settled items are in [DECISIONS.md](DECISIONS.md). The product contract is [SPEC.md](../SPEC.md), risks and competitors are in [ANALYSIS.md](ANALYSIS.md), and the demo plan is in [DEMO.md](DEMO.md).
+**History, not truth.** This records what we looked at and why we set it aside. Outcomes are in [DECISIONS.md](DECISIONS.md) and the build contract is [SPEC.md](../SPEC.md). Don't cite this file as current.
 
-Market facts below come from web searches on the day. Many are vendor claims or third-party summaries, so the ones marked unverified need checking before they go on a slide.
+Market facts come from web searches on the day. Many are vendor claims or third-party summaries, so check the ones marked unverified before they go on a slide.
 
 ---
 
 ## 1. Where we landed
 
-- **Idea:** the adaptive storefront. The page reshapes itself per shopper (density, layout, depth of specs) and through a chat that turns answers into page "scenes".
-- **Pitch line:** "Target personalizes content. We personalize complexity."
-- **Runtime LLM:** DeepSeek, locked.
-- **Biggest gap to close:** as specced, the product is mostly a fixed workflow plus a chatbot. §6 has the proposal to make it properly agentic. It isn't in SPEC yet.
+Outcomes (idea, pitch line, DeepSeek, name) are logged in [DECISIONS.md](DECISIONS.md). The biggest gap left: as specced, the product is mostly a fixed workflow plus a chatbot. §6 proposes how to make it properly agentic.
 
 ## 2. Adobe already covers a lot
 
@@ -134,24 +131,13 @@ The original design was a fixed workflow for one reason: **the first page load m
 | Groq / Cerebras | Free tiers, very fast | Open models are less reliable at tool calling |
 | xAI Grok 4.6 | ~$2 / $6 | Not cheap for what it offers |
 
-**Price barely matters at hackathon scale:** about 2,000 calls of 10K tokens each is roughly $2–5 on any cheap model.
-
-**How we cover DeepSeek's weak spots** (all already in CLAUDE.md and GUARDRAILS):
-- zod validation plus one repair retry, then a deterministic fallback, because JSON mode guarantees valid JSON but not our format,
-- no PII sent to the API,
-- cached variants and a default grid so the shop works during outages,
-- model ID in `DEEPSEEK_MODEL`, since legacy aliases are being deprecated.
+**Price barely matters at hackathon scale:** about 2,000 calls of 10K tokens each is roughly $2–5 on any cheap model. How DeepSeek's weak spots are covered: [ANALYSIS §2.13](ANALYSIS.md#213-deepseek-specific-risks).
 
 **TypeSafe Jev** (considered, not used): a "System One" decision model. It answers typed questions (yes/no, choice up to 255 options, scores up to 10 levels) about the data you send, returns calibrated probabilities, and **never writes text**. Vendor claims: 70–500 ms, $0.042 per 1M input tokens, output free. It scores 67.8% on its maker's own benchmark, tied with GPT-5.6 Terra and below Claude Opus 5's 73.1%. It would have fit the fast decisions (persona choice, "is the shopper struggling?", which intervention, input and policy checks, chat intent), but it can't write PageSpecs, copy or tool plans. It's early access behind a waitlist, with no documented rate limits or data handling. Revisit only if we get keys and the session agent turns out too slow on DeepSeek.
 
 ## 9. Still open
 
-- Product category (laptops recommended)
-- DeepSeek model ID(s) and token budget
-- Whether to adopt the session agent and optimizer (§6), and update SPEC if so
-- Demo format (proposal in [DEMO.md](DEMO.md))
-- Hackathon judging criteria and tracks: are Adobe APIs required, and how is "agentic" weighted?
-- Whether we can get any Adobe sandbox access (Target, AEM, Firefly) for the integration story
+Moved to [DECISIONS.md → Open](DECISIONS.md#open).
 
 ---
 

@@ -24,16 +24,17 @@ Prefer GitHub Issues if the team is comfortable with them. Agents can read and u
 - [todo] [A] Rules persona engine (`lib/persona`) (R3ktline) ·
 - [todo] [B] Visitor Simulator panel (Ionut) ·
 - [todo] [C] Pre-built variants for `simple`, `specs`, `balanced` on home + product pages (David) ·
-- [todo] [C] Chat → Scene with 2-3 tools, scene strip, back/forward (David) · tools from A
+- [todo] [C] Chat → Scene with 2-3 tools, scene strip, back/forward, honest "unknown" answers (David) · tools from A
 - [todo] [D] Guardrails: schema + refs + grounding + policy (Estegucci) ·
 
-## P1
+## P1 (from SPEC §8)
 
 - [todo] [C] Profiler Agent with background re-layout (David) ·
 - [todo] [B] "Why this view?" explainer (Ionut) ·
 - [todo] [D] LLM critic agent on chat scenes (Estegucci) ·
 - [todo] [A] `deals` persona + UTM-matched landing variant (R3ktline) ·
 - [todo] [B] Side-by-side persona comparison view (Ionut) ·
+- [todo] [B] Receipts: hover/tap a fact in AI copy to see its catalog source (Ionut) · needs `claims` schema from A
 
 ## Blocked / needs another track
 

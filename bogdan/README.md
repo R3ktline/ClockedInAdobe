@@ -6,14 +6,14 @@ Bogdan's (R3ktline) planning material for **Babel**, the adaptive storefront. It
 
 | Path | What it is |
 |---|---|
-| `SPEC.md` | Product spec, architecture, repo layout (§7), scope (§8), team split (§10) |
+| `SPEC.md` | What to build: personas, PageSpec, truth model (§4.3), architecture, stack, layout (§7), scope (§8) |
 | `CLAUDE.md` | Agent rules: non-negotiables, track ownership, git workflow |
 | `docs/ANALYSIS.md` | Risks, competition, counterpoints |
 | `docs/GUARDRAILS.md` | Safety layers and draft system prompts |
-| `docs/DEMO.md` | Demo plan |
-| `docs/PLANNING-NOTES.md` | Earlier exploration and alternatives |
+| `docs/DEMO.md` | Demo script (full + 3-minute version) and stage plan |
+| `docs/PLANNING-NOTES.md` | History: alternatives explored and set aside. Not a source of truth |
 | `docs/TASKS.md` | Task board with owners per track |
-| `docs/DECISIONS.md` | Settled decisions plus open questions |
+| `docs/DECISIONS.md` | Settled decisions and the single list of open questions |
 | `.github/` | CODEOWNERS, PR template, CI workflow |
 | `.env.example` | Env vars for the DeepSeek client |
 

@@ -9,6 +9,7 @@ Hackathon project: **Babel**, an adaptive storefront. The page reshapes itself p
 - Product spec and architecture: [SPEC.md](SPEC.md)
 - Risks, competition, counterpoints: [docs/ANALYSIS.md](docs/ANALYSIS.md)
 - Safety layers and system prompts: [docs/GUARDRAILS.md](docs/GUARDRAILS.md)
+- Decisions, tasks, demo: see [Coordination files](#coordination-files-read-before-starting-work) below
 
 **Status: planning.** No app code yet. Don't scaffold or build unless asked.
 
@@ -26,11 +27,11 @@ Hackathon project: **Babel**, an adaptive storefront. The page reshapes itself p
 
 ## Schema is the contract
 
-`packages/schema` (zod) is the single source of truth for `PageSpec`, `Section`, `Scene`, `Product`, and `Persona`. TS types are inferred from it, and the JSON Schema in prompts is generated from it. Change the schema first, then update the renderer, prompts, and validators in the same change.
+`packages/schema` (zod) is the single source of truth for `PageSpec`, `Section`, `Scene`, `Product`, and `Persona`. TS types are inferred from it, and the JSON Schema in prompts is generated from it. Track A owns it: other tracks that need a field open a task for A. A schema change updates the renderer, prompts, and validators in the same PR.
 
 ## Team and ownership
 
-Several people, each running their own agents on separate machines. Agents don't talk to each other. They coordinate through this repo. Tracks follow SPEC §10:
+Several people, each running their own agents on separate machines. Agents don't talk to each other. They coordinate through this repo. Each track's hour-1 contract is in [docs/TASKS.md](docs/TASKS.md).
 
 | Track | Person | Owns (may edit) |
 |---|---|---|
@@ -40,7 +41,6 @@ Several people, each running their own agents on separate machines. Agents don't
 | **D. Guardrails & pitch** | Estegucci | `lib/guardrails`, `scripts/`, `docs/` |
 
 - **Stay in your track's folders.** If a task needs a file another track owns, stop and say so in the task (or ask the human) instead of editing it.
-- **Schema changes are owned by Track A.** Any other track that needs a field opens a task for A. A schema PR updates the renderer, prompts, and validators in the same change (see above).
 - Cross-cutting files (`package.json`, configs, CLAUDE.md) change only in small, separate PRs.
 
 ## Coordination files (read before starting work)
@@ -57,13 +57,9 @@ Several people, each running their own agents on separate machines. Agents don't
 - Until the real LLM client exists, use the mock in `lib/llm` (fixture PageSpecs) so UI work never waits on Track C.
 - CI (typecheck + tests) must pass before merge. Don't merge your own red PR.
 
-## Planned layout
+## Layout and stack
 
-See SPEC §7. Summary: `app/` (routes + api), `components/sections` (registry), `lib/{llm,agents,guardrails,persona,tools}`, `packages/schema`, `prompts/`, `data/`, `scripts/`.
-
-## Stack (planned)
-
-Next.js App Router + TypeScript, Tailwind + shadcn/ui, Framer Motion, zod, `openai` SDK pointed at `https://api.deepseek.com`, JSON/SQLite catalog.
+Folder layout: [SPEC §7](SPEC.md#7-repo-layout-proposed). Stack: [SPEC §6](SPEC.md#6-tech-stack) (Next.js App Router + TS, Tailwind + shadcn/ui, Framer Motion, zod, `openai` SDK pointed at DeepSeek).
 
 ## Commands
 
@@ -75,11 +71,7 @@ _To be filled in after scaffolding._ Expected:
 
 ## Environment
 
-```
-DEEPSEEK_API_KEY=        # never commit; .env.local only
-DEEPSEEK_MODEL=          # check api-docs.deepseek.com for current IDs
-DEEPSEEK_BASE_URL=https://api.deepseek.com
-```
+Copy [.env.example](.env.example) to `.env.local` (never committed). `DEEPSEEK_MODEL` must be set: check `api-docs.deepseek.com` for current IDs.
 
 ## Conventions
 
