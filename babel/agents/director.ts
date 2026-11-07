@@ -186,13 +186,27 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
     });
   }
   const m = visit.markers;
+  // Like the live Director, the mock also follows the signal model's read when it is confident and
+  // differs from what is on screen (minor slide: ≤ 2 blocks, dialect unchanged).
+  const model = shopperSummary(visit)?.suggested;
+  const modelSays = (need: string) => !!model && model.need === need && model.confidence >= 0.55 && prev.persona.need !== need;
   const trustUp = prev.blocks.find((b) => b.id === "trust")?.order === 2;
-  if (prev.template === "product" && !trustUp && ((m.trustNeed?.value ?? 0) >= 0.6 || (m.hesitation?.value ?? 0) >= 0.6)) {
+  const markersSayTrust = (m.trustNeed?.value ?? 0) >= 0.6 || (m.hesitation?.value ?? 0) >= 0.6;
+  if (prev.template === "product" && !trustUp && (markersSayTrust || modelSays("reassurance"))) {
     return call("proposeSlide", {
       need: "reassurance",
       changes: [{ id: "trust", order: 2, variant: "returns_warranty_first" }, { id: "buyBox", variant: "calm" }],
       rationale: "You checked returns and reviews, so returns, warranty and reviews now sit right under the photos.",
       hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30 },
+    });
+  }
+  const specsUp = prev.blocks.find((b) => b.id === "specs");
+  if (prev.template === "product" && specsUp && specsUp.variant !== "table_full" && modelSays("specs")) {
+    return call("proposeSlide", {
+      need: "specs",
+      changes: [{ id: "specs", order: 2, variant: "table_full" }],
+      rationale: "You opened the details and read them, so all the specifications are now open, right under the photos.",
+      hypothesis: { marker: "infoAppetite", expect: "up", withinSeconds: 30 },
     });
   }
   return call("hold", { reason: "mock: nothing to change" });

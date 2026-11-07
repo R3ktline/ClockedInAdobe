@@ -11,6 +11,7 @@ export default function Index() {
         {Object.values(shoppers).map((s) => (
           <li key={s.id}>
             <Link className="font-semibold text-[#2346d8] hover:underline" href={`${s.startPath}?ghost=${s.id}`}>Replay {s.id}</Link> · {s.label}
+            {s.revisit && <> · <Link className="font-semibold text-[#2346d8] hover:underline" href={`/lab/${s.id}`}>Lab: two visits with memory</Link></>}
           </li>
         ))}
         <li><Link className="font-semibold text-[#2346d8] hover:underline" href="/merchant">Merchant panel</Link> · markers and the agent&apos;s trace</li>

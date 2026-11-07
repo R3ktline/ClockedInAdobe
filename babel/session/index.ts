@@ -69,6 +69,8 @@ const visits: Map<string, Visit> = (g.__babelVisits ??= new Map());
 const memory: Map<string, Groups> = (g.__babelMemory ??= new Map());
 export const recall = (visitorId?: string) => (visitorId ? memory.get(visitorId) : undefined);
 export const forget = (visitorId: string) => memory.delete(visitorId);
+// A return visit hands back what the browser kept (consented localStorage), already scaled down.
+export const remember = (visitorId: string, groups: Groups) => memory.set(visitorId, groups);
 
 export const getVisit = (id: string) => visits.get(id);
 export const listVisits = () => [...visits.values()].sort((a, b) => b.startedAt - a.startedAt);

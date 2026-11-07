@@ -5,6 +5,7 @@ import radu from "./radu.json";
 import gheorghe from "./gheorghe.json";
 import mihai from "./mihai.json";
 import tudor from "./tudor.json";
+import cristina from "./cristina.json";
 
 const Shopper = z.object({
   id: z.string(),
@@ -15,6 +16,12 @@ const Shopper = z.object({
   events: z.array(InteractionEvent),
   // Pages the ghost walks on to after the first; each starts its own visit, with the memory of the ones before.
   pages: z.array(z.object({ path: z.string(), events: z.array(InteractionEvent) })).default([]),
+  // Optional second visit, days later (lab: /lab/<id>). It starts from what the browser remembered.
+  revisit: z.object({
+    startPath: z.string(),
+    events: z.array(InteractionEvent),
+    pages: z.array(z.object({ path: z.string(), events: z.array(InteractionEvent) })).default([]),
+  }).optional(),
 });
 export type Shopper = z.infer<typeof Shopper>;
 
@@ -25,5 +32,5 @@ export const anonymousPartner: PartnerContext = {
 };
 
 export const shoppers: Record<string, Shopper> = Object.fromEntries(
-  [radu, gheorghe, mihai, tudor].map((s) => { const parsed = Shopper.parse(s); return [parsed.id, parsed]; }),
+  [radu, gheorghe, mihai, tudor, cristina].map((s) => { const parsed = Shopper.parse(s); return [parsed.id, parsed]; }),
 );

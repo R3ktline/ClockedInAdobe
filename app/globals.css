@@ -20,6 +20,26 @@ body {
 
 [data-contrast="high"] .border-black\/10 { border-color: rgb(0 0 0 / 0.6); }
 
+/* Lab (testing): changed blocks stay marked long enough to watch, with a label saying so. */
+.babel-lab .babel-block[data-babel-changed] {
+  position: relative;
+  animation: none;
+  outline: 4px solid #f5b301;
+  outline-offset: 4px;
+}
+.babel-lab .babel-block[data-babel-changed]::before {
+  content: "changed by Babel";
+  position: absolute;
+  top: -14px;
+  right: 8px;
+  z-index: 5;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f5b301;
+  color: #14171f;
+  font: 700 12px/18px system-ui, sans-serif;
+}
+
 /* Ghost shopper click ripple (demo/testing). */
 .babel-ghost-click { animation: babel-ghost-click 600ms ease-out forwards; }
 @keyframes babel-ghost-click {
