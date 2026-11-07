@@ -10,10 +10,15 @@ doc and mark the question `ANSWERED` with the date — don't delete it.
 2. **How many people, and who does what?** Suggested split: one on the storefront +
    registry (P1), one on the engine + chat (P2/P3), one on the trust surface + pitch
    (P5/P6). Agents can take whichever lane is unclaimed.
-3. **Repo access.** `github.com/R3ktline/ClockedInAdobe` is 404 to us as of
-   2026-11-07. Owner appears to be Gheorghe Bogdan-Constantin (`R3ktline`), who has two
-   other public repos, so the account exists and the repo is private or not yet created.
-   See `07-upstream-repo.md` for access options.
+3. ~~**Repo access.**~~ **ANSWERED 2026-11-07 — resolved. The repo exists.** It is private,
+   and David *is* a collaborator on it. Every earlier 404 came from either an anonymous
+   request or a token with no repository access — and GitHub returns an identical 404 for
+   "private" and "does not exist", so "the repo may not exist" stayed an open possibility
+   right up until it was checked with working credentials. **Access route:** Docker
+   Desktop's MCP toolkit — `docker mcp oauth authorize github`, then granting the connector
+   access to this repo. **No personal access token was needed.** Note the connector is a
+   GitHub *App*, so it reaches only repositories it has been granted; the `--scopes` flag
+   does nothing. See `07-upstream-repo.md` for the full check history.
 
 ## Scope and positioning
 
