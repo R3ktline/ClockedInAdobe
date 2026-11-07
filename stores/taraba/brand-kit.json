@@ -2,15 +2,15 @@
   "store": "taraba",
   "name": "Taraba",
   "colors": {
-    "primary": "#2346d8",
-    "accent": "#f5b800",
-    "surface": "#ffffff",
-    "text": "#14171f",
-    "muted": "#5b6170"
+    "primary": "#294d3b",
+    "accent": "#e7b84a",
+    "surface": "#f7f0e4",
+    "text": "#24271f",
+    "muted": "#716f63"
   },
   "fonts": {
-    "heading": "ui-rounded, 'SF Pro Rounded', system-ui, sans-serif",
-    "body": "system-ui, -apple-system, 'Segoe UI', sans-serif"
+    "heading": "Georgia, 'Times New Roman', serif",
+    "body": "'Trebuchet MS', Arial, sans-serif"
   },
   "ranges": {
     "typeScale": [0.95, 1.3],
