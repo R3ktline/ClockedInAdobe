@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#263b48">
+  <title>Fieldbook 14 — Analog Supply</title>
+
+  <style>
+    :root {
+      --ink: #293943;
+      --muted: #697579;
+      --paper: #eeece4;
+      --blue: #287ba7;
+      --finish: #b6c0c1;
+      --screen-glow: #314f59;
+      --shadow: 0 12px 32px #07131d66;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Lucida Grande", Arial, sans-serif;
+      background:
+        radial-gradient(ellipse at 50% 0%, #496477 0, transparent 53%),
+        repeating-linear-gradient(0deg, #ffffff05 0 1px, transparent 1px 3px),
+        linear-gradient(140deg, #1d303d, #101c25 75%);
+    }
+
+    button, a { font: inherit; }
+
+    button:focus-visible, a:focus-visible {
+      outline: 3px solid #e4a957;
+      outline-offset: 3px;
+    }
+
+    .shop {
+      width: min(1120px, calc(100% - 32px));
+      margin: 28px auto;
+      overflow: hidden;
+      border: 1px solid #8797a0;
+      border-radius: 12px;
+      background: var(--paper);
+      box-shadow: 0 2px 0 #ffffff66 inset, var(--shadow);
+      animation: arrive .5s ease-out both;
+    }
+
+    @keyframes arrive {
+      from { opacity: 0; transform: translateY(9px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 24px;
+      color: #f4f7f8;
+      background:
+        linear-gradient(180deg, #ffffff20, transparent 48%),
+        linear-gradient(100deg, #354c5c, #172b3b 65%, #24394b);
+      border-bottom: 1px solid #09151f;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: inherit;
+      font-weight: 900;
+      letter-spacing: .11em;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 35px;
+      height: 35px;
+      place-items: center;
+      border: 1px solid #b8d5e0;
+      border-radius: 9px;
+      color: #eaf8ff;
+      background: linear-gradient(145deg, #7fb3c9, #235577 60%, #14384f);
+      box-shadow: 0 1px 1px #fff inset, 0 -2px 3px #0006 inset;
+      font-size: 19px;
+      text-shadow: 0 1px 2px #123;
+    }
+
+    .brand small {
+      display: block;
+      margin-top: 3px;
+      color: #c3d0d5;
+      font-size: 10px;
+      font-weight: normal;
+      letter-spacing: .08em;
+    }
+
+    .nav { display: flex; align-items: center; gap: 5px; }
+
+    .nav a, .bag-link {
+      padding: 8px 10px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: #e5edf0;
+      font-size: 12px;
+      text-decoration: none;
+    }
+
+    .nav a:hover, .bag-link:hover { background: #ffffff1e; }
+
+    .count {
+      display: inline-grid;
+      width: 19px;
+      height: 19px;
+      margin-left: 4px;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: linear-gradient(#e99a61, #bd4d21);
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .ticker {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 8px 16px;
+      color: #eff5f5;
+      background: linear-gradient(#5f7d8c, #3c596a);
+      border-bottom: 1px solid #273c49;
+      font-size: 11px;
+      letter-spacing: .08em;
+    }
+
+    .ticker-window { flex: 1; overflow: hidden; }
+
+    .ticker-track {
+      display: flex;
+      width: max-content;
+      animation: drift 32s linear infinite;
+    }
+
+    .ticker:hover .ticker-track,
+    .ticker.paused .ticker-track { animation-play-state: paused; }
+
+    .ticker-copy { padding-right: 36px; white-space: nowrap; }
+
+    @keyframes drift { to { transform: translateX(-50%); } }
+
+    .ticker-toggle {
+      flex: 0 0 auto;
+      padding: 4px 8px;
+      border: 1px solid #ffffff55;
+      border-radius: 5px;
+      color: white;
+      background: #203d4b55;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    main { padding: 27px; }
+
+    .crumb {
+      margin-bottom: 17px;
+      color: #727b7d;
+      font-size: 12px;
+    }
+
+    .crumb a { color: inherit; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(310px, .88fr);
+      gap: 25px;
+      align-items: stretch;
+    }
+
+    .visual-card {
+      position: relative;
+      display: grid;
+      min-height: 430px;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid #b8b9b1;
+      border-radius: 10px;
+      background:
+        radial-gradient(ellipse at 50% 44%, #ffffffed, #e2e2d9c9 48%, transparent 72%),
+        repeating-linear-gradient(135deg, #ffffff29 0 2px, transparent 2px 5px),
+        linear-gradient(145deg, #d6d5ca, #eeece2 50%, #c6c6bd);
+      box-shadow: 0 1px 0 #fff inset, 0 3px 7px #33322222 inset;
+    }
+
+    .visual-card::before {
+      position: absolute;
+      inset: 12px;
+      border: 1px solid #ffffffa3;
+      border-radius: 7px;
+      content: "";
+      pointer-events: none;
+    }
+
+    .little-note {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      z-index: 1;
+      padding: 7px 10px;
+      transform: rotate(-3deg);
+      border: 1px solid #aa6235;
+      color: white;
+      background: linear-gradient(#d98249, #a83e1f);
+      box-shadow: 0 1px 0 #ffffff66 inset, 0 2px 3px #888;
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: .08em;
+    }
+
+    .edition {
+      position: absolute;
+      top: 27px;
+      right: 24px;
+      color: #78838a;
+      font: 11px Georgia, serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .laptop-wrap {
+      width: min(84%, 510px);
+      margin-top: 28px;
+      filter: drop-shadow(0 22px 15px #242c3147);
+      transform: perspective(900px) rotateX(3deg);
+      transition: transform .35s ease, filter .35s ease;
+    }
+
+    .visual-card:hover .laptop-wrap {
+      transform: perspective(900px) rotateX(0) translateY(-4px);
+      filter: drop-shadow(0 27px 18px #242c3147);
+    }
+
+    .screen {
+      width: 76%;
+      height: 230px;
+      margin: auto;
+      padding: 11px;
+      border: 5px solid #8b969a;
+      border-bottom-width: 8px;
+      border-radius: 11px 11px 4px 4px;
+      background: linear-gradient(145deg, #35434a, #111b20);
+      box-shadow: 0 1px 0 #e6eceb inset, 0 0 0 1px #59656a;
+    }
+
+    .screen-content {
+      display: flex;
+      height: 100%;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 14px;
+      color: #e7f2f1;
+      background:
+        radial-gradient(ellipse at 75% 20%, #9cd3c733, transparent 35%),
+        linear-gradient(150deg, var(--screen-glow), #172b36 60%, #15242e);
+      font-family: Georgia, serif;
+      transition: filter .35s, background .35s;
+    }
+
+    .screen-content .tiny {
+      color: #b8cfca;
+      font: 8px "Trebuchet MS", sans-serif;
+      letter-spacing: .2em;
+    }
+
+    .screen-content strong {
+      font-size: clamp(20px, 4vw, 37px);
+      font-weight: normal;
+      letter-spacing: -.04em;
+    }
+
+    .screen-foot {
+      display: flex;
+      justify-content: space-between;
+      color: #d3ddd7;
+      font: 9px "Trebuchet MS", sans-serif;
+    }
+
+    .base {
+      position: relative;
+      height: 30px;
+      margin-top: -1px;
+      clip-path: polygon(8% 0, 92% 0, 100% 72%, 95% 100%, 5% 100%, 0 72%);
+      border-top: 2px solid #f5f6f1;
+      background: linear-gradient(180deg, #dce0dc, var(--finish) 48%, #e0e1dc 54%, #9da8a9);
+      transition: background .35s;
+    }
+
+    .base::after {
+      position: absolute;
+      top: 2px;
+      left: 42%;
+      width: 16%;
+      height: 4px;
+      border-radius: 0 0 5px 5px;
+      background: linear-gradient(#7c8587, #c1c6c4);
+      content: "";
+    }
+
+    .visual-caption {
+      position: absolute;
+      bottom: 18px;
+      color: #737c7c;
+      font: italic 12px Georgia, serif;
+    }
+
+    .wake-button {
+      position: absolute;
+      right: 20px;
+      bottom: 14px;
+      border: 0;
+      color: #667274;
+      background: transparent;
+      cursor: pointer;
+      font-size: 11px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .product-panel {
+      padding: 24px;
+      border: 1px solid #b7b3a8;
+      border-radius: 10px;
+      background:
+        repeating-linear-gradient(0deg, #4b412e06 0 1px, transparent 1px 3px),
+        linear-gradient(145deg, #faf8f1, #e9e5d9);
+      box-shadow: 0 1px 0 white inset, 0 3px 8px #3731271f;
+    }
+
+    .eyebrow {
+      color: #63839a;
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 8px 0 9px;
+      color: #273744;
+      font: normal clamp(32px, 4vw, 45px)/1.04 Georgia, "Times New Roman", serif;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #59656a;
+      font: italic 16px Georgia, serif;
+    }
+
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 16px 0;
+      color: #68747a;
+      font-size: 12px;
+    }
+
+    .stars { color: #c48237; letter-spacing: 2px; }
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 14px 0;
+      border-top: 1px solid #d1cdc2;
+      border-bottom: 1px solid #d1cdc2;
+    }
+
+    .price { color: #263b4a; font-size: 29px; font-weight: bold; }
+    .price-note { color: #737c7e; font-size: 11px; }
+
+    .description {
+      color: #59636a;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .honesty-note {
+      margin: 13px 0;
+      padding: 10px 12px;
+      border-left: 3px solid #82987a;
+      color: #59675d;
+      background: #e6eadf;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .option-label {
+      display: block;
+      margin: 17px 0 9px;
+      color: #56636a;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+    }
+
+    .finish-name { color: #687477; font-weight: normal; text-transform: none; }
+    .swatches { display: flex; gap: 10px; }
+
+    .swatch {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 2px solid #f8f6ef;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px #969a96, 0 1px 2px #aaa;
+      cursor: pointer;
+      transition: transform .15s;
+    }
+
+    .swatch:hover { transform: scale(1.12); }
+    .swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px #277ca7, 0 1px 2px #aaa; }
+    .swatch.silver { background: linear-gradient(135deg, #f8f8f4, #89959a); }
+    .swatch.blue { background: linear-gradient(135deg, #769bb0, #253f52); }
+    .swatch.copper { background: linear-gradient(135deg, #d6a17b, #754633); }
+
+    .purchase-row { display: flex; gap: 9px; margin-top: 20px; }
+
+    .buy-button {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #12486d;
+      border-radius: 7px;
+      color: white;
+      background:
+        linear-gradient(#ffffff60, transparent 49%),
+        linear-gradient(#4ba0d1, #2175aa 52%, #135680);
+      box-shadow: 0 1px 0 #ffffff73 inset, 0 -2px 3px #0003 inset, 0 2px 4px #aaa;
+      text-shadow: 0 1px 1px #174b6a;
+      cursor: pointer;
+      font-weight: bold;
+      transition: filter .15s, transform .15s;
+    }
+
+    .buy-button:hover { filter: brightness(1.07); }
+    .buy-button:active { transform: translateY(1px); }
+
+    .save-button, .quantity button, .remove-button, .continue-button {
+      border: 1px solid #9a9c96;
+      border-radius: 7px;
+      color: #34454e;
+      background: linear-gradient(#fff, #d9d9d2);
+      box-shadow: 0 1px 0 #fff inset, 0 -1px 1px #0002 inset, 0 2px 3px #0002;
+      cursor: pointer;
+    }
+
+    .save-button { padding: 0 13px; font-size: 17px; }
+    .save-button[aria-pressed="true"] { color: #a6463c; }
+    .ship-note { margin-top: 12px; color: #64716e; font-size: 11px; text-align: center; }
+
+    .use-card {
+      margin-top: 19px;
+      padding: 14px;
+      border: 1px solid #c9c5ba;
+      border-radius: 8px;
+      background: #ffffff5c;
+    }
+
+    .use-card h2, .assurance h2 {
+      margin: 0 0 5px;
+      color: #354b56;
+      font: normal 17px Georgia, serif;
+    }
+
+    .use-card > p {
+      margin: 0;
+      color: #6a7374;
+      font-size: 11px;
+    }
+
+    .use-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+    .use-button {
+      padding: 6px 9px;
+      border: 1px solid #b9b9ae;
+      border-radius: 14px;
+      color: #53636a;
+      background: linear-gradient(#fff, #e8e7df);
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .use-button[aria-pressed="true"] {
+      border-color: #70909b;
+      color: #254c5e;
+      background: linear-gradient(#e9f2f2, #cbdcdb);
+    }
+
+    .use-answer {
+      min-height: 34px;
+      margin-top: 10px !important;
+      color: #51615e !important;
+      line-height: 1.5;
+    }
+
+    .lower-grid {
+      display: grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .info-card, .assurance, .bag-card {
+      border: 1px solid #b7b3a8;
+      border-radius: 9px;
+      background: linear-gradient(145deg, #f8f6ef, #e7e3d8);
+      box-shadow: 0 1px 0 white inset;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 10px 12px 0;
+      border-bottom: 1px solid #bcb8ad;
+    }
+
+    .tab {
+      padding: 9px 13px;
+      border: 1px solid transparent;
+      border-bottom: 0;
+      border-radius: 6px 6px 0 0;
+      color: #59666b;
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .tab.active {
+      border-color: #bcb8ad;
+      color: #2e4657;
+      background: linear-gradient(#fff, #f4f1e9);
+      font-weight: bold;
+    }
+
+    .tab-content {
+      min-height: 100px;
+      padding: 15px 18px;
+      color: #59636a;
+      font-size: 12px;
+      line-height: 1.65;
+      animation: fade-in .25s ease both;
+    }
+
+    .tab-content strong { color: #334b5b; }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .assurance { padding: 16px; }
+    .assurance p, .assurance li {
+      color: #5d686b;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .assurance ul { display: grid; gap: 7px; margin: 10px 0 0; padding: 0; list-style: none; }
+    .assurance li::before { margin-right: 7px; color: #668f50; content: "◆"; font-size: 9px; }
+
+    /* Bag view, still inside this same page */
+    .bag-view { max-width: 850px; margin: auto; }
+    .bag-view h1 {
+      margin: 14px 0 5px;
+      color: #273744;
+      font: normal 38px Georgia, serif;
+    }
+
+    .bag-intro { margin: 0 0 22px; color: #697579; font: italic 15px Georgia, serif; }
+    .bag-card { padding: 0 20px; }
+
+    .bag-item {
+      display: grid;
+      grid-template-columns: 90px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid #d1cdc2;
+    }
+
+    .product-art {
+      display: grid;
+      width: 90px;
+      height: 70px;
+      place-items: center;
+      border: 1px solid #b8b9b1;
+      border-radius: 7px;
+      background: radial-gradient(ellipse, #fff, #d7d9d2);
+    }
+
+    .mini-laptop {
+      position: relative;
+      width: 62px;
+      height: 38px;
+      border: 4px solid #89969a;
+      border-radius: 5px 5px 2px 2px;
+      background: linear-gradient(140deg, #44606a, #172a35);
+    }
+
+    .mini-laptop::after {
+      position: absolute;
+      right: -7px;
+      bottom: -7px;
+      left: -7px;
+      height: 4px;
+      border-radius: 2px 2px 5px 5px;
+      background: linear-gradient(#e4e6df, var(--finish));
+      content: "";
+    }
+
+    .item-name { margin: 0 0 5px; color: #2e4350; font: 20px Georgia, serif; }
+    .item-detail { color: #727b7d; font-size: 12px; }
+    .quantity { display: flex; align-items: center; gap: 9px; margin-top: 11px; }
+    .quantity button { width: 27px; height: 27px; font-weight: bold; }
+    .quantity-value { min-width: 16px; text-align: center; font-size: 13px; }
+
+    .remove-button {
+      margin-left: 5px;
+      padding: 5px 8px;
+      color: #7d5548;
+      font-size: 11px;
+    }
+
+    .item-price { color: #2e4350; font-size: 16px; font-weight: bold; white-space: nowrap; }
+
+    .summary { margin-top: 18px; padding: 19px; }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 7px 0;
+      color: #5e6a6d;
+      font-size: 13px;
+    }
+
+    .summary-row.total {
+      margin-top: 7px;
+      padding-top: 13px;
+      border-top: 1px solid #c9c5ba;
+      color: #293943;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .disclaimer { margin: 12px 0 0; color: #697579; font-size: 11px; line-height: 1.5; }
+    .summary-actions { display: flex; gap: 10px; margin-top: 18px; }
+
+    .continue-button, .checkout-button {
+      flex: 1;
+      padding: 11px 15px;
+      text-align: center;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .checkout-button {
+      border: 1px solid #12486d;
+      border-radius: 7px;
+      color: white;
+      background:
+        linear-gradient(#ffffff60, transparent 49%),
+        linear-gradient(#4ba0d1, #2175aa 52%, #135680);
+      box-shadow: 0 1px 0 #ffffff73 inset, 0 -2px 3px #0003 inset, 0 2px 4px #aaa;
+      text-shadow: 0 1px 1px #174b6a;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .empty {
+      padding: 48px 20px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      display: grid;
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 15px;
+      place-items: center;
+      border: 1px solid #bcb8ad;
+      border-radius: 50%;
+      color: #66808a;
+      background: linear-gradient(#fff, #deddd5);
+      box-shadow: 0 1px 0 white inset, 0 3px 6px #3332;
+      font-size: 26px;
+    }
+
+    .empty h2 { margin: 0 0 8px; color: #344956; font: normal 23px Georgia, serif; }
+    .empty p { max-width: 370px; margin: 0 auto 18px; color: #697579; font-size: 13px; line-height: 1.6; }
+    .empty .continue-button { display: inline-block; }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 24px;
+      color: #c2cdd0;
+      background: linear-gradient(#394f5b, #263b48);
+      border-top: 1px solid white;
+      font-size: 10px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 5;
+      max-width: min(340px, calc(100vw - 40px));
+      padding: 12px 15px;
+      transform: translateY(12px);
+      opacity: 0;
+      border: 1px solid #78918e;
+      border-radius: 8px;
+      color: #f2f8f5;
+      background: linear-gradient(#587b87, #284b5b);
+      box-shadow: 0 2px 0 #ffffff33 inset, 0 5px 18px #1118;
+      font-size: 12px;
+      transition: .22s ease;
+      pointer-events: none;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 760px) {
+      .topbar { flex-wrap: wrap; padding: 12px 16px; }
+      .nav { order: 3; width: 100%; justify-content: center; }
+      main { padding: 18px; }
+      .hero, .lower-grid { grid-template-columns: 1fr; }
+      .visual-card { min-height: 350px; }
+      .screen { height: 190px; }
+      footer { flex-direction: column; text-align: center; }
+    }
+
+    @media (max-width: 430px) {
+      .shop { width: calc(100% - 16px); margin: 8px auto; }
+      .nav a, .bag-link { padding: 7px; font-size: 11px; }
+      .product-panel { padding: 18px; }
+      .visual-card { min-height: 300px; }
+      .screen { height: 155px; }
+      .edition { top: 47px; right: 18px; font-size: 9px; }
+      .bag-card { padding: 0 12px; }
+      .bag-item { grid-template-columns: 64px 1fr auto; gap: 11px; }
+      .product-art { width: 64px; height: 60px; }
+      .mini-laptop { transform: scale(.8); }
+      .item-name { font-size: 17px; }
+      .remove-button { display: block; margin: 8px 0 0; }
+      .summary-actions { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="shop">
+    <header class="topbar">
+      <a class="brand" href="#shop" aria-label="Analog Supply home">
+        <span class="brand-mark">A</span>
+        <span>Analog Supply<small>GOOD GEAR. NO NONSENSE.</small></span>
+      </a>
+
+      <nav class="nav" aria-label="Main navigation">
+        <a href="#shop">The laptop</a>
+        <a href="#details">The details</a>
+        <a href="#promise">Our promise</a>
+      </nav>
+
+      <a class="bag-link" href="#bag" aria-label="Check your bag">
+        Your bag <span class="count" id="cart-count">0</span>
+      </a>
+    </header>
+
+    <div class="ticker" id="ticker">
+      <div class="ticker-window" aria-label="A note from our little shop">
+        <div class="ticker-track">
+          <span class="ticker-copy">A little more machine. A little less fuss. &nbsp; ◆ &nbsp; Take your time; there’s no countdown here. &nbsp; ◆ &nbsp; Questions? A real person can help. &nbsp; ◆ &nbsp;</span>
+          <span class="ticker-copy" aria-hidden="true">A little more machine. A little less fuss. &nbsp; ◆ &nbsp; Take your time; there’s no countdown here. &nbsp; ◆ &nbsp; Questions? A real person can help. &nbsp; ◆ &nbsp;</span>
+        </div>
+      </div>
+      <button class="ticker-toggle" id="ticker-toggle" type="button" aria-pressed="false">Pause note</button>
+    </div>
+
+    <main>
+      <!-- Shop view -->
+      <section id="shop-view">
+        <div class="crumb">Home <span>›</span> Computers <span>›</span> Fieldbook 14</div>
+
+        <section class="hero" id="shop" aria-label="Fieldbook 14">
+          <div class="visual-card">
+            <span class="little-note">A NEW CLASSIC</span>
+            <span class="edition">Series 04 · Est. 1998</span>
+
+            <div class="laptop-wrap" aria-label="Illustration of the Fieldbook 14 laptop">
+              <div class="screen">
+                <div class="screen-content" id="screen-content">
+                  <span class="tiny">ANALOG SUPPLY PRESENTS</span>
+                  <strong id="screen-message">Make room<br>for better.</strong>
+                  <div class="screen-foot"><span>FIELDBOOK 14</span><span>01 — 04</span></div>
+                </div>
+              </div>
+              <div class="base"></div>
+            </div>
+
+            <div class="visual-caption">Built for the long way around.</div>
+            <button class="wake-button" id="wake-button" type="button">Wake the display ↗</button>
+          </div>
+
+          <article class="product-panel">
+            <div class="eyebrow">The everyday original</div>
+            <h1>Fieldbook 14</h1>
+            <p class="subtitle">A dependable little powerhouse.</p>
+
+            <div class="rating">
+              <span class="stars" aria-label="Rated five out of five">★★★★★</span>
+              <span>A fictional demo product, made with care.</span>
+            </div>
+
+            <div class="price-row">
+              <span class="price">$899</span>
+              <span class="price-note">One clear price. No surprise add-ons.</span>
+            </div>
+
+            <p class="description">
+              A bright 14-inch display, all-day battery, and a satisfyingly solid
+              aluminum body. No drama, no bloat—just a laptop that shows up and gets it done.
+            </p>
+
+            <div class="honesty-note">
+              A note from us: this is a fictional demo product. The price and specs here
+              are for the concept—not a real offer.
+            </div>
+
+            <span class="option-label">Pick the finish: <span class="finish-name" id="finish-name">Silver</span></span>
+            <div class="swatches" role="group" aria-label="Choose laptop finish">
+              <button class="swatch silver" type="button" aria-label="Silver finish"
+                aria-pressed="true" data-finish="Silver" data-color="#b6c0c1" data-screen="#314f59"></button>
+              <button class="swatch blue" type="button" aria-label="Midnight blue finish"
+                aria-pressed="false" data-finish="Midnight blue" data-color="#526a7c" data-screen="#263d55"></button>
+              <button class="swatch copper" type="button" aria-label="Warm copper finish"
+                aria-pressed="false" data-finish="Warm copper" data-color="#b47b5b" data-screen="#563d36"></button>
+            </div>
+
+            <div class="purchase-row">
+              <button class="buy-button" id="add-to-bag" type="button">Add to bag — $899</button>
+              <button class="save-button" id="save-item" type="button"
+                aria-label="Save for later" aria-pressed="false">♡</button>
+            </div>
+            <div class="ship-note">No rush. No pop-ups. Just have a look around.</div>
+
+            <section class="use-card" aria-labelledby="use-title">
+              <h2 id="use-title">What does a good day look like?</h2>
+              <p>Pick one. We’ll tell you what we think matters most.</p>
+              <div class="use-buttons" role="group" aria-label="Choose how you use a laptop">
+                <button class="use-button" type="button" aria-pressed="false" data-use="writing">Writing &amp; making</button>
+                <button class="use-button" type="button" aria-pressed="false" data-use="travel">Out and about</button>
+                <button class="use-button" type="button" aria-pressed="false" data-use="home">A bit of everything</button>
+              </div>
+              <p class="use-answer" id="use-answer" aria-live="polite">
+                No quiz, no data collection—just a little buying advice when you want it.
+              </p>
+            </section>
+          </article>
+        </section>
+
+        <section class="lower-grid" id="details">
+          <div class="info-card">
+            <div class="tabs" role="tablist" aria-label="Product information">
+              <button class="tab active" role="tab" aria-selected="true" data-tab="story">The story</button>
+              <button class="tab" role="tab" aria-selected="false" data-tab="specs">The specs</button>
+              <button class="tab" role="tab" aria-selected="false" data-tab="box">In the box</button>
+            </div>
+            <div class="tab-content" id="tab-content" role="tabpanel" aria-live="polite">
+              <strong>Made to be kept.</strong> The Fieldbook pairs a sturdy aluminum shell
+              with thoughtful repairability and a keyboard you’ll actually enjoy typing on.
+              It’s the familiar favorite, made for today.
+            </div>
+          </div>
+
+          <aside class="assurance" id="promise">
+            <h2>The Analog promise</h2>
+            <p>We think good shopping should leave you feeling informed, not cornered.</p>
+            <ul>
+              <li>No ticking clocks or fake scarcity</li>
+              <li>No tracking in this demo</li>
+              <li>Leave whenever you like</li>
+            </ul>
+          </aside>
+        </section>
+      </section>
+
+      <!-- Bag view: part of this same index.html -->
+      <section class="bag-view" id="bag-view" hidden>
+        <div class="crumb"><a href="#shop">Home</a> <span>›</span> Your bag</div>
+        <h1>Your bag</h1>
+        <p class="bag-intro">A quiet place to look things over.</p>
+        <div id="bag-content"></div>
+      </section>
+    </main>
+
+    <footer>
+      <span>© 2026 Analog Supply Co.</span>
+      <span>Thoughtful gear for real life.</span>
+      <span>This is a demo—no purchase is made.</span>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const BAG_KEY = "analog-supply-bag";
+    const toast = document.getElementById("toast");
+    let toastTimer;
+    let screenAwake = true;
+
+    function readBag() {
+      try {
+        const bag = JSON.parse(localStorage.getItem(BAG_KEY)) || [];
+        return Array.isArray(bag) ? bag : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveBag(bag) {
+      localStorage.setItem(BAG_KEY, JSON.stringify(bag));
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2500);
+    }
+
+    function updateBagCount() {
+      const count = readBag().reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById("cart-count").textContent = count;
+    }
+
+    function money(amount) {
+      return "$" + Number(amount).toLocaleString("en-US");
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[character]);
+    }
+
+    function renderBag() {
+      const bagContent = document.getElementById("bag-content");
+      const bag = readBag();
+
+      if (!bag.length) {
+        bagContent.innerHTML = `
+          <section class="bag-card empty">
+            <div class="empty-icon" aria-hidden="true">♡</div>
+            <h2>Your bag is taking a little break.</h2>
+            <p>Nothing in here yet. Have a look around the shop whenever you feel like it—there’s no rush.</p>
+            <a class="continue-button" href="#shop">Back to the shop</a>
+          </section>`;
+        return;
+      }
+
+      const items = bag.map((item) => `
+        <article class="bag-item">
+          <div class="product-art" aria-hidden="true"><div class="mini-laptop"></div></div>
+          <div>
+            <h2 class="item-name">${escapeHtml(item.name)}</h2>
+            <div class="item-detail">Finish: ${escapeHtml(item.finish)}</div>
+            <div class="quantity" aria-label="Item quantity controls">
+              <button type="button" data-action="decrease" aria-label="Decrease quantity">−</button>
+              <span class="quantity-value">${item.quantity}</span>
+              <button type="button" data-action="increase" aria-label="Increase quantity">+</button>
+              <button class="remove-button" type="button" data-action="remove">Remove</button>
+            </div>
+          </div>
+          <div class="item-price">${money(item.price * item.quantity)}</div>
+        </article>
+      `).join("");
+
+      const subtotal = bag.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+      bagContent.innerHTML = `
+        <section class="bag-card" aria-label="Items in your bag">${items}</section>
+        <section class="bag-card summary" aria-label="Bag summary">
+          <div class="summary-row"><span>Subtotal</span><strong>${money(subtotal)}</strong></div>
+          <div class="summary-row"><span>Shipping</span><span>Calculated later</span></div>
+          <div class="summary-row total"><span>Estimated total</span><span>${money(subtotal)}</span></div>
+          <p class="disclaimer">This is a design demo. There’s no checkout, payment, or purchase—just a working bag interaction.</p>
+          <div class="summary-actions">
+            <a class="continue-button" href="#shop">Keep looking</a>
+            <button class="checkout-button" id="checkout-button" type="button">That’s all for now</button>
+          </div>
+        </section>`;
+
+      bagContent.querySelectorAll("[data-action]").forEach((button) => {
+        button.addEventListener("click", () => changeBagItem(button.dataset.action));
+      });
+
+      document.getElementById("checkout-button").addEventListener("click", () => {
+        showToast("Thanks for stopping by. This demo doesn’t take orders.");
+      });
+    }
+
+    function changeBagItem(action) {
+      let bag = readBag();
+      const item = bag.find((entry) => entry.id === "fieldbook-14");
+      if (!item) return;
+
+      if (action === "increase") item.quantity += 1;
+      if (action === "decrease") item.quantity -= 1;
+      if (action === "remove" || item.quantity <= 0) {
+        bag = bag.filter((entry) => entry.id !== "fieldbook-14");
+      }
+
+      saveBag(bag);
+      updateBagCount();
+      renderBag();
+    }
+
+    function showCurrentView() {
+      const isBag = location.hash === "#bag";
+      document.getElementById("shop-view").hidden = isBag;
+      document.getElementById("bag-view").hidden = !isBag;
+
+      if (isBag) renderBag();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // The moving note can be paused.
+    const ticker = document.getElementById("ticker");
+    const tickerToggle = document.getElementById("ticker-toggle");
+
+    tickerToggle.addEventListener("click", () => {
+      const paused = ticker.classList.toggle("paused");
+      tickerToggle.textContent = paused ? "Play note" : "Pause note";
+      tickerToggle.setAttribute("aria-pressed", String(paused));
+    });
+
+    // Finish picker changes the drawn laptop.
+    document.querySelectorAll(".swatch").forEach((swatch) => {
+      swatch.addEventListener("click", () => {
+        document.querySelectorAll(".swatch").forEach((item) => {
+          item.setAttribute("aria-pressed", "false");
+        });
+        swatch.setAttribute("aria-pressed", "true");
+        document.documentElement.style.setProperty("--finish", swatch.dataset.color);
+        document.documentElement.style.setProperty("--screen-glow", swatch.dataset.screen);
+        document.getElementById("finish-name").textContent = swatch.dataset.finish;
+      });
+    });
+
+    // Wake or tuck in the illustrated display.
+    document.getElementById("wake-button").addEventListener("click", (event) => {
+      screenAwake = !screenAwake;
+      document.getElementById("screen-message").innerHTML =
+        screenAwake ? "Make room<br>for better." : "See you<br>in a bit.";
+      document.getElementById("screen-content").style.filter =
+        screenAwake ? "brightness(1)" : "brightness(.56)";
+      event.currentTarget.textContent =
+        screenAwake ? "Tuck the display in ↙" : "Wake the display ↗";
+    });
+
+    // Friendly usage advice; no answers are collected or stored.
+    const advice = {
+      writing: "For long writing sessions, a comfortable keyboard matters more than a flashy spec sheet. Try one in person if you can.",
+      travel: "If you carry it every day, check the weight and charger size before you decide. Those little things add up.",
+      home: "For everyday browsing, calls, and a little creative work, you probably don’t need to pay extra for the biggest numbers."
+    };
+
+    document.querySelectorAll(".use-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".use-button").forEach((item) => {
+          item.setAttribute("aria-pressed", "false");
+        });
+        button.setAttribute("aria-pressed", "true");
+        document.getElementById("use-answer").textContent = advice[button.dataset.use];
+      });
+    });
+
+    // Product detail tabs.
+    const tabCopy = {
+      story: "<strong>Made to be kept.</strong> The Fieldbook pairs a sturdy aluminum shell with thoughtful repairability and a keyboard you’ll actually enjoy typing on. It’s the familiar favorite, made for today.",
+      specs: "<strong>For this fictional demo:</strong> 14-inch display · 16 GB memory · 512 GB storage · Up to 16 hours of battery · Wi-Fi 6 · 1.4 kg. Check real manufacturer details before buying any real device.",
+      box: "<strong>The imagined box contains:</strong> Fieldbook 14 · USB-C charger · Braided USB-C cable · A plain-language setup guide · A little welcome note."
+    };
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((item) => {
+          item.classList.remove("active");
+          item.setAttribute("aria-selected", "false");
+        });
+
+        tab.classList.add("active");
+        tab.setAttribute("aria-selected", "true");
+
+        const panel = document.getElementById("tab-content");
+        panel.innerHTML = tabCopy[tab.dataset.tab];
+        panel.style.animation = "none";
+        void panel.offsetWidth;
+        panel.style.animation = "";
+      });
+    });
+
+    // Save the demo bag locally so it survives a refresh.
+    document.getElementById("add-to-bag").addEventListener("click", () => {
+      const bag = readBag();
+      const finish = document.getElementById("finish-name").textContent;
+      const item = bag.find((entry) => entry.id === "fieldbook-14");
+
+      if (item) {
+        item.quantity += 1;
+        item.finish = finish;
+      } else {
+        bag.push({
+          id: "fieldbook-14",
+          name: "Fieldbook 14",
+          finish,
+          price: 899,
+          quantity: 1
+        });
+      }
+
+      saveBag(bag);
+      updateBagCount();
+      showToast("Added to your demo bag. Nothing has been purchased.");
+    });
+
+    // Save-for-later is just a local page interaction.
+    document.getElementById("save-item").addEventListener("click", (event) => {
+      const button = event.currentTarget;
+      const saved = button.getAttribute("aria-pressed") !== "true";
+      button.setAttribute("aria-pressed", String(saved));
+      button.textContent = saved ? "♥" : "♡";
+      showToast(saved ? "Kept on this page while you browse." : "Removed from saved items.");
+    });
+
+    window.addEventListener("hashchange", showCurrentView);
+    updateBagCount();
+    showCurrentView();
+  </script>
+</body>
+</html>
