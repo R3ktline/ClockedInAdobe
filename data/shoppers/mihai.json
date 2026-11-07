@@ -19,11 +19,43 @@
   ],
   "pages": [
     {
+      "path": "/taraba/search?q=laptop",
+      "events": [
+        { "t": 0, "type": "page_view" },
+        { "t": 2500, "type": "filter", "value": "ram:16GB" },
+        { "t": 5000, "type": "filter", "value": "cpu:8-core" },
+        { "t": 7500, "type": "compare_add", "blockId": "productList", "productId": "elec-lap-01" },
+        { "t": 10000, "type": "compare_add", "blockId": "productList", "productId": "elec-tab-01" },
+        { "t": 12500, "type": "product_click", "blockId": "productList", "productId": "elec-mon-01" }
+      ]
+    },
+    {
       "path": "/taraba/p/elec-mon-01",
       "events": [
         { "t": 0, "type": "page_view", "productId": "elec-mon-01" },
         { "t": 2500, "type": "block_open", "blockId": "specs", "productId": "elec-mon-01" },
-        { "t": 6000, "type": "block_dwell", "blockId": "specs", "value": 9000 }
+        { "t": 6000, "type": "block_dwell", "blockId": "specs", "value": 9000 },
+        { "t": 9500, "type": "compare_add", "blockId": "specs", "productId": "elec-mon-01" },
+        { "t": 12000, "type": "hover_price", "blockId": "buyBox", "productId": "elec-mon-01" }
+      ]
+    },
+    {
+      "path": "/taraba/c/electronics",
+      "events": [
+        { "t": 0, "type": "page_view" },
+        { "t": 2500, "type": "filter", "value": "wifi:6" },
+        { "t": 5000, "type": "scroll", "value": "fast" },
+        { "t": 7500, "type": "compare_add", "blockId": "productList", "productId": "elec-router-01" },
+        { "t": 10000, "type": "product_click", "blockId": "productList", "productId": "elec-router-01" }
+      ]
+    },
+    {
+      "path": "/taraba/p/elec-router-01",
+      "events": [
+        { "t": 0, "type": "page_view", "productId": "elec-router-01" },
+        { "t": 2500, "type": "block_open", "blockId": "specs", "productId": "elec-router-01" },
+        { "t": 6000, "type": "block_dwell", "blockId": "specs", "value": 10000 },
+        { "t": 10000, "type": "add_to_cart", "blockId": "buyBox", "productId": "elec-router-01" }
       ]
     }
   ]

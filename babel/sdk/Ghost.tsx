@@ -19,9 +19,23 @@ const TEXT: Partial<Record<EventType, string>> = {
   add_to_cart: "clicks Add to cart",
   remove_from_cart: "clicks Remove from cart",
   block_open: "opens the details",
+  block_dwell: "reads it closely",
+  scroll: "scrolls the page",
+  product_click: "picks a product",
+  category_click: "opens a category",
+  compare_add: "adds it to compare",
+  gallery_swipe: "swipes through the photos",
+  image_zoom: "zooms in on a photo",
+  back_nav: "goes back",
+  mis_tap: "taps and misses",
+  dead_click: "clicks something that isn't a button",
 };
 export function describeEvent(e: InteractionEvent): string {
+  if (e.type === "page_view" && !e.productId) return "opens the page";
   if (e.type === "policy_open" && typeof e.value === "string") return `opens the ${e.value} policy`;
+  if (e.type === "search" && e.value !== undefined) return `searches for "${e.value}"`;
+  if (e.type === "sort" && e.value !== undefined) return `sorts by ${e.value}`;
+  if (e.type === "filter" && e.value !== undefined) return `filters by ${String(e.value).replace(":", " ")}`;
   return TEXT[e.type] ?? e.type.replaceAll("_", " ");
 }
 

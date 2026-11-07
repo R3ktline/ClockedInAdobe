@@ -20,12 +20,35 @@
   ],
   "pages": [
     {
+      "path": "/taraba/c/home",
+      "events": [
+        { "t": 0, "type": "page_view" },
+        { "t": 2500, "type": "mis_tap", "blockId": "productList" },
+        { "t": 4500, "type": "back_nav" },
+        { "t": 7000, "type": "dead_click", "blockId": "productList" },
+        { "t": 9500, "type": "scroll", "value": "slow" },
+        { "t": 12000, "type": "product_click", "blockId": "productList", "productId": "home-fridge-01" }
+      ]
+    },
+    {
       "path": "/taraba/p/home-fridge-01",
       "events": [
         { "t": 0, "type": "page_view", "productId": "home-fridge-01" },
         { "t": 3000, "type": "policy_open", "blockId": "trust", "value": "returns" },
         { "t": 5500, "type": "mis_tap", "blockId": "buyBox", "productId": "home-fridge-01" },
-        { "t": 8000, "type": "policy_open", "blockId": "trust", "value": "delivery" }
+        { "t": 8000, "type": "policy_open", "blockId": "trust", "value": "delivery" },
+        { "t": 10500, "type": "review_open", "blockId": "trust", "productId": "home-fridge-01" },
+        { "t": 13000, "type": "back_nav" }
+      ]
+    },
+    {
+      "path": "/taraba/p/home-dw-01",
+      "events": [
+        { "t": 0, "type": "page_view", "productId": "home-dw-01" },
+        { "t": 3000, "type": "policy_open", "blockId": "trust", "value": "warranty" },
+        { "t": 6000, "type": "mis_tap", "blockId": "buyBox", "productId": "home-dw-01" },
+        { "t": 8500, "type": "idle", "blockId": "buyBox", "value": 7000 },
+        { "t": 11500, "type": "add_to_cart", "blockId": "buyBox", "productId": "home-dw-01" }
       ]
     }
   ]

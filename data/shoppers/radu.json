@@ -22,11 +22,34 @@
   ],
   "pages": [
     {
+      "path": "/taraba/c/home",
+      "events": [
+        { "t": 0, "type": "page_view" },
+        { "t": 3000, "type": "scroll", "value": "slow" },
+        { "t": 6000, "type": "sort", "value": "rating" },
+        { "t": 9000, "type": "idle", "blockId": "productList", "value": 5000 },
+        { "t": 12000, "type": "product_click", "blockId": "productList", "productId": "home-wm-02" }
+      ]
+    },
+    {
       "path": "/taraba/p/home-wm-02",
       "events": [
         { "t": 0, "type": "page_view", "productId": "home-wm-02" },
         { "t": 3000, "type": "policy_open", "blockId": "trust", "value": "warranty" },
-        { "t": 6000, "type": "review_open", "blockId": "trust", "productId": "home-wm-02" }
+        { "t": 6000, "type": "review_open", "blockId": "trust", "productId": "home-wm-02" },
+        { "t": 9000, "type": "hover_price", "blockId": "buyBox", "productId": "home-wm-02" },
+        { "t": 11500, "type": "policy_open", "blockId": "trust", "value": "returns" },
+        { "t": 14000, "type": "idle", "blockId": "buyBox", "value": 6000 }
+      ]
+    },
+    {
+      "path": "/taraba/p/home-wm-01",
+      "events": [
+        { "t": 0, "type": "page_view", "productId": "home-wm-01" },
+        { "t": 3000, "type": "review_open", "blockId": "trust", "productId": "home-wm-01" },
+        { "t": 6000, "type": "policy_open", "blockId": "trust", "value": "delivery" },
+        { "t": 9000, "type": "hover_price", "blockId": "buyBox", "productId": "home-wm-01" },
+        { "t": 12000, "type": "add_to_cart", "blockId": "buyBox", "productId": "home-wm-01" }
       ]
     }
   ]

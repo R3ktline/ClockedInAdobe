@@ -37,7 +37,7 @@ export async function shopperFrom(searchParams: Promise<Record<string, string | 
       label: s.id[0].toUpperCase() + s.id.slice(1),
       events: free ? [] : page.events,
       step,
-      next: nextPage && `${nextPage.path}?ghost=${s.id}&step=${step + 1}${keep}`,
+      next: nextPage && `${nextPage.path}${nextPage.path.includes("?") ? "&" : "?"}ghost=${s.id}&step=${step + 1}${keep}`,
       lab, visit, variant,
       last: !nextPage && !free, // the last scripted page of this visit: the lab offers "close the site"
     },
