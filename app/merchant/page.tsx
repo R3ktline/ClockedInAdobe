@@ -6,6 +6,10 @@ import type { TraceEntry } from "@/babel/session";
 
 type Feed = {
   llm: { mocked: boolean; model: string; calls: number; errors: number; cacheHitTokens: number; cacheMissTokens: number; outputTokens: number };
+  defaults: {
+    id: string; store: string; template: string; rationale: string; evidence: string[]; simulated: boolean; mocked: boolean; at: number; active: boolean;
+    changes: { id: string; variant?: string; order?: number; collapsed?: boolean }[];
+  }[];
   visits: {
     id: string; store: string; template: string; productId?: string; returning: boolean; standardView: boolean;
     ageMs: number; persona: Persona; markers: Markers; events: number; trace: TraceEntry[];
@@ -44,6 +48,16 @@ export default function Merchant() {
 
   const visit = feed?.visits.find((v) => v.id === selected) ?? feed?.visits[0];
 
+  const [looking, setLooking] = useState(false);
+  const [lastRun, setLastRun] = useState<{ store: string; template: string; outcome: string; reason: string }[] | null>(null);
+  const analyze = async () => {
+    setLooking(true);
+    try { setLastRun((await fetch("/api/insights", { method: "POST", body: JSON.stringify({ action: "analyze" }) }).then((r) => r.json())).results); }
+    catch { setLastRun([]); }
+    setLooking(false);
+  };
+  const revert = (id: string) => fetch("/api/insights", { method: "POST", body: JSON.stringify({ action: "revert", id }) });
+
   return (
     <div className="min-h-screen bg-[#f6f7f9] text-[#14171f]">
       <header className="flex flex-wrap items-center gap-x-6 gap-y-1 border-b border-black/10 bg-white px-6 py-4">
@@ -57,6 +71,37 @@ export default function Merchant() {
           </span>
         )}
       </header>
+      <section className="mx-6 mt-6 rounded-xl border border-black/10 bg-white p-5" aria-labelledby="insights-h">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 id="insights-h" className="font-bold">What shoppers have in common</h2>
+          <button onClick={analyze} disabled={looking} className="rounded-lg bg-[#2346d8] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-60">
+            {looking ? "Looking…" : "Look across all shoppers"}
+          </button>
+          <span className="text-sm text-[#5b6170]">Changes the agent keeps making for many shoppers become the store’s starting view for new visits.</span>
+        </div>
+        {lastRun && (
+          <ul className="mt-3 text-sm text-[#3c4250]">
+            {!lastRun.length && <li>No shoppers to look at yet. Replay a few ghost shoppers first.</li>}
+            {lastRun.map((r, i) => <li key={i}>{r.store} · {r.template}: {r.outcome === "applied" ? "applied" : r.outcome === "hold" ? "held" : "nothing yet"} — {r.reason}</li>)}
+          </ul>
+        )}
+        <ul className="mt-3 flex flex-col gap-3">
+          {feed?.defaults.map((d) => (
+            <li key={d.id} className={`rounded-lg border p-3 text-sm ${d.active ? "border-emerald-300 bg-emerald-50" : "border-black/10 bg-slate-50 text-[#5b6170]"}`}>
+              <p className="font-semibold">
+                {d.store} · {d.template} · {d.changes.map((c) => [c.id + ":", c.variant?.replaceAll("_", " "), c.collapsed !== undefined && (c.collapsed ? "collapsed" : "expanded"), c.order && `(position ${c.order})`].filter(Boolean).join(" ")).join(", ")}
+                <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-900">{d.simulated ? "simulated sessions" : "live sessions"}</span>
+                {d.mocked && <span className="ml-1 rounded bg-slate-200 px-1.5 py-0.5 text-xs font-bold text-slate-700">mock LLM</span>}
+                <span className="ml-1 text-xs font-bold">{d.active ? "ACTIVE for new visits" : "reverted"}</span>
+              </p>
+              <p className="mt-1">{d.rationale}</p>
+              <ul className="mt-1 list-disc pl-5 text-xs text-[#5b6170]">{d.evidence.map((e, i) => <li key={i}>{e}</li>)}</ul>
+              {d.active && <button onClick={() => revert(d.id)} className="mt-2 rounded border border-black/20 bg-white px-2 py-1 text-xs font-semibold">Revert</button>}
+            </li>
+          ))}
+          {feed && !feed.defaults.length && <li className="text-sm text-[#5b6170]">No store defaults yet.</li>}
+        </ul>
+      </section>
       <div className="grid gap-6 p-6 md:grid-cols-[18rem_1fr]">
         <nav aria-label="Visits" className="flex flex-col gap-2">
           <h2 className="text-sm font-bold uppercase text-[#5b6170]">Live visits</h2>
