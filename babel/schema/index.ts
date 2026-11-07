@@ -86,7 +86,7 @@ export const EventType = z.enum([
   "search", "filter", "sort",
   "gallery_swipe", "image_zoom", "hover_price", "review_open", "policy_open", "compare_add", "size_guide_open",
   "add_to_cart", "remove_from_cart", "checkout_start", "reorder_click",
-  "rage_click", "dead_click", "mis_tap",
+  "rage_click", "dead_click", "mis_tap", "page_zoom", // page_zoom value = zoom relative to page load (1.25 = 125%)
   "slide_shown", "slide_undo", "slide_prev", "slide_next", "why_open", "view_switch", "chat_message",
 ]);
 export const InteractionEvent = z.object({

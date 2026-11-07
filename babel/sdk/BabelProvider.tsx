@@ -215,6 +215,34 @@ export function BabelProvider(p: BabelProviderProps) {
     };
   }, [p.ghost, requestSlide, track]);
 
+  // Page zoom: browser zoom changes devicePixelRatio; pinch zoom shows up as visualViewport.scale.
+  // Reported relative to page load, in steps of at least 10%, so the agent can react to zooming in.
+  useEffect(() => {
+    const base = devicePixelRatio;
+    let last = 1;
+    const check = () => {
+      const zoom = Math.round((devicePixelRatio / base) * (visualViewport?.scale ?? 1) * 100) / 100;
+      if (Math.abs(zoom - last) < 0.1) return;
+      last = zoom;
+      track("page_zoom", { value: zoom });
+    };
+    // A DPR change doesn't always come with a resize; a resolution media query always fires.
+    let mq: MediaQueryList;
+    const watchDpr = () => {
+      mq = matchMedia(`(resolution: ${devicePixelRatio}dppx)`);
+      mq.addEventListener("change", onDpr, { once: true });
+    };
+    const onDpr = () => { check(); watchDpr(); };
+    watchDpr();
+    addEventListener("resize", check);
+    visualViewport?.addEventListener("resize", check);
+    return () => {
+      mq.removeEventListener("change", onDpr);
+      removeEventListener("resize", check);
+      visualViewport?.removeEventListener("resize", check);
+    };
+  }, [track]);
+
   // 4. Type scale applies to the whole page, so rem-based sizes follow it.
   useEffect(() => {
     document.documentElement.style.fontSize = `${16 * slide.theme.typeScale}px`;

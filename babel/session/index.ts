@@ -5,8 +5,8 @@ import type {
 import { computeMarkers, findTriggers } from "@/babel/markers";
 import type { LlmTranscript } from "@/babel/agents/director";
 
-// "checkin" = a routine look by the agent, not a threshold crossing.
-export type Trigger = MarkerId | "checkin";
+// "checkin" = a routine look by the agent; "zoom" = the shopper zoomed the page in.
+export type Trigger = MarkerId | "checkin" | "zoom";
 
 export type TraceEntry = {
   at: number; // ms since visit start
@@ -42,6 +42,7 @@ export type Visit = {
   pendingTriggers: Trigger[];
   lastLookAt: number;      // when the agent was last asked to look
   eventsAtLastLook: number;
+  zoom: number;            // current page zoom relative to page load
   directorBusy: boolean;
   lastDirectorSlideAt?: number;
   minorCount: number;
@@ -82,6 +83,7 @@ export function createVisit(init: {
     pendingTriggers: [],
     lastLookAt: 0,
     eventsAtLastLook: 0,
+    zoom: 1,
     directorBusy: false,
     minorCount: 0,
     standardView: !init.partner.consent.personalization,
@@ -96,6 +98,14 @@ const values = (m: Markers) =>
 // Append events, recompute markers, score due hypotheses, and decide whether a slide is due.
 export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: boolean } {
   v.events.push(...events);
+  // Zooming in is a direct sign the text is too small: act on it now, don't wait for a threshold.
+  let zoomedTo = 0; // highest zoom-in in this batch, 0 if none
+  for (const e of events) {
+    if (e.type !== "page_zoom" || typeof e.value !== "number") continue;
+    if (e.value >= v.zoom + 0.1) zoomedTo = Math.max(zoomedTo, e.value);
+    v.zoom = e.value;
+  }
+  const zoomedIn = zoomedTo > 0;
   if (events.some((e) => e.type === "view_switch" && e.value === "standard")) v.standardView = true;
   if (!v.partner.consent.personalization) return { trigger: false }; // no consent: no markers (GUARDRAILS §2)
 
@@ -104,11 +114,11 @@ export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: b
   v.markers = computeMarkers(v.events, now);
   scoreHypotheses(v, now);
 
-  const crossed: Trigger[] = findTriggers(prev, v.markers);
+  const crossed: Trigger[] = [...findTriggers(prev, v.markers), ...(zoomedIn ? ["zoom" as const] : [])];
   const fresh = v.events.length - v.eventsAtLastLook;
   const checkin = !crossed.length && CHECKIN_MS > 0 && now - v.lastLookAt >= CHECKIN_MS && fresh >= CHECKIN_MIN_EVENTS;
   if ((!crossed.length && !checkin) || v.standardView) return { trigger: false };
-  const tooSoon = v.lastDirectorSlideAt !== undefined && now - v.lastDirectorSlideAt < MIN_GAP_MS;
+  const tooSoon = !zoomedIn && v.lastDirectorSlideAt !== undefined && now - v.lastDirectorSlideAt < MIN_GAP_MS;
   if (tooSoon || v.minorCount >= MAX_MINOR_SLIDES) {
     if (!checkin) v.trace.push({ at: now, kind: "skip", text: `${crossed.join(", ")} crossed, but ${tooSoon ? "the last slide was too recent" : "the slide limit is reached"}`, triggers: crossed });
     return { trigger: false };
@@ -119,7 +129,8 @@ export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: b
   v.eventsAtLastLook = v.events.length;
   v.trace.push({
     at: now, kind: "trigger", triggers, markers: values(v.markers),
-    text: checkin ? `check-in: ${fresh} new events, the agent takes a look` : `${crossed.join(", ")} crossed 0.6`,
+    text: checkin ? `check-in: ${fresh} new events, the agent takes a look`
+      : crossed.map((t) => (t === "zoom" ? `zoomed in to ${Math.round(zoomedTo * 100)}%` : `${t} crossed 0.6`)).join(", "),
   });
   return { trigger: true };
 }

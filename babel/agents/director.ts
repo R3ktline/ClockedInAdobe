@@ -9,7 +9,7 @@ import { validateSlide } from "@/babel/guardrails/validateSlide";
 import { markerKinds } from "@/babel/markers";
 import { moveBlock } from "@/babel/persona";
 import { SlideProposal, type BrandKit, type Registry, type Slide } from "@/babel/schema";
-import type { Visit } from "@/babel/session";
+import type { Trigger, Visit } from "@/babel/session";
 
 const MAX_ROUNDS = 3;
 const BUDGET_MS = Number(process.env.BABEL_DIRECTOR_BUDGET_MS ?? 6_000); // raise for slow free models
@@ -55,11 +55,11 @@ export type LlmTranscript = {
   rounds: { said: string; call?: { name: string; args: unknown }; verdict: string; ms: number }[];
 };
 
-export async function runDirector(visit: Visit, registry: Registry, brand: BrandKit): Promise<DirectorOutcome> {
+export async function runDirector(visit: Visit, registry: Registry, brand: BrandKit, triggers: Trigger[] = []): Promise<DirectorOutcome> {
   const started = Date.now();
   const prev = visit.slides.at(-1)!;
   const kind: Slide["kind"] = visit.returning && prev.index === 0 ? "major" : "minor";
-  const input = JSON.stringify(observation(visit, prev, kind), null, 1);
+  const input = JSON.stringify(observation(visit, prev, kind, triggers), null, 1);
   const transcript: LlmTranscript = { model: isMocked() ? "mock" : process.env.DEEPSEEK_MODEL ?? "", input, rounds: [] };
   const out: DirectorOutcome = { decision: "hold", clamps: [], errors: [], rounds: 0, ms: 0, mocked: isMocked(), transcript };
   const done = (o: Partial<DirectorOutcome>) => ({ ...out, ...o, ms: Date.now() - started });
@@ -77,7 +77,7 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
     for (let round = 1; round <= MAX_ROUNDS; round++) {
       out.rounds = round;
       const roundStart = Date.now();
-      const msg = await chat({ agent: "director", messages, tools: TOOLS, signal: abort.signal, mock: () => mockDecision(visit, prev) });
+      const msg = await chat({ agent: "director", messages, tools: TOOLS, signal: abort.signal, mock: () => mockDecision(visit, prev, triggers, brand) });
       messages.push({ role: "assistant", content: msg.content ?? "", tool_calls: msg.tool_calls });
       const calls = (msg.tool_calls ?? []).filter((c) => c.type === "function");
       const said = (msg.content ?? "").slice(0, 2000);
@@ -113,12 +113,13 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
   }
 }
 
-function observation(visit: Visit, prev: Slide, kind: Slide["kind"]) {
+function observation(visit: Visit, prev: Slide, kind: Slide["kind"], triggers: Trigger[]) {
   const lastScored = visit.trace.filter((t) => t.kind === "result").at(-1);
   return {
     page: prev.template,
     allowedSlideKind: kind,
-    triggers: visit.pendingTriggers,
+    triggers,
+    pageZoom: visit.zoom,
     markers: visit.markers,
     markerKinds: markerKinds(),
     currentSlide: {
@@ -168,11 +169,21 @@ function safeJson(s: string): Record<string, unknown> | undefined {
 }
 
 // Deterministic stand-in used without an API key: answers trust or hesitation spikes on a product page.
-function mockDecision(visit: Visit, prev: Slide): ChatCompletionMessage {
+function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: BrandKit): ChatCompletionMessage {
   const call = (name: string, args: unknown): ChatCompletionMessage => ({
     role: "assistant", content: null, refusal: null,
     tool_calls: [{ id: `mock-${visit.slides.length}`, type: "function", function: { name, arguments: JSON.stringify(args) } }],
   });
+  if (triggers.includes("zoom")) {
+    const plain = prev.blocks.find((b) => b.id === "summary") ? [{ id: "summary", variant: "benefits_plain" }] : [];
+    return call("proposeSlide", {
+      changes: plain,
+      theme: { typeScale: Math.min(brand.ranges.typeScale[1], Math.round((prev.theme.typeScale + 0.1) * 100) / 100) },
+      copyRegister: "plain",
+      rationale: "You zoomed in, so the text is now larger and the description shorter and plainer.",
+      hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30 },
+    });
+  }
   const m = visit.markers;
   const trustUp = prev.blocks.find((b) => b.id === "trust")?.order === 2;
   if (prev.template === "product" && !trustUp && ((m.trustNeed?.value ?? 0) >= 0.6 || (m.hesitation?.value ?? 0) >= 0.6)) {

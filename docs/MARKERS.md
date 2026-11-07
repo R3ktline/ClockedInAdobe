@@ -27,7 +27,7 @@ type InteractionEvent = {
 | Search & filter | `search` (query text), `filter` (facet, value), `sort` (key) |
 | Product | `gallery_swipe`, `image_zoom`, `hover_price`, `review_open`, `policy_open` (returns / warranty / delivery), `compare_add`, `size_guide_open` |
 | Commerce | `add_to_cart`, `remove_from_cart`, `checkout_start`, `reorder_click` |
-| Friction | `rage_click` (≥ 3 clicks < 1 s same spot), `dead_click` (click on non-interactive), `mis_tap` (tap just outside a target, then a correction) |
+| Friction | `rage_click` (≥ 3 clicks < 1 s same spot), `dead_click` (click on non-interactive), `mis_tap` (tap just outside a target, then a correction), `page_zoom` (browser or pinch zoom, relative to page load) |
 | Babel | `slide_shown`, `slide_undo`, `slide_prev`, `slide_next`, `why_open`, `view_switch`, `chat_message` |
 | Context (once) | from `PartnerContext.device`: pointer type, OS zoom, `prefers-reduced-motion`, `prefers-contrast`, viewport |
 
@@ -66,7 +66,9 @@ A trigger asks the Director for a new slide at the next pause (see [SPEC §4.3](
 - `hesitation`, `confusion` or `trustNeed` crosses **0.6** upward;
 - `purchaseIntent.stage` changes;
 - the top need changes and holds for ≥ 10 s;
-- the last slide's hypothesis window expired (score it either way).
+- the last slide's hypothesis window expired (score it either way);
+- the shopper **zooms in** by 10% or more: an immediate trigger that skips the 20 s pause (still capped at 5 slides). Zoom is read as "the text is hard to read here", never as a trait of the person;
+- a **check-in**: 15 s and at least 3 new events since the agent last looked.
 
 Triggers are debounced (≥ 20 s between slides) and respect the change budget.
 
