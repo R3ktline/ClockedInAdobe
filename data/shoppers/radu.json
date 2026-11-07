@@ -1,0 +1,23 @@
+{
+  "id": "radu",
+  "label": "Radu (synthetic): buying a washing machine, skeptical of promotions",
+  "expectedPersona": { "dialect": "standard", "need": "reassurance" },
+  "startPath": "/taraba/p/home-wm-01",
+  "partner": {
+    "consent": { "personalization": true, "partnerData": true },
+    "visitor": { "returning": false, "visits": 1 },
+    "account": { "tenureMonths": 30, "orderCategories": ["home", "electronics"] },
+    "device": { "pointer": "fine", "viewportWidth": 1440, "zoom": 1, "prefersReducedMotion": false, "prefersContrast": false }
+  },
+  "events": [
+    { "t": 0, "type": "page_view", "productId": "home-wm-01" },
+    { "t": 2500, "type": "hover_price", "blockId": "buyBox", "productId": "home-wm-01" },
+    { "t": 4500, "type": "review_open", "blockId": "trust", "productId": "home-wm-01" },
+    { "t": 7000, "type": "policy_open", "blockId": "trust", "value": "returns" },
+    { "t": 9000, "type": "idle", "blockId": "buyBox", "value": 6000 },
+    { "t": 11000, "type": "add_to_cart", "blockId": "buyBox", "productId": "home-wm-01" },
+    { "t": 12500, "type": "remove_from_cart", "blockId": "buyBox", "productId": "home-wm-01" },
+    { "t": 14500, "type": "policy_open", "blockId": "trust", "value": "warranty" },
+    { "t": 17000, "type": "policy_open", "blockId": "trust", "value": "returns" }
+  ]
+}

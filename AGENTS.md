@@ -6,7 +6,7 @@ Rules for every coding agent (Claude Code, Codex, Cursor, …) and every person 
 
 **Babel**: an AI layer an online store plugs into. It decides what kind of shopper is on the page (persona = web dialect × need), scores marketing markers from their behaviour, and a DeepSeek agent re-composes the store's own page as a timeline of **slides**, inside the store's brand. The catalog is also served to shopping agents over A2A and MCP. 12-hour hackathon, synthetic data, two fictional demo stores (Taraba, Croiala).
 
-**Status: Phase 1 (foundation).** bogdan is building the base app and a proof of concept on his own. The tracks take over their folders once the foundation checkpoint in [docs/TASKS.md](docs/TASKS.md) is done. Planning is finished and archived in `planning-phase/` (history, read-only, not a source of truth).
+**Status: Phase 1 (foundation) built, one check left.** The base app and an end-to-end proof of concept run on the mock LLM. The checkpoint in [docs/TASKS.md](docs/TASKS.md#phase-1-foundation-bogdan-solo) still needs one run against real DeepSeek. When bogdan marks it `done`, the tracks take over their folders. Planning is finished and archived in `planning-phase/` (history, read-only, not a source of truth).
 
 ## Read before you start
 
@@ -45,10 +45,10 @@ Each person runs their own agents on their own machine. Agents coordinate only t
 
 | Track | Person (GitHub) | Owns (may edit) |
 |---|---|---|
-| **A. Schema, data, gateway, guardrails** | bogdan (`R3ktline`) | `babel/schema`, `babel/guardrails`, `babel/tools`, `data/catalog.json`, `app/api/a2a`, `app/api/mcp`, `app/.well-known`, `scripts/gen-catalog*`, `scripts/buyer-agent*`, `docs/DECISIONS.md` |
-| **B. Stores and slide UI** | Ionut (`ionutdautema`) | `stores/`, `app/[store]/`, `babel/sdk/` (except `signals.ts`) |
-| **C. Agents and LLM** | David (`Ddavid10101`) | `babel/llm`, `babel/agents`, `babel/persona`, `prompts/`, `app/api/slide`, `app/api/chat`, `data/slide-cache/`, `scripts/build-slide-cache*` |
-| **D. Signals, markers, merchant panel** | Matei (`estegucci-oss`) | `babel/sdk/signals.ts`, `babel/markers`, `app/merchant/`, `app/api/events`, `data/shoppers/`, `data/sessions/`, `scripts/ghost-shopper*`, `scripts/eval*` |
+| **A. Schema, data, gateway, guardrails** | bogdan (`R3ktline`) | `babel/schema`, `babel/guardrails`, `babel/tools`, `babel/session`, `data/catalog*`, `app/api/a2a`, `app/api/mcp`, `app/.well-known`, `app/api/_store.ts`, `scripts/gen-catalog*`, `scripts/buyer-agent*`, `docs/DECISIONS.md` |
+| **B. Stores and slide UI** | Ionut (`ionutdautema`) | `stores/`, `app/[store]/`, `app/page.tsx`, `app/globals.css`, `babel/sdk/` (signal collection inside `BabelProvider.tsx` is shared with D) |
+| **C. Agents and LLM** | David (`Ddavid10101`) | `babel/llm`, `babel/agents`, `babel/persona`, `prompts/`, `app/api/visit`, `app/api/slide`, `app/api/chat`, `data/slide-cache/`, `scripts/build-slide-cache*` |
+| **D. Signals, markers, merchant panel** | Matei (`estegucci-oss`) | `babel/markers`, `app/merchant/`, `app/api/events`, `app/api/merchant`, `data/shoppers/`, `data/sessions/`, `scripts/ghost-shopper*`, `scripts/eval*` |
 
 - **Stay in your track's folders** (from Phase 2). If a task needs another track's file, stop and say so in the task instead of editing it.
 - Cross-cutting files (`package.json`, configs, `AGENTS.md`, `SPEC.md`) change only in small, separate PRs.
@@ -64,17 +64,16 @@ Each person runs their own agents on their own machine. Agents coordinate only t
 
 ## Commands
 
-_Filled in after scaffolding (task 0 in TASKS.md)._ Expected:
-
 | Command | Does |
 |---|---|
-| `npm run dev` | Dev server: `/taraba`, `/croiala`, `/merchant` |
-| `npm run typecheck` / `npm run lint` / `npm test` | CI checks |
-| `npm run gen-catalog` | Regenerate `data/catalog.json` (synthetic) |
-| `npm run build-slide-cache` | Director pre-builds slide 0 for every persona × template × store |
-| `npm run ghost -- <shopper>` | Replay a synthetic shopper into the event pipeline |
-| `npm run buyer-agent` | Run the A2A buyer-agent demo client |
-| `npm run eval` | Red-team fixtures + persona fixtures |
+| `npm run dev` | Dev server on :3000. `/` index, `/taraba` store, `/merchant` panel |
+| `npm run typecheck` / `npm test` / `npm run build` | CI checks (tsc, vitest, Next build) |
+
+Demo URLs: `/taraba/p/home-wm-01?ghost=radu` replays the synthetic shopper Radu in the page (`?ghost=<id>` for any fixture in `data/shoppers/`); open `/merchant` alongside to watch markers and the Director's trace.
+
+**Without `DEEPSEEK_API_KEY` the LLM is mocked** (`babel/llm`, deterministic answers per agent), so everything runs offline; the merchant panel says "mock". `BABEL_LLM=mock` forces the mock even with a key. `BABEL_MIN_SLIDE_GAP_MS` (default 20000) sets the pause between slides.
+
+Planned in Phase 2+ (not there yet): `gen-catalog`, `build-slide-cache`, `buyer-agent`, `eval`, lint.
 
 ## Environment
 
