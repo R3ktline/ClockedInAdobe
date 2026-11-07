@@ -19,5 +19,15 @@
     { "t": 12500, "type": "remove_from_cart", "blockId": "buyBox", "productId": "home-wm-01" },
     { "t": 14500, "type": "policy_open", "blockId": "trust", "value": "warranty" },
     { "t": 17000, "type": "policy_open", "blockId": "trust", "value": "returns" }
+  ],
+  "pages": [
+    {
+      "path": "/taraba/p/home-wm-02",
+      "events": [
+        { "t": 0, "type": "page_view", "productId": "home-wm-02" },
+        { "t": 3000, "type": "policy_open", "blockId": "trust", "value": "warranty" },
+        { "t": 6000, "type": "review_open", "blockId": "trust", "productId": "home-wm-02" }
+      ]
+    }
   ]
 }
