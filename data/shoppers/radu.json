@@ -6,7 +6,7 @@
   "partner": {
     "consent": { "personalization": true, "partnerData": true },
     "visitor": { "returning": false, "visits": 1 },
-    "account": { "tenureMonths": 30, "orderCategories": ["home", "electronics"] },
+    "account": { "tenureMonths": 30 },
     "device": { "pointer": "fine", "viewportWidth": 1440, "zoom": 1, "prefersReducedMotion": false, "prefersContrast": false }
   },
   "events": [

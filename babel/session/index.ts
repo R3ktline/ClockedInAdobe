@@ -3,6 +3,8 @@ import type {
   Hypothesis, InteractionEvent, MarkerId, Markers, PartnerContext, Persona, Slide, Template,
 } from "@/babel/schema";
 import { computeMarkers, findTriggers } from "@/babel/markers";
+import { readShopper } from "@/babel/persona";
+import { TRAIT_NAMES, TRAITS } from "@/babel/persona/signalModel";
 import type { LlmTranscript } from "@/babel/agents/director";
 
 // "checkin" = a routine look by the agent; "zoom" = the shopper zoomed the page in.
@@ -43,6 +45,7 @@ export type Visit = {
   lastLookAt: number;      // when the agent was last asked to look
   eventsAtLastLook: number;
   zoom: number;            // current page zoom relative to page load
+  shopper?: ReturnType<typeof readShopper>; // David's signal model, re-read on every batch of events
   directorBusy: boolean;
   lastDirectorSlideAt?: number;
   minorCount: number;
@@ -112,6 +115,7 @@ export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: b
   const now = Math.max(elapsed(v), ...v.events.map((e) => e.t));
   const prev = v.markers;
   v.markers = computeMarkers(v.events, now);
+  v.shopper = readShopper(v.partner, v.events);
   scoreHypotheses(v, now);
 
   const crossed: Trigger[] = [...findTriggers(prev, v.markers), ...(zoomedIn ? ["zoom" as const] : [])];
@@ -161,3 +165,16 @@ export function addSlide(v: Visit, slide: Slide) {
 }
 
 export { describeDiff } from "@/babel/schema/diff";
+
+// The signal model's read of the shopper in the team's marker names, for the Director and /merchant.
+export function shopperSummary(v: Visit) {
+  const p = v.shopper?.profile;
+  if (!p) return null;
+  const m = v.shopper!.model;
+  return {
+    suggested: { dialect: m.dialect, need: m.need, confidence: m.confidence, dialectWhy: m.dialectWhy, needWhy: m.needWhy, copyRegister: m.copyRegister, giftContext: m.giftContext },
+    traits: Object.fromEntries(TRAITS.map((t) => [TRAIT_NAMES[t], { value: p.traits[t].value, confidence: p.traits[t].conf }])),
+    stage: p.stage,
+    buyingFor: p.buyingFor,
+  };
+}

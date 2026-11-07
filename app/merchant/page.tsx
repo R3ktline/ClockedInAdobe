@@ -9,8 +9,16 @@ type Feed = {
   visits: {
     id: string; store: string; template: string; productId?: string; returning: boolean; standardView: boolean;
     ageMs: number; persona: Persona; markers: Markers; events: number; trace: TraceEntry[];
+    shopper: Shopper | null;
     slides: { index: number; kind: string; source: string; rationale: string }[];
   }[];
+};
+
+type Shopper = {
+  suggested: { dialect: string; need: string; confidence: number; dialectWhy: string; needWhy: string; copyRegister: string; giftContext: boolean };
+  traits: Record<string, { value: number; confidence: number }>;
+  stage: string;
+  buyingFor: string;
 };
 
 const KIND_STYLE: Record<TraceEntry["kind"], string> = {
@@ -71,6 +79,32 @@ export default function Merchant() {
 
         {visit && (
           <main className="flex flex-col gap-6">
+            {visit.shopper && (
+              <section className="rounded-xl border border-black/10 bg-white p-5">
+                <h2 className="font-bold">Who is this shopper? <span className="font-normal text-[#5b6170]">· signal model (David), confidence below 0.55 = not known</span></h2>
+                <p className="mt-2 text-sm">
+                  Suggests <span className="font-semibold">{visit.shopper.suggested.dialect} × {visit.shopper.suggested.need}</span>
+                  {" "}(confidence {visit.shopper.suggested.confidence.toFixed(2)}) · dialect: {visit.shopper.suggested.dialectWhy} · need: {visit.shopper.suggested.needWhy}
+                  {" "}· stage {visit.shopper.stage} · for {visit.shopper.buyingFor} · wording {visit.shopper.suggested.copyRegister}
+                </p>
+                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {Object.entries(visit.shopper.traits).map(([name, t]) => {
+                    const sure = t.confidence >= 0.55;
+                    return (
+                      <li key={name} className="grid grid-cols-[10rem_1fr_6.5rem] items-center gap-2 text-sm">
+                        <span className={sure ? "font-semibold" : "text-[#5b6170]"}>{name}</span>
+                        <div className="relative h-2.5 rounded-full bg-slate-100" role="meter" aria-label={name} aria-valuenow={t.value} aria-valuemin={0} aria-valuemax={1}>
+                          <div className="absolute top-0 bottom-0 w-px bg-black/25" style={{ left: "50%" }} />
+                          <div className={`h-full rounded-full ${sure ? "bg-[#2346d8]" : "bg-slate-300"}`} style={{ width: `${t.value * 100}%`, opacity: 0.35 + 0.65 * t.confidence }} />
+                        </div>
+                        <span className="tabular-nums text-[#3c4250]">{t.value.toFixed(2)} · c {t.confidence.toFixed(2)}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
+
             <section className="rounded-xl border border-black/10 bg-white p-5">
               <h2 className="font-bold">Markers <span className="font-normal text-[#5b6170]">· {visit.events} events</span></h2>
               <ul className="mt-3 flex flex-col gap-3">
