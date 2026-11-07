@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>Fieldbook 14 — A Plain Little Laptop Page</title>
+
+  <style>
+    :root {
+      --paper: #fffef9;
+      --ink: #171717;
+      --blue: #0000ee;
+      --purple: #551a8b;
+      --green: #176b36;
+      --rule: #777;
+      --panel: #f3f1e9;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #e8e8e8;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+    }
+
+    button, select { font: inherit; }
+
+    button:focus-visible, a:focus-visible, select:focus-visible {
+      outline: 3px solid #d40086;
+      outline-offset: 3px;
+    }
+
+    [hidden] { display: none !important; }
+
+    .page {
+      width: min(940px, calc(100% - 32px));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 18px 26px 28px;
+      border-right: 1px solid #c8c8c8;
+      border-left: 1px solid #c8c8c8;
+      background: var(--paper);
+      box-shadow: 0 0 16px #00000012;
+    }
+
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #aaa;
+      color: #555;
+      font-size: 11px;
+    }
+
+    .mode-button {
+      padding: 6px 9px;
+      border: 1px solid #555;
+      border-radius: 2px;
+      color: white;
+      background: #333;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .mode-button:hover { background: #555; }
+
+    .masthead { padding: 21px 0 16px; }
+
+    .masthead p {
+      margin: 0 0 5px;
+      color: #555;
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 6vw, 56px);
+      letter-spacing: -.06em;
+      line-height: 1.05;
+    }
+
+    .masthead .description {
+      margin: 8px 0 0;
+      color: #444;
+      font-size: 13px;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 9px 0;
+      border-top: 1px solid #aaa;
+      border-bottom: 1px solid #aaa;
+      font-size: 12px;
+    }
+
+    a { color: var(--blue); }
+
+    .notice {
+      margin: 17px 0;
+      padding: 9px 11px;
+      border-left: 3px solid #555;
+      background: #f0eee7;
+      font-size: 12px;
+    }
+
+    .product {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(270px, .85fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .laptop-panel {
+      display: grid;
+      min-height: 310px;
+      padding: 18px;
+      place-items: center;
+      border: 1px solid #bbb;
+      background:
+        linear-gradient(90deg, transparent 49.8%, #0000000a 50%, transparent 50.2%),
+        linear-gradient(0deg, transparent 49.8%, #0000000a 50%, transparent 50.2%),
+        #f0efe9;
+      background-size: 24px 24px;
+    }
+
+    .laptop {
+      width: min(88%, 420px);
+      filter: drop-shadow(0 12px 8px #0000002a);
+      transition: transform .2s ease;
+    }
+
+    .laptop-panel:hover .laptop { transform: translateY(-3px); }
+
+    .screen-frame {
+      width: 78%;
+      height: clamp(145px, 24vw, 205px);
+      margin: auto;
+      padding: 8px;
+      border: 7px solid #737979;
+      border-bottom-width: 10px;
+      border-radius: 9px 9px 3px 3px;
+      background: #303638;
+    }
+
+    .screen {
+      display: flex;
+      height: 100%;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 12px;
+      color: white;
+      background: linear-gradient(145deg, #446878, #1d2b37);
+    }
+
+    .screen small { font-size: 8px; letter-spacing: .1em; }
+
+    .screen strong {
+      font-size: clamp(18px, 3vw, 28px);
+      font-weight: normal;
+      line-height: 1.2;
+    }
+
+    .screen span { font-size: 9px; }
+
+    .laptop-base {
+      position: relative;
+      height: 25px;
+      margin-top: -1px;
+      clip-path: polygon(8% 0, 92% 0, 100% 72%, 95% 100%, 5% 100%, 0 72%);
+      border-top: 2px solid white;
+      background: linear-gradient(#e4e6e5, #bfc6c7 48%, #f8f8f6 54%, #929998);
+    }
+
+    .laptop-base::after {
+      position: absolute;
+      top: 3px;
+      left: 42%;
+      width: 16%;
+      height: 4px;
+      background: #777;
+      content: "";
+    }
+
+    .caption {
+      margin: 8px 0 0;
+      color: #555;
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .product-info h2 {
+      margin: 0;
+      font-size: 27px;
+      letter-spacing: -.04em;
+    }
+
+    .product-info .tagline {
+      margin: 3px 0 12px;
+      color: #555;
+      font-size: 12px;
+    }
+
+    .product-info p {
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .price {
+      margin: 13px 0;
+      padding: 10px 0;
+      border-top: 1px solid #aaa;
+      border-bottom: 1px solid #aaa;
+      font-size: 21px;
+      font-weight: bold;
+    }
+
+    .price small {
+      display: block;
+      color: #555;
+      font-size: 10px;
+      font-weight: normal;
+    }
+
+    .demo-note {
+      padding: 8px 10px;
+      border-left: 3px solid #777;
+      background: #f0eee7;
+      font-size: 10px !important;
+    }
+
+    .finish-label {
+      display: block;
+      margin: 12px 0 5px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    select {
+      width: 100%;
+      min-height: 35px;
+      padding: 5px 8px;
+      border: 1px solid #888;
+      background: white;
+    }
+
+    .buy-button {
+      width: 100%;
+      min-height: 42px;
+      margin-top: 13px;
+      border: 1px solid #333;
+      color: white;
+      background: #333;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .buy-button:hover { background: #555; }
+
+    .specs {
+      margin-top: 22px;
+      border-top: 2px solid #333;
+    }
+
+    .specs h2 {
+      margin: 10px 0 6px;
+      font-size: 16px;
+    }
+
+    .spec-row {
+      display: grid;
+      grid-template-columns: minmax(105px, .35fr) 1fr;
+      gap: 12px;
+      padding: 7px 9px;
+      border-top: 1px solid #ddd;
+      font-size: 11px;
+    }
+
+    .spec-row dt { color: #555; }
+    .spec-row dd { margin: 0; }
+
+    .bottom-note {
+      margin-top: 22px;
+      padding-top: 12px;
+      border-top: 1px solid #aaa;
+      color: #555;
+      font-size: 10px;
+      line-height: 1.7;
+    }
+
+    .bag-view { max-width: 720px; margin: auto; }
+
+    .bag-view h1 { font-size: clamp(27px, 5vw, 40px); }
+
+    .bag-view > p {
+      color: #555;
+      font-size: 12px;
+    }
+
+    .bag-panel { margin-top: 16px; border: 1px solid #aaa; }
+
+    .bag-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 13px;
+      border-bottom: 1px solid #ccc;
+      background: #fff;
+    }
+
+    .bag-item h2 { margin: 0; font-size: 14px; }
+    .bag-item p { margin: 3px 0 0; color: #555; font-size: 10px; }
+    .bag-price { font-size: 13px; font-weight: bold; white-space: nowrap; }
+
+    .quantity {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 8px;
+    }
+
+    .quantity button, .bag-action {
+      min-width: 30px;
+      min-height: 30px;
+      padding: 4px 8px;
+      border: 1px solid #888;
+      color: #111;
+      background: #eee;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .quantity .remove { color: #900; }
+
+    .bag-summary { padding: 13px; }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 5px 0;
+      font-size: 11px;
+    }
+
+    .summary-row.total {
+      margin-top: 5px;
+      padding-top: 10px;
+      border-top: 1px solid #aaa;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .bag-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+
+    .bag-action { display: inline-block; text-decoration: none; }
+
+    .empty {
+      padding: 20px;
+      border: 1px solid #aaa;
+      text-align: center;
+    }
+
+    .empty h2 { margin: 0 0 5px; font-size: 16px; }
+    .empty p { margin: 0 0 12px; color: #555; font-size: 11px; }
+
+    footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 24px;
+      padding-top: 10px;
+      border-top: 1px solid #aaa;
+      color: #555;
+      font-size: 10px;
+    }
+
+    /* Minimal Mode: plain document defaults, with no designed layout. */
+    body.minimal {
+      margin: 8px;
+      color: #000;
+      background: #fff;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 16px;
+      line-height: normal;
+    }
+
+    body.minimal .page {
+      width: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    body.minimal .topline,
+    body.minimal .masthead,
+    body.minimal nav,
+    body.minimal main,
+    body.minimal footer {
+      display: block;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      color: #000;
+      background: transparent;
+      box-shadow: none;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 16px;
+      letter-spacing: normal;
+      text-align: left;
+      text-transform: none;
+    }
+
+    body.minimal .topline { margin-bottom: 1em; }
+    body.minimal .masthead { margin-bottom: 1em; }
+    body.minimal .masthead p,
+    body.minimal .masthead .description,
+    body.minimal .bottom-note,
+    body.minimal footer { color: #000; }
+
+    body.minimal h1 {
+      margin: .67em 0;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 2em;
+      font-weight: bold;
+      letter-spacing: normal;
+      line-height: normal;
+    }
+
+    body.minimal nav { margin: 1em 0; }
+    body.minimal nav a { margin-right: .7em; }
+
+    body.minimal a,
+    body.minimal a:visited {
+      color: #0000ee;
+      text-decoration: underline;
+    }
+
+    body.minimal .product,
+    body.minimal .spec-row,
+    body.minimal .bag-item {
+      display: block;
+      margin: 1em 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    body.minimal .product-visual,
+    body.minimal .product-info,
+    body.minimal .specs,
+    body.minimal .bag-view,
+    body.minimal .bag-panel,
+    body.minimal .bag-summary {
+      display: block;
+      position: static;
+      min-height: 0;
+      margin: 1em 0;
+      padding: 0;
+      overflow: visible;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      color: #000;
+    }
+
+    body.minimal .product-info h2,
+    body.minimal .bag-item h2,
+    body.minimal .specs h2 {
+      margin: .83em 0;
+      color: #000;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 1.5em;
+      font-weight: bold;
+      letter-spacing: normal;
+    }
+
+    body.minimal .product-info p,
+    body.minimal .product-info .tagline,
+    body.minimal .spec-row,
+    body.minimal .bag-view > p,
+    body.minimal .bag-item p,
+    body.minimal .caption,
+    body.minimal .demo-note {
+      color: #000;
+      background: transparent;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 16px;
+      line-height: normal;
+    }
+
+    body.minimal .laptop {
+      width: auto;
+      max-width: 100%;
+      filter: none;
+    }
+
+    body.minimal .laptop-panel {
+      display: block;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    body.minimal .screen-frame {
+      width: 300px;
+      max-width: 90%;
+      height: 150px;
+      border: 1px solid #000;
+      border-radius: 0;
+      background: #ccc;
+    }
+
+    body.minimal .screen {
+      padding: 8px;
+      color: #000;
+      background: #eee;
+    }
+
+    body.minimal .screen small,
+    body.minimal .screen span { font-size: 12px; }
+
+    body.minimal .screen strong {
+      color: #000;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 20px;
+      font-weight: bold;
+      text-shadow: none;
+    }
+
+    body.minimal .laptop-base { display: none; }
+
+    body.minimal .price,
+    body.minimal .price small,
+    body.minimal .price-note,
+    body.minimal .spec-row dt,
+    body.minimal .spec-row dd,
+    body.minimal .bag-price,
+    body.minimal .summary-row,
+    body.minimal .summary-row.total {
+      color: #000;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 16px;
+      font-weight: normal;
+    }
+
+    body.minimal select {
+      width: auto;
+      min-height: 0;
+      padding: 2px;
+      border: 1px solid #767676;
+      border-radius: 0;
+      color: #000;
+      background: #fff;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 16px;
+    }
+
+    body.minimal button,
+    body.minimal .mode-button,
+    body.minimal .buy-button,
+    body.minimal .small-button,
+    body.minimal .quantity button,
+    body.minimal .bag-action {
+      min-width: 0;
+      min-height: 0;
+      width: auto;
+      margin: 0;
+      padding: 2px 6px;
+      border: 2px outset ButtonBorder;
+      border-radius: 2px;
+      color: ButtonText;
+      background: ButtonFace;
+      box-shadow: none;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      font-weight: normal;
+      letter-spacing: normal;
+      text-decoration: none;
+      text-transform: none;
+      text-shadow: none;
+      cursor: default;
+      transform: none;
+    }
+
+    body.minimal button:hover,
+    body.minimal .bag-action:hover {
+      color: ButtonText;
+      background: ButtonFace;
+      filter: none;
+    }
+
+    body.minimal .buy-button .japanese,
+    body.minimal .buy-button .english {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+    }
+
+    body.minimal .buy-button { width: auto; }
+
+    body.minimal .finish-label,
+    body.minimal .selected-finish {
+      color: #000;
+      font-size: 16px;
+    }
+
+    body.minimal .finish-options { display: block; }
+
+    body.minimal .spec-row {
+      display: block;
+      margin: .4em 0;
+    }
+
+    body.minimal .spec-row dt,
+    body.minimal .spec-row dd { display: inline; }
+
+    body.minimal .spec-row dt::after { content: ": "; }
+
+    body.minimal .bag-item {
+      display: block;
+      padding: 8px 0;
+      border-bottom: 1px solid #aaa;
+    }
+
+    body.minimal .quantity { display: block; margin: 8px 0; }
+    body.minimal .quantity > * { margin-right: 5px; }
+
+    body.minimal .summary-row { display: block; }
+    body.minimal .summary-row span { margin-right: 12px; }
+    body.minimal .bag-actions { display: block; margin: 1em 0; }
+    body.minimal .bag-action { margin-right: 6px; }
+
+    body.minimal .empty {
+      padding: 0;
+      border: 0;
+      text-align: left;
+    }
+
+    body.minimal .empty h2 {
+      margin: .83em 0;
+      font-size: 1.5em;
+      text-align: left;
+    }
+
+    body.minimal .empty p { color: #000; }
+
+    body.minimal .notice {
+      margin: 1em 0;
+      padding: 0;
+      border: 0;
+      color: #000;
+      background: transparent;
+      font-size: 16px;
+    }
+
+    body.minimal .demo-note {
+      padding: 0;
+      border: 0;
+    }
+
+    body.minimal .mode-button {
+      color: ButtonText;
+      background: ButtonFace;
+      cursor: default;
+    }
+
+    body.minimal footer { margin-top: 1em; }
+
+    @media (max-width: 650px) {
+      .page { width: calc(100% - 18px); padding: 14px; }
+      .product { grid-template-columns: 1fr; }
+      .laptop-panel { min-height: 260px; }
+      .product-info h2 { font-size: 24px; }
+      body.minimal .page { width: auto; padding: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+
+<body class="minimal">
+  <a class="skip-link" href="#main-content">Skip to the main content</a>
+
+  <div class="page">
+    <div class="topline">
+      <span>A small laptop page · Made for curious people</span>
+    </div>
+
+    <header class="masthead">
+      <p>Field notes · No. 014 · A fictional product page</p>
+      <h1>Fieldbook 14</h1>
+      <p class="description">
+        A plain little laptop page. Choose a finish, read the details, or add it to your bag.
+      </p>
+    </header>
+
+    <nav aria-label="Page links">
+      <a href="#product">The laptop</a>
+      <a href="#specifications">Specifications</a>
+      <a href="#about">About this page</a>
+      <a href="#bag">Your bag (<span id="bag-count">0</span>)</a>
+    </nav>
+
+    <main id="main-content">
+      <section id="shop-view">
+        <p class="notice">
+          <strong>A note:</strong> This is a fictional demo product. There is no checkout or purchase.
+        </p>
+
+        <section class="product" id="product" aria-label="Fieldbook 14 laptop">
+          <div class="laptop-panel">
+            <div class="laptop" role="img" aria-label="Illustration of the Fieldbook 14 laptop">
+              <div class="screen-frame">
+                <div class="screen" id="screen">
+                  <small>FIELD NOTES · 014</small>
+                  <strong>A little room<br>to think.</strong>
+                  <span>FIELD BOOK 14</span>
+                </div>
+              </div>
+              <div class="laptop-base"></div>
+            </div>
+            <p class="caption">A simple CSS illustration. No product photo required.</p>
+          </div>
+
+          <article class="product-info">
+            <p class="category">Everyday laptop · Demo edition</p>
+            <h2>Fieldbook 14</h2>
+            <p class="tagline">A dependable computer for work, study, and everything between.</p>
+
+            <p>
+              A 14-inch display, a comfortable keyboard, and enough room for everyday
+              projects. Designed as a concept for people who would rather get on with
+              their day than fuss with their computer.
+            </p>
+
+            <div class="price">
+              $899
+              <small>Illustrative demo price · Fictional product</small>
+            </div>
+
+            <p class="demo-note">
+              This page is a design experiment. The laptop, price, and specifications are
+              fictional; the bag is only a local demo.
+            </p>
+
+            <label class="finish-label" for="finish">Choose a finish:</label>
+            <select id="finish">
+              <option value="Silver">Silver</option>
+              <option value="Blue">Blue</option>
+              <option value="Copper">Copper</option>
+            </select>
+            <p class="selected-finish">Selected: <span id="finish-name">Silver</span></p>
+
+            <button class="buy-button" id="add-to-bag" type="button">
+              Add to bag
+            </button>
+          </article>
+        </section>
+
+        <section class="specs" id="specifications">
+          <h2>Specifications</h2>
+          <dl>
+            <div class="spec-row"><dt>Display</dt><dd>14-inch</dd></div>
+            <div class="spec-row"><dt>Memory</dt><dd>16 GB</dd></div>
+            <div class="spec-row"><dt>Storage</dt><dd>512 GB solid-state drive</dd></div>
+            <div class="spec-row"><dt>Illustrative use</dt><dd>Writing, browsing, video calls, and everyday work</dd></div>
+          </dl>
+        </section>
+
+        <section class="bottom-note" id="about">
+          <strong>About this page:</strong> Minimal Mode presents the same laptop information
+          with almost no designed layout—just text, links, and browser-style buttons.
+          Switch to the styled version if you’d like. Nothing here executes terminal
+          commands or collects browsing data.
+        </section>
+      </section>
+
+      <section class="bag-view" id="bag-view" hidden>
+        <h1>Your bag</h1>
+        <p>This is a local demo bag. You can change quantities or remove the item.</p>
+        <div id="bag-content"></div>
+      </section>
+
+      <footer>
+        Fieldbook 14 · Fictional design concept · No orders taken
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const BAG_KEY = "fieldbook-plain-html-bag";
+    const body = document.body;
+    const modeToggle = document.getElementById("mode-toggle");
+    const toast = document.createElement("p");
+
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+    toast.hidden = true;
+    document.body.append(toast);
+
+    let toastTimer;
+
+    function showMessage(message) {
+      toast.textContent = message;
+      toast.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.hidden = true; }, 2200);
+    }
+
+    function readBag() {
+      try {
+        const items = JSON.parse(localStorage.getItem(BAG_KEY) || "[]");
+        return Array.isArray(items) ? items : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveBag(items) {
+      try {
+        localStorage.setItem(BAG_KEY, JSON.stringify(items));
+      } catch {
+        // The demo still works for the current page view if storage is unavailable.
+      }
+    }
+
+    function updateCount() {
+      const count = readBag().reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById("bag-count").textContent = count;
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]);
+    }
+
+    function showBag() {
+      document.getElementById("shop-view").hidden = true;
+      document.getElementById("bag-view").hidden = false;
+      renderBag();
+      window.scrollTo(0, 0);
+    }
+
+    function showShop() {
+      document.getElementById("shop-view").hidden = false;
+      document.getElementById("bag-view").hidden = true;
+      window.scrollTo(0, 0);
+    }
+
+    function renderBag() {
+      const container = document.getElementById("bag-content");
+      const items = readBag();
+
+      if (!items.length) {
+        container.innerHTML = `
+          <div class="empty">
+            <h2>Your bag is empty.</h2>
+            <p>Return to the laptop page if you’d like to add the demo product.</p>
+            <a class="bag-action" href="#product">Back to the laptop</a>
+          </div>`;
+        return;
+      }
+
+      const rows = items.map((item) => `
+        <div class="bag-item">
+          <div>
+            <h2>${escapeHtml(item.name)}</h2>
+            <p>Finish: ${escapeHtml(item.finish)} · Quantity: ${item.quantity}</p>
+            <div class="quantity">
+              <button type="button" data-action="minus" aria-label="Decrease quantity">−</button>
+              <span>${item.quantity}</span>
+              <button type="button" data-action="plus" aria-label="Increase quantity">+</button>
+              <button type="button" class="remove" data-action="remove">Remove</button>
+            </div>
+          </div>
+          <strong>$${(item.price * item.quantity).toLocaleString("en-US")}</strong>
+        </div>
+      `).join("");
+
+      const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+      container.innerHTML = `
+        <div class="bag-panel">
+          ${rows}
+          <div class="bag-summary">
+            <div class="summary-row"><span>Subtotal</span><strong>$${total.toLocaleString("en-US")}</strong></div>
+            <div class="summary-row"><span>Shipping</span><span>Not applicable</span></div>
+            <div class="summary-row total"><span>Demo total</span><span>$${total.toLocaleString("en-US")}</span></div>
+            <p>This is a demo. No order or payment can be made.</p>
+            <div class="bag-actions">
+              <a class="bag-action" href="#product">Back to the laptop</a>
+              <button class="bag-action" type="button" id="done">Done</button>
+            </div>
+          </div>
+        </div>`;
+
+      container.querySelectorAll("[data-action]").forEach((button) => {
+        button.addEventListener("click", () => changeBag(button.dataset.action));
+      });
+
+      document.getElementById("done").addEventListener("click", () => {
+        showMessage("Thanks for having a look.");
+      });
+    }
+
+    function changeBag(action) {
+      let items = readBag();
+      const laptop = items.find((item) => item.id === "fieldbook-14");
+      if (!laptop) return;
+
+      if (action === "plus") laptop.quantity += 1;
+      if (action === "minus") laptop.quantity -= 1;
+
+      if (action === "remove" || laptop.quantity <= 0) {
+        items = items.filter((item) => item.id !== "fieldbook-14");
+      }
+
+      saveBag(items);
+      updateCount();
+      renderBag();
+    }
+
+    modeToggle.addEventListener("click", () => {
+      const isMinimal = body.classList.toggle("minimal");
+      modeToggle.textContent = isMinimal
+        ? "Turn on the styled version"
+        : "Return to Minimal Mode";
+      modeToggle.setAttribute("aria-pressed", String(isMinimal));
+    });
+
+    document.getElementById("finish").addEventListener("change", (event) => {
+      const colors = {
+        Silver: ["#bfc6c9", "#314b58"],
+        Blue: ["#657c95", "#24384e"],
+        Copper: ["#a97861", "#49382f"]
+      };
+
+      const [finish, screen] = colors[event.target.value];
+      document.documentElement.style.setProperty("--product-finish", finish);
+      document.documentElement.style.setProperty("--screen-color", screen);
+      document.getElementById("finish-name").textContent = event.target.value;
+    });
+
+    document.getElementById("add-to-bag").addEventListener("click", () => {
+      const items = readBag();
+      const finish = document.getElementById("finish").value;
+      const laptop = items.find((item) => item.id === "fieldbook-14");
+
+      if (laptop) {
+        laptop.quantity += 1;
+        laptop.finish = finish;
+      } else {
+        items.push({
+          id: "fieldbook-14",
+          name: "Fieldbook 14",
+          finish,
+          price: 899,
+          quantity: 1
+        });
+      }
+
+      saveBag(items);
+      updateCount();
+      showMessage("Fieldbook 14 added to your demo bag.");
+    });
+
+    document.querySelectorAll('a[href="#bag"]').forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        location.hash = "bag";
+      });
+    });
+
+    window.addEventListener("hashchange", () => {
+      if (location.hash === "#bag") showBag();
+      else showShop();
+    });
+
+    updateCount();
+    if (location.hash === "#bag") showBag();
+  </script>
+</body>
+</html>
