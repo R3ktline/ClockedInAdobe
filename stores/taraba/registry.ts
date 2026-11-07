@@ -29,7 +29,7 @@ export const registry: Registry = {
   product: {
     gallery: {
       label: "Photos",
-      variants: ["grid_thumbs", "single_large"],
+      variants: ["grid_thumbs", "single_large", "side_large"], // side_*: half width, sits next to another side_* block
       neutral: "grid_thumbs",
       byDialect: { guided: "single_large", visual: "single_large" },
     },
@@ -41,20 +41,20 @@ export const registry: Registry = {
     },
     buyBox: {
       label: "Price and buy",
-      variants: ["standard", "calm", "prominent_simple"],
+      variants: ["standard", "calm", "prominent_simple", "side_standard"],
       neutral: "standard",
       required: true,
       byDialect: { guided: "prominent_simple" },
     },
     specs: {
       label: "Specifications",
-      variants: ["table_key", "table_full", "hidden"],
+      variants: ["table_key", "table_full", "side_key", "hidden"],
       neutral: "table_key",
       byDialect: { dense: "table_full" },
     },
     trust: {
       label: "Reviews, returns and warranty",
-      variants: ["reviews_summary", "returns_warranty_first"],
+      variants: ["reviews_summary", "returns_warranty_first", "side_reviews"],
       neutral: "reviews_summary",
     },
   },

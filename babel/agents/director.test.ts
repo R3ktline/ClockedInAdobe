@@ -72,3 +72,19 @@ describe("Director on zoom", () => {
     expect(o.slide!.blocks.find((b) => b.id === "summary")!.variant).toBe("benefits_plain");
   });
 });
+
+describe("Director on layout", () => {
+  it("puts the reviews next to the photos after the shopper opens them (mock LLM)", async () => {
+    delete process.env.DEEPSEEK_API_KEY;
+    const { partner } = shoppers.radu;
+    const { persona, reasons } = initialPersona(partner);
+    const slide = buildSlide({ persona, template: "product", registry, brand, ctx: partner });
+    const visit = createVisit({ store: "taraba", template: "product", partner, persona, slide, reasons });
+    visit.events.push({ t: 1000, type: "review_open", blockId: "trust" });
+    const o = await runDirector(visit, registry, brand, ["checkin"]);
+    expect(o.decision).toBe("slide");
+    const [g, t] = ["gallery", "trust"].map((id) => o.slide!.blocks.find((b) => b.id === id)!);
+    expect(g.variant).toBe("side_large");
+    expect(t).toMatchObject({ variant: "side_reviews", order: g.order + 1 });
+  });
+});

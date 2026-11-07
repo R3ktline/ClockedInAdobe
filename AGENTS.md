@@ -25,7 +25,7 @@ Rules for every coding agent (Claude Code, Codex, Cursor, …) and every person 
 6. **Prompts live in `/prompts/*.md`**, versioned, static parts first (DeepSeek prefix caching). Untrusted text goes in `<data>` / `<user_message>`.
 7. **No age or demographic inference.** Persona is dialect × need from interaction signals and consented partner context ([GUARDRAILS §3](docs/GUARDRAILS.md#3-what-babel-may-know-about-the-shopper)). User-facing text describes the *view*, never the *person*.
 8. **No personalised pricing, no dark patterns.** Hesitation, confusion and abandonment risk never trigger urgency, scarcity, countdowns or discounts.
-9. **Change budget is code, not prompt.** Minor slide ≤ 2 blocks, no dialect change; major slide only on a return visit, with carry-over ([SPEC §4.2](SPEC.md#42-change-budget-enforced-in-code-by-babelguardrails-not-by-the-prompt)).
+9. **Change budget is code, not prompt.** Minor slide ≤ 4 blocks, dialect may change on clear signals; major slide only on a return visit, with carry-over ([SPEC §4.2](SPEC.md#42-change-budget-enforced-in-code-by-babelguardrails-not-by-the-prompt)).
 10. **Plug-in boundary.** `stores/*` imports only from `babel/sdk`'s public API. `babel/*` never imports from `stores/*`.
 11. **Every failure has a deterministic fallback.** The store works with DeepSeek unreachable (hold / neutral slide).
 12. **Synthetic is labelled synthetic.** Every simulated number on screen carries a "simulated" tag. Never invent a metric.
