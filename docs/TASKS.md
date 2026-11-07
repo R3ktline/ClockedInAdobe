@@ -35,7 +35,7 @@ bogdan builds the base and a thin proof of concept that touches every track's fo
 - [done] [A] Full catalog: 60 products (10 per category), 3 copy registers, policies, store-wide promotions, 3–4 simulated review texts each (`Product.reviews`, shown under "Read reviews" on Taraba) (bogdan)
 - [todo] [A] Return-visit major slide with carry-over (validator side) (bogdan) · with C
 - [todo] [A] Policy layer + red-team fixtures from [GUARDRAILS §7](GUARDRAILS.md#7-red-team-fixtures-scriptseval-fixtures) passing (bogdan) ·
-- [todo] [A] A2A Agent Card + `search_products`, `compare_products`, `create_handoff_link`; `/{store}/h/{id}` route with B (bogdan) ·
+- [done] [A] A2A Agent Card + `search_products`, `get_product`, `compare_products`, `get_store_policies`, `create_handoff_link` in `babel/tools` (bogdan) · needs B: `/{store}/h/{id}` shortlist page reading `getHandoff(id)` from `babel/tools`; until then the link points at the first product page
 - [todo] [A] `scripts/buyer-agent.ts` (DeepSeek-driven buyer agent over A2A) (bogdan) ·
 - [todo] [B] All block variants for the 4 dialects on Taraba (hero, productList, filters, gallery, summary, specs, trust, buyBox, compare, continuity, assist) (Ionut) ·
 - [todo] [B] SlidePlayer polish: change highlight, Why? panel, undo (Ionut) ·
@@ -52,7 +52,7 @@ bogdan builds the base and a thin proof of concept that touches every track's fo
 - [todo] [B] Croiala store: brand kit, registry, variants; clamp log visible (Ionut) ·
 - [todo] [C] Concierge chat → explicit slides (David) ·
 - [review] [C] Insights agent cards + "approve as default" (David) · panel UI with D · first version built by bogdan: `babel/agents/insights.ts`, `babel/session/defaults.ts`, `/api/insights`, "What shoppers have in common" on /merchant. It applies a default on its own once validated (SPEC §6.3 says a human approves), with a Revert button
-- [todo] [A] MCP endpoint over `babel/tools` (bogdan) ·
+- [done] [A] MCP endpoint over `babel/tools` (bogdan) · stateless Streamable HTTP at `/api/mcp`
 - [todo] [D] Persona table vs Standard-view holdout (simulated, labelled) (Matei) ·
 - [todo] [C] Cost meter: usage → cost from DeepSeek's pricing page; per-1,000-visits figure (David) · [SPEC §14](../SPEC.md#14-cost)
 - [todo] [D] LLM synthetic shoppers (Matei) ·
