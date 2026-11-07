@@ -1,12 +1,27 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
 import type { ReactNode } from "react";
-import type { BlockId } from "@/babel/schema";
+import type { BlockId, Slide } from "@/babel/schema";
 import { useBabel } from "./BabelProvider";
 
-// Blocks reorder with CSS `order`, so they must share one flex parent.
+// Blocks reorder with CSS `order`, so they must share one parent. It is a two-column grid on wide
+// screens: a block is full width unless its variant starts with `side_` (see sideBlocks).
 export function BabelStack({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`flex flex-col gap-[var(--babel-gap)] ${className}`}>{children}</div>;
+  return <div className={`grid grid-cols-1 gap-[var(--babel-gap)] md:grid-cols-2 ${className}`}>{children}</div>;
+}
+
+// Variants named `side_*` take half the width, so two of them in a row sit next to each other
+// (e.g. the photos with the reviews). Consecutive side blocks pair up in order; an odd one out stays
+// full width, so a lone side variant never leaves a hole.
+function sideBlocks(blocks: Slide["blocks"]): Set<BlockId> {
+  const out = new Set<BlockId>();
+  let run: BlockId[] = [];
+  const flush = () => { if (run.length % 2) run.pop(); run.forEach((id) => out.add(id)); run = []; };
+  for (const b of [...blocks].sort((x, y) => x.order - y.order)) {
+    if (b.variant.startsWith("side_") && !b.collapsed) run.push(b.id); else flush();
+  }
+  flush();
+  return out;
 }
 
 // A store wraps each adaptable section in this and hands over every variant it declared.
@@ -29,7 +44,7 @@ export function BabelBlock({ id, variants }: { id: BlockId; variants: Record<str
       data-babel-block={id}
       data-babel-changed={changed.has(id) || undefined}
       style={{ order }}
-      className="babel-block"
+      className={`babel-block ${sideBlocks(slide.blocks).has(id) ? "" : "md:col-span-2"}`}
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
