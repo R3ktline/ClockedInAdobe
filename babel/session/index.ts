@@ -27,6 +27,7 @@ export type TraceEntry = {
   ms?: number;
   mocked?: boolean;
   met?: boolean;
+  slideIndex?: number; // on "result": which slide the bet was about (Insights reads it)
   llm?: LlmTranscript;
 };
 
@@ -213,7 +214,7 @@ function scoreHypotheses(v: Visit, now: number) {
     const met = expect === "down" ? after < before : after > before;
     v.scored.push(s.id);
     v.trace.push({
-      at: now, kind: "result", met, hypothesis: s.hypothesis,
+      at: now, kind: "result", met, hypothesis: s.hypothesis, slideIndex: s.index,
       text: `slide ${s.index}: ${marker} ${before.toFixed(2)} → ${after.toFixed(2)}, expected ${expect}: ${met ? "met" : "not met"}`,
     });
   }

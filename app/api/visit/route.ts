@@ -5,6 +5,7 @@ import { validateSlide } from "@/babel/guardrails/validateSlide";
 import { buildSlide, initialPersona, NEUTRAL_PERSONA } from "@/babel/persona";
 import { PartnerContext, Template } from "@/babel/schema";
 import { createVisit, forget, recall, recallSlide, startSession } from "@/babel/session";
+import { activeDefaults, withDefaults } from "@/babel/session/defaults";
 import { bad, storeConfig } from "../_store";
 
 const Body = z.object({
@@ -35,9 +36,15 @@ export async function POST(req: Request) {
   const built = buildSlide({ persona, template, registry: cfg.registry, brand: cfg.brand, ctx: partner, copyRegister });
   const check = (slide: unknown) => validateSlide({ slide, registry: cfg.registry, brand: cfg.brand, returning: partner.visitor.returning });
 
+  // What Insights learned from all shoppers is the starting view; if it no longer validates, the rules' slide stands.
+  const learned = activeDefaults(store, template);
+  const withLearned = learned.length ? check(withDefaults(built, learned)) : undefined;
+  const fromRules = withLearned?.ok ? withLearned : check(built);
+
   const kept = recallSlide(consented, template);
   const restored = kept && check({ ...kept, id: `${template}-0-${Math.random().toString(36).slice(2, 8)}`, index: 0, parentId: undefined, kind: "initial", trigger: "page_load", source: "cache" });
-  const checked = restored && restored.ok ? restored : check(built);
+  const checked = restored && restored.ok ? restored : fromRules;
+  if (checked === withLearned) reasons.push(...learned.map((d) => `store default learned from all shoppers: ${d.rationale}`));
   const slide = checked.ok
     ? checked.slide
     : buildSlide({ persona: NEUTRAL_PERSONA, template, registry: cfg.registry, brand: cfg.brand });

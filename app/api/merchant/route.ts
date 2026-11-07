@@ -1,6 +1,7 @@
 // Merchant panel feed: live visits, markers, Director trace, LLM usage.
 import { usageLog, isMocked } from "@/babel/llm";
 import { elapsed, listVisits, shopperSummary } from "@/babel/session";
+import { listDefaults } from "@/babel/session/defaults";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export async function GET() {
       cacheMissTokens: usage.reduce((s, u) => s + u.cacheMissTokens, 0),
       outputTokens: usage.reduce((s, u) => s + u.outputTokens, 0),
     },
+    defaults: listDefaults(),
     visits: listVisits().slice(0, 20).map((v) => ({
       id: v.id,
       store: v.store,

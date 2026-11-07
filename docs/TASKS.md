@@ -51,7 +51,7 @@ bogdan builds the base and a thin proof of concept that touches every track's fo
 
 - [todo] [B] Croiala store: brand kit, registry, variants; clamp log visible (Ionut) ·
 - [todo] [C] Concierge chat → explicit slides (David) ·
-- [todo] [C] Insights agent cards + "approve as default" (David) · panel UI with D
+- [review] [C] Insights agent cards + "approve as default" (David) · panel UI with D · first version built by bogdan: `babel/agents/insights.ts`, `babel/session/defaults.ts`, `/api/insights`, "What shoppers have in common" on /merchant. It applies a default on its own once validated (SPEC §6.3 says a human approves), with a Revert button
 - [todo] [A] MCP endpoint over `babel/tools` (bogdan) ·
 - [todo] [D] Persona table vs Standard-view holdout (simulated, labelled) (Matei) ·
 - [todo] [C] Cost meter: usage → cost from DeepSeek's pricing page; per-1,000-visits figure (David) · [SPEC §14](../SPEC.md#14-cost)
