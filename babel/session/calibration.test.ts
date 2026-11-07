@@ -33,10 +33,9 @@ describe("curtain mode: the page does not move while the profile forms", () => {
     expect(recordEvents(v, careful()).restyle).toBe(false);
   });
 
-  it("a zoom is still answered at once: the shopper asked for it", () => {
+  it("a zoom does not move the page in curtain mode either", () => {
     const v = start();
-    expect(recordEvents(v, [{ t: 1000, type: "page_zoom", value: 1.3 }]).trigger).toBe(true);
-    expect(v.pendingTriggers).toEqual(["zoom"]);
+    expect(recordEvents(v, [{ t: 1000, type: "page_zoom", value: 1.3 }]).trigger).toBe(false);
   });
 });
 

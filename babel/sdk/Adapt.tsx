@@ -5,13 +5,14 @@
 //   TransitionLab  local comparison panel (?txlab=1): switch the look and watch how each transition feels
 // Wording describes the view, never the shopper, and says the store itself does not change.
 import { useEffect, useState } from "react";
-import type { Dialect } from "@/babel/schema";
+import type { Dialect, Skin } from "@/babel/schema";
 
 export const LOOK_LABEL: Record<Dialect, string> = { standard: "Standard", guided: "Guided", dense: "Detailed", visual: "Visual" };
 export type Transition = "glass" | "fade" | "morph";
 // A skin is a visual identity for the store frame (palette, type, texture, shape), taken from the five design pages.
-// It is separate from the look above (layout and detail level) and is chosen by the shopper, never inferred.
-export type Skin = "none" | "genx" | "alpha" | "alphadark" | "millennial" | "xp" | "print";
+// It is separate from the look above (layout and detail level). Babel picks it per slide (Bento by default, see
+// babel/persona/skin.ts); a choice made in this switcher wins over Babel's until it is cleared.
+export type { Skin };
 export const SKIN_LABEL: Record<Skin, string> = {
   none: "Store default", genx: "Glossy", alpha: "Bento", alphadark: "Bento dark", millennial: "Pastel", xp: "Y2K desktop", print: "Print",
 };

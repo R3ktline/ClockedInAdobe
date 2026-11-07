@@ -19,6 +19,16 @@ describe("markers", () => {
     expect(computeMarkers(events, 120_000).hesitation!.value).toBeLessThan(0.1);
   });
 
+  it("trustNeed and infoAppetite fade slowly when the behaviour stops", () => {
+    const events: InteractionEvent[] = [
+      { t: 0, type: "policy_open", value: "returns" }, { t: 0, type: "block_open", blockId: "specs" },
+    ];
+    const now = computeMarkers(events, 0);
+    const later = computeMarkers(events, 600_000);
+    expect(later.trustNeed!.value).toBeLessThan(now.trustNeed!.value / 2);
+    expect(later.infoAppetite!.value).toBeLessThan(now.infoAppetite!.value / 2);
+  });
+
   it("volume is not interest: many page views without opens keep infoAppetite at 0", () => {
     const events: InteractionEvent[] = Array.from({ length: 7 }, (_, i) => ({ t: i * 30_000, type: "page_view" }));
     expect(computeMarkers(events, 240_000).infoAppetite!.value).toBe(0);

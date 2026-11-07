@@ -62,14 +62,28 @@ describe("Director on a chat message", () => {
   });
 });
 
-describe("Director on zoom", () => {
-  it("answers a zoom-in with bigger, plainer text inside the change budget (mock LLM)", async () => {
+describe("Director on the look", () => {
+  it("switches the skin when the shopper asks for one in chat (mock LLM)", async () => {
     delete process.env.DEEPSEEK_API_KEY;
-    const o = await runDirector(raduVisit(), registry, brand, ["zoom"]);
+    const { partner } = shoppers.radu;
+    const { persona, reasons } = initialPersona(partner);
+    const slide = buildSlide({ persona, template: "product", registry, brand, ctx: partner, skin: "alpha" });
+    const visit = createVisit({ store: "taraba", template: "product", partner, persona, slide, reasons });
+    const o = await runDirector(visit, registry, brand, ["chat"], "can you make it dark?");
     expect(o.decision).toBe("slide");
-    expect(o.slide!.theme.typeScale).toBeCloseTo(1.1);
-    expect(o.slide!.copyRegister).toBe("plain");
-    expect(o.slide!.blocks.find((b) => b.id === "summary")!.variant).toBe("benefits_plain");
+    expect(o.slide!.skin).toBe("alphadark");
+  });
+});
+
+describe("Director on zoom", () => {
+  it("treats a zoom on the specs as interest in the specs, not as a need for bigger text (mock LLM)", async () => {
+    delete process.env.DEEPSEEK_API_KEY;
+    const v = raduVisit();
+    v.events.push({ t: 1000, type: "page_zoom", value: 1.5, blockId: "specs", target: "spec:battery" });
+    const o = await runDirector(v, registry, brand, ["checkin"]);
+    expect(o.decision).toBe("slide");
+    expect(o.slide!.theme.typeScale).toBe(v.slides.at(-1)!.theme.typeScale);
+    expect(o.slide!.copyRegister).toBe(v.slides.at(-1)!.copyRegister);
   });
 });
 

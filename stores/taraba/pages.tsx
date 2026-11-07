@@ -111,7 +111,7 @@ function Gallery({ p, thumbs }: { p: Product; thumbs: boolean }) {
           </button>
         ))}
       </div>
-      <div className={`${frame} aspect-square flex-1 sm:aspect-[4/3]`}><ProductArt p={p} view={view} /></div>
+      <div data-babel-focus={`photo:${view + 1}`} className={`${frame} aspect-square flex-1 sm:aspect-[4/3]`}><ProductArt p={p} view={view} /></div>
     </div>
   );
 }
@@ -144,7 +144,7 @@ function BuyBox({ p, variant }: { p: Product; variant: "standard" | "calm" | "pr
   return (
     <div className={`${card} p-5`} onMouseEnter={() => track("hover_price", { blockId: "buyBox", productId: p.id })}>
       <div className="flex flex-wrap items-baseline gap-3">
-        <span data-ghost="hover_price" className={`${big ? "text-5xl" : "text-3xl"} font-extrabold`}>{lei.format(p.price)}</span>
+        <span data-ghost="hover_price" data-babel-focus="price" className={`${big ? "text-5xl" : "text-3xl"} font-extrabold`}>{lei.format(p.price)}</span>
         {promo && (
           <>
             <span className="text-[var(--c-muted)] line-through">{lei.format(p.promotion!.oldPrice)}</span>
@@ -184,7 +184,7 @@ function Specs({ p, limit }: { p: Product; limit?: number }) {
     <table className="w-full text-left">
       <tbody>
         {list.map((s) => (
-          <tr key={s.key} className="border-b border-black/10 last:border-0">
+          <tr key={s.key} data-babel-focus={`spec:${s.key}`} className="border-b border-black/10 last:border-0">
             <th scope="row" className="py-2 pr-4 font-medium text-[var(--c-muted)]">{s.label}</th>
             <td className="py-2">{s.value}</td>
           </tr>
