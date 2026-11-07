@@ -23,7 +23,7 @@ bogdan builds the base and a thin proof of concept that touches every track's fo
 
 **Foundation checkpoint:** the Radu ghost shopper runs on Taraba; his markers rise on `/merchant`; the Director (real DeepSeek) proposes a slide; the validator accepts or makes it repair; the page moves to slide 2 and ◀ goes back. With DeepSeek unreachable, the Director holds and the store still works. CI is green. When this is met, bogdan marks it `done` here and tells the team.
 
-- [doing] Checkpoint (bogdan) · verified on 2026-11-07 with the **mock** LLM: Radu's replay → hesitation/trustNeed cross 0.6 → Director slide 1 (trust moved up, promo badge off) → ◀ back works; unreachable DeepSeek → hold (unit test); typecheck, 15 tests and `next build` pass. **Left: one run with a real `DEEPSEEK_API_KEY`.**
+- [done] Checkpoint (bogdan) · 2026-11-07. Mock LLM: Radu's replay → hesitation/trustNeed cross 0.6 → slide 1 → ◀ back; unreachable LLM → hold (unit test); typecheck, 15 tests, `next build` pass. **Live LLM:** same flow through OpenRouter with the free `nvidia/nemotron-3.5-lightning:free` (no free DeepSeek model supports tool calls today): valid slide on the first round in 10-15 s, real token usage on /merchant. That run caught the Director betting that an accumulating marker would fall; fixed by telling it which markers fade (prompt v2). Still to try: DeepSeek itself, once there is a key.
 
 **While Phase 1 runs (prep only, no app code pushed):**
 - Ionut: designs for the 4 dialects on Taraba, and Croiala's look.

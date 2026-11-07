@@ -6,12 +6,13 @@ import path from "node:path";
 import { z } from "zod";
 import { chat, isMocked, type ChatCompletionMessage, type ChatCompletionMessageParam, type ChatCompletionTool } from "@/babel/llm";
 import { validateSlide } from "@/babel/guardrails/validateSlide";
+import { markerKinds } from "@/babel/markers";
 import { moveBlock } from "@/babel/persona";
 import { SlideProposal, type BrandKit, type Registry, type Slide } from "@/babel/schema";
 import type { Visit } from "@/babel/session";
 
 const MAX_ROUNDS = 3;
-const BUDGET_MS = 6_000;
+const BUDGET_MS = Number(process.env.BABEL_DIRECTOR_BUDGET_MS ?? 6_000); // raise for slow free models
 
 const SYSTEM_PROMPT = readFileSync(path.join(process.cwd(), "prompts", "director.md"), "utf8");
 
@@ -100,6 +101,7 @@ function observation(visit: Visit, prev: Slide, kind: Slide["kind"]) {
     allowedSlideKind: kind,
     triggers: visit.pendingTriggers,
     markers: visit.markers,
+    markerKinds: markerKinds(),
     currentSlide: {
       persona: prev.persona, theme: prev.theme, copyRegister: prev.copyRegister,
       blocks: prev.blocks.map(({ id, variant, order, collapsed }) => ({ id, variant, order, collapsed })),

@@ -39,6 +39,10 @@ export const RULES: Partial<Record<MarkerId, Rule>> = {
   },
 };
 
+// Fading markers can go down; session totals only rise. The Director needs this to place sensible bets.
+export const markerKinds = () =>
+  Object.fromEntries(Object.entries(RULES).map(([id, r]) => [id, r!.halfLifeMs ? "fades" : "accumulates"]));
+
 const saturate = (x: number) => 1 - Math.exp(-x);
 const round = (x: number) => Math.round(x * 100) / 100;
 
