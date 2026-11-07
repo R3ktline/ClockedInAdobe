@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#09004f">
+  <title>Fieldbook 14 — Laptop Zone 1999</title>
+
+  <style>
+    :root {
+      --night: #08003f;
+      --purple: #6a00a8;
+      --pink: #ff45cb;
+      --cyan: #00fff0;
+      --yellow: #fff300;
+      --lime: #8dff00;
+      --white: #fff;
+      --ink: #12053b;
+      --paper: #fffde8;
+      --blue: #001eff;
+      --finish: #b7c2c7;
+      --screen: #087a89;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background-color: var(--night);
+      background-image:
+        radial-gradient(circle, #fff 1px, transparent 1.7px),
+        radial-gradient(circle, #79faff 1px, transparent 1.8px),
+        radial-gradient(circle, #fff300 1px, transparent 1.8px),
+        linear-gradient(135deg, #09004f, #260065 60%, #09004f);
+      background-position: 0 0, 23px 37px, 71px 19px, 0 0;
+      background-size: 47px 47px, 83px 83px, 109px 109px, auto;
+      font-family: Verdana, Arial, sans-serif;
+    }
+
+    button, select { font: inherit; }
+
+    a { color: var(--blue); }
+
+    button:focus-visible, a:focus-visible, select:focus-visible {
+      outline: 4px solid var(--pink);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 20;
+      padding: 8px 12px;
+      transform: translateY(-150%);
+      color: #000;
+      background: var(--yellow);
+      font-weight: bold;
+    }
+
+    .skip-link:focus { transform: translateY(0); }
+
+    [hidden] { display: none !important; }
+
+    .site {
+      width: min(1050px, calc(100% - 24px));
+      margin: 18px auto;
+      border: 5px ridge #ffecff;
+      background: var(--paper);
+      box-shadow: 0 0 30px #ff45cb77, 0 0 70px #00fff044;
+    }
+
+    .masthead {
+      position: relative;
+      padding: 23px 20px 17px;
+      overflow: hidden;
+      color: var(--white);
+      text-align: center;
+      background:
+        repeating-linear-gradient(135deg, #ffffff0b 0 5px, transparent 5px 10px),
+        linear-gradient(100deg, #1d0074, #70009c 50%, #1d0074);
+      border-bottom: 4px ridge #f8d7ff;
+    }
+
+    .sparkle {
+      position: absolute;
+      color: var(--yellow);
+      font-size: 22px;
+      animation: twinkle 1.8s steps(2, end) infinite;
+    }
+
+    .sparkle.one { top: 19px; left: 8%; }
+    .sparkle.two { top: 48px; right: 10%; animation-delay: .6s; }
+    .sparkle.three { right: 24%; bottom: 13px; animation-delay: 1s; }
+
+    @keyframes twinkle {
+      50% { opacity: .35; transform: scale(.8); }
+    }
+
+    .site-kicker {
+      margin: 0 0 6px;
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--yellow);
+      font-family: "Trebuchet MS", Verdana, sans-serif;
+      font-size: clamp(32px, 7vw, 66px);
+      font-weight: 900;
+      letter-spacing: -.06em;
+      line-height: 1;
+      text-shadow: 3px 3px 0 #f500b8, 6px 6px 0 #14004e;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: #fff;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .marquee-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      color: #090047;
+      background: var(--yellow);
+      border-bottom: 3px ridge #fff;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .marquee-label {
+      flex: 0 0 auto;
+      padding: 3px 5px;
+      color: #fff;
+      background: #d900a7;
+    }
+
+    .marquee-window {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: scroll-note 30s linear infinite;
+    }
+
+    .marquee-text {
+      padding-right: 35px;
+      white-space: nowrap;
+    }
+
+    .marquee-row.paused .marquee-track,
+    .marquee-row:hover .marquee-track {
+      animation-play-state: paused;
+    }
+
+    @keyframes scroll-note {
+      to { transform: translateX(-50%); }
+    }
+
+    .pause-button {
+      flex: 0 0 auto;
+      padding: 4px 7px;
+      border: 2px outset #fff;
+      color: #100044;
+      background: #e9d8ff;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 7px;
+      padding: 11px;
+      border-bottom: 3px double #6c3a9d;
+      background: #e9dcff;
+    }
+
+    .nav a {
+      padding: 6px 10px;
+      border: 2px outset #fff;
+      color: #0014c4;
+      background: #fff;
+      font-size: 11px;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+
+    .nav a:hover { color: #d000a3; background: #fffca8; }
+
+    main { padding: 18px; }
+
+    .welcome-box {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 15px;
+      align-items: center;
+      padding: 12px 15px;
+      border: 3px dashed #9400b8;
+      background: #f1e8ff;
+    }
+
+    .welcome-box p { margin: 0; font-size: 12px; line-height: 1.55; }
+    .welcome-box strong { color: #9400b8; }
+
+    .construction {
+      min-width: 120px;
+      padding: 8px;
+      transform: rotate(2deg);
+      border: 3px double #111;
+      color: #111;
+      background: var(--yellow);
+      font-size: 10px;
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 24px 0 12px;
+      color: #640098;
+      font-family: "Trebuchet MS", Verdana, sans-serif;
+      font-size: clamp(21px, 4vw, 30px);
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .section-title::before, .section-title::after {
+      height: 3px;
+      flex: 1;
+      background: linear-gradient(90deg, transparent, #e000ae);
+      content: "";
+    }
+
+    .section-title::after { transform: scaleX(-1); }
+
+    .product {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, .8fr);
+      border: 4px ridge #d7b6ff;
+      background: #fff;
+      box-shadow: 5px 5px 0 #26005a;
+    }
+
+    .product-art {
+      position: relative;
+      display: grid;
+      min-height: 310px;
+      place-items: center;
+      overflow: hidden;
+      border-right: 3px ridge #d7b6ff;
+      background:
+        radial-gradient(circle at center, #fff 0 7%, transparent 7.5%),
+        repeating-radial-gradient(circle at center, #e9e1ff 0 12px, #d9c8ff 13px 15px);
+    }
+
+    .art-label {
+      position: absolute;
+      top: 11px;
+      left: 11px;
+      padding: 5px 7px;
+      border: 2px outset #fff;
+      color: #fff;
+      background: #9400b8;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .laptop {
+      width: min(82%, 410px);
+      filter: drop-shadow(5px 10px 5px #1a004777);
+      transition: transform .2s steps(3, end);
+    }
+
+    .product-art:hover .laptop { transform: translateY(-4px) rotate(-1deg); }
+
+    .laptop-screen {
+      width: 78%;
+      height: clamp(145px, 24vw, 215px);
+      margin: auto;
+      padding: 9px;
+      border: 8px ridge #aab4bb;
+      border-bottom-width: 12px;
+      border-radius: 12px 12px 3px 3px;
+      background: #444;
+      box-shadow: 0 0 0 2px #111;
+    }
+
+    .screen-content {
+      display: flex;
+      height: 100%;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 12px;
+      color: white;
+      background:
+        radial-gradient(ellipse at 75% 25%, #faffb8 0 5%, transparent 5.5%),
+        linear-gradient(145deg, var(--screen), #10004e);
+      text-align: left;
+    }
+
+    .screen-content small {
+      color: var(--yellow);
+      font-size: 8px;
+      font-weight: bold;
+      letter-spacing: .08em;
+    }
+
+    .screen-content strong {
+      font-size: clamp(17px, 3vw, 28px);
+      line-height: 1;
+      text-shadow: 2px 2px #d000a3;
+      text-transform: uppercase;
+    }
+
+    .screen-content span { font-size: 9px; }
+
+    .laptop-base {
+      position: relative;
+      height: 24px;
+      margin-top: -1px;
+      clip-path: polygon(7% 0, 93% 0, 100% 74%, 95% 100%, 5% 100%, 0 74%);
+      border-top: 3px solid #fff;
+      background: linear-gradient(#e9eeee, var(--finish) 50%, #f9f9f9 55%, #808c94);
+      transition: background .2s;
+    }
+
+    .laptop-base::after {
+      position: absolute;
+      top: 3px;
+      left: 42%;
+      width: 16%;
+      height: 4px;
+      background: #78838b;
+      content: "";
+    }
+
+    .art-caption {
+      position: absolute;
+      right: 10px;
+      bottom: 9px;
+      left: 10px;
+      color: #331454;
+      font-size: 9px;
+      font-weight: bold;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .product-info {
+      padding: 17px;
+      background:
+        repeating-linear-gradient(0deg, #00000005 0 1px, transparent 1px 3px),
+        #fffef4;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 7px;
+      transform: rotate(-2deg);
+      color: #fff;
+      background: #ef168a;
+      font-size: 9px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .product-info h3 {
+      margin: 10px 0 4px;
+      color: #24005b;
+      font-size: 30px;
+      letter-spacing: -.06em;
+    }
+
+    .tagline {
+      margin: 0;
+      color: #4b3b64;
+      font: italic 14px Georgia, serif;
+    }
+
+    .description {
+      margin: 13px 0;
+      color: #211b2a;
+      font-size: 12px;
+      line-height: 1.65;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 0;
+      border-top: 2px dotted #8b5aa9;
+      border-bottom: 2px dotted #8b5aa9;
+    }
+
+    .price { color: #b00078; font-size: 25px; font-weight: 900; }
+    .price-note { color: #514466; font-size: 9px; text-align: right; }
+
+    .demo-note {
+      margin: 10px 0;
+      padding: 8px;
+      border: 1px dashed #665180;
+      background: #f1eaff;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .finish-label {
+      display: block;
+      margin: 12px 0 5px;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .finish-select {
+      width: 100%;
+      min-height: 36px;
+      padding: 5px 8px;
+      border: 2px inset #bbb;
+      color: #160044;
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .button-row { display: flex; gap: 8px; margin-top: 12px; }
+
+    .retro-button {
+      min-height: 39px;
+      padding: 8px 12px;
+      border: 3px outset #fff;
+      color: #fff;
+      background: #2000b4;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .retro-button:hover { background: #d500a1; }
+    .retro-button:active { border-style: inset; }
+    .retro-button.secondary { color: #160044; background: #e8dbff; }
+    .button-row .retro-button:first-child { flex: 1; }
+
+    .retro-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 18px;
+      margin: 17px 0 0;
+      padding: 10px;
+      border: 2px dotted #b40092;
+      background: #fff4fc;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .retro-links a { color: #0000cc; }
+
+    .footer {
+      padding: 13px 15px;
+      border-top: 4px ridge #f8d7ff;
+      color: #fff;
+      background: #250058;
+      font-size: 10px;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    .footer a { color: var(--cyan); }
+
+    /* Bag */
+    .bag-view { padding: 17px; }
+
+    .bag-view h2 {
+      margin: 0 0 5px;
+      color: #640098;
+      font-size: 28px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .bag-intro {
+      margin: 0 0 15px;
+      color: #45365a;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .bag-panel {
+      border: 4px ridge #d7b6ff;
+      background: #fffef4;
+    }
+
+    .bag-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      border-bottom: 2px dotted #8b5aa9;
+    }
+
+    .bag-item h3 { margin: 0; color: #24005b; font-size: 15px; }
+    .bag-item p { margin: 4px 0 0; color: #514466; font-size: 10px; }
+    .bag-item-price { color: #b00078; font-size: 14px; font-weight: bold; }
+
+    .quantity {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 9px;
+    }
+
+    .quantity button {
+      min-width: 29px;
+      min-height: 29px;
+      border: 2px outset #fff;
+      color: #160044;
+      background: #e8dbff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .quantity .remove {
+      padding: 4px 8px;
+      color: #fff;
+      background: #ad0078;
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    .bag-summary { padding: 14px; }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 5px 0;
+      font-size: 11px;
+    }
+
+    .summary-line.total {
+      margin-top: 5px;
+      padding-top: 10px;
+      border-top: 2px solid #6c3a9d;
+      color: #79005d;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .counter-box {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+      padding: 10px;
+      border: 2px dashed #4c2776;
+      background: #eee5ff;
+      text-align: center;
+    }
+
+    .counter-label {
+      color: #26005b;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .hit-counter {
+      display: inline-flex;
+      gap: 2px;
+      padding: 4px;
+      border: 3px ridge #aaa;
+      background: #111;
+      box-shadow: 0 0 0 1px #fff inset;
+    }
+
+    .hit-counter span {
+      min-width: 15px;
+      padding: 2px 3px;
+      color: #ff4d4d;
+      background: #260000;
+      font: bold 15px/1.1 "Courier New", monospace;
+      text-align: center;
+      text-shadow: 0 0 5px #ff2929;
+    }
+
+    .counter-caption {
+      flex-basis: 100%;
+      color: #55496a;
+      font-size: 9px;
+    }
+
+    .bag-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 13px;
+    }
+
+    .empty-bag { padding: 25px 14px; text-align: center; }
+    .empty-bag h3 { margin: 0 0 7px; color: #640098; font-size: 17px; }
+    .empty-bag p { margin: 0 0 13px; color: #45365a; font-size: 11px; }
+
+    .toast {
+      position: fixed;
+      right: 15px;
+      bottom: 15px;
+      z-index: 30;
+      max-width: min(330px, calc(100vw - 30px));
+      padding: 10px 13px;
+      border: 3px ridge #fff;
+      color: #fff;
+      background: #24005b;
+      box-shadow: 4px 4px 0 #ff45cb;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 700px) {
+      .site { width: calc(100% - 12px); margin: 6px auto; }
+      main { padding: 12px; }
+      .product { grid-template-columns: 1fr; }
+      .product-art { min-height: 260px; border-right: 0; border-bottom: 3px ridge #d7b6ff; }
+      .welcome-box { grid-template-columns: 1fr; }
+      .construction { justify-self: start; }
+    }
+
+    @media (max-width: 430px) {
+      .masthead { padding: 20px 12px 15px; }
+      .marquee-label { font-size: 9px; }
+      .pause-button { padding: 4px; font-size: 9px; }
+      .nav { gap: 5px; }
+      .nav a { padding: 6px; font-size: 9px; }
+      .product-info { padding: 13px; }
+      .product-art { min-height: 230px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .marquee-track, .sparkle { animation: none !important; }
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#main-content">Skip to the laptop</a>
+
+  <div class="site">
+    <header class="masthead">
+      <span class="sparkle one" aria-hidden="true">✦</span>
+      <span class="sparkle two" aria-hidden="true">✧</span>
+      <span class="sparkle three" aria-hidden="true">✦</span>
+
+      <p class="site-kicker">The unofficial laptop corner of the internet</p>
+      <h1>Fieldbook 14</h1>
+      <p class="subtitle">★ A little computer for your big internet adventures ★</p>
+    </header>
+
+    <div class="marquee-row" id="marquee">
+      <span class="marquee-label">Site news!</span>
+      <div class="marquee-window" aria-label="Site announcement">
+        <div class="marquee-track">
+          <span class="marquee-text">Welcome, web wanderer! Thanks for visiting my little laptop corner. Take a look around—no pop-ups, no pressure! ✦ &nbsp;</span>
+          <span class="marquee-text" aria-hidden="true">Welcome, web wanderer! Thanks for visiting my little laptop corner. Take a look around—no pop-ups, no pressure! ✦ &nbsp;</span>
+        </div>
+      </div>
+      <button class="pause-button" id="pause-marquee" type="button" aria-pressed="false">Pause</button>
+    </div>
+
+    <nav class="nav" aria-label="Site navigation">
+      <a href="#home">Home</a>
+      <a href="#laptop">The laptop</a>
+      <a href="#about">About this page</a>
+      <a href="#bag">My bag (<span id="bag-count">0</span>)</a>
+    </nav>
+
+    <main id="main-content">
+      <section id="shop-view">
+        <div class="welcome-box" id="home">
+          <p>
+            <strong>Hi, welcome to my laptop page!</strong><br>
+            I made this little corner of the web to show off a very imaginary
+            computer. Click around, pick a color, and see what happens.
+          </p>
+          <div class="construction">✧ Still adding<br>pixel dust! ✧</div>
+        </div>
+
+        <h2 class="section-title" id="laptop">Behold: the laptop!</h2>
+
+        <section class="product" aria-label="Fieldbook 14 laptop">
+          <div class="product-art">
+            <span class="art-label">Fresh from the web!</span>
+
+            <div class="laptop" role="img" aria-label="A silver illustrated laptop">
+              <div class="laptop-screen">
+                <div class="screen-content">
+                  <small>FIELD NOTES · 1999</small>
+                  <strong>Surf the web<br>in style!</strong>
+                  <span>FIELD BOOK 14 · YOUR DIGITAL SIDEKICK</span>
+                </div>
+              </div>
+              <div class="laptop-base"></div>
+            </div>
+
+            <div class="art-caption">Illustration made with HTML &amp; CSS · no image download needed</div>
+          </div>
+
+          <div class="product-info">
+            <span class="badge">★ Site owner's pick ★</span>
+            <h3>Fieldbook 14</h3>
+            <p class="tagline">A trusty sidekick for the information superhighway.</p>
+
+            <p class="description">
+              A bright 14-inch screen, comfy keyboard, and room for your
+              projects, playlists, and way-too-many browser tabs.
+            </p>
+
+            <div class="price-row">
+              <span class="price">$899</span>
+              <span class="price-note">Totally imaginary demo price!<br>This is not a real shop.</span>
+            </div>
+
+            <p class="demo-note">
+              Important web-person note: this laptop is fictional. Its price and specs
+              are just part of this design demo.
+            </p>
+
+            <label class="finish-label" for="finish">Choose your color:</label>
+            <select class="finish-select" id="finish">
+              <option value="Silver">Moonbeam Silver</option>
+              <option value="Blue">Deep Space Blue</option>
+              <option value="Copper">Cosmic Copper</option>
+            </select>
+
+            <div class="button-row">
+              <button class="retro-button" id="add-button" type="button">Add to my bag!</button>
+              <a class="retro-button secondary" href="#bag">Peek in bag</a>
+            </div>
+          </div>
+        </section>
+
+        <div class="retro-links" id="about">
+          <span>✦ Cool corners:</span>
+          <a href="#laptop">Back to the laptop</a>
+          <a href="#bag">My shopping bag</a>
+          <a href="#about-note">About this page</a>
+          <span>✦ You are visitor #<span id="visit-number">1</span> (in this browser)</span>
+        </div>
+
+        <p id="about-note" style="font-size:10px;text-align:center;color:#34244d">
+          This is a playful Web 1.0-inspired design concept. No tracking, guestbook data,
+          or personal information is collected.
+        </p>
+      </section>
+
+      <section class="bag-view" id="bag-view" hidden>
+        <h2>My shopping bag</h2>
+        <p class="bag-intro">The bag is a demo too—no checkout or real purchases here.</p>
+        <div id="bag-content"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div>Best viewed with a curious mind and a comfy chair.</div>
+      <div>Made with ✦ in the spirit of the old web.</div>
+      <div><a href="#home">Back to the top ↑</a></div>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script>
+    const BAG_KEY = "fieldbook-geocities-bag";
+    const VISIT_KEY = "fieldbook-geocities-visits";
+    const toast = document.getElementById("toast");
+    let toastTimer;
+
+    function readBag() {
+      try {
+        const value = JSON.parse(localStorage.getItem(BAG_KEY) || "[]");
+        return Array.isArray(value) ? value : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveBag(items) {
+      try {
+        localStorage.setItem(BAG_KEY, JSON.stringify(items));
+      } catch {
+        // The demo remains usable if browser storage is unavailable.
+      }
+    }
+
+    function safeText(value) {
+      return String(value).replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[character]);
+    }
+
+    function updateBagCount() {
+      const count = readBag().reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById("bag-count").textContent = count;
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.hidden = true; }, 2500);
+    }
+
+    function showBag() {
+      document.getElementById("shop-view").hidden = true;
+      document.getElementById("bag-view").hidden = false;
+      renderBag();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showShop() {
+      document.getElementById("shop-view").hidden = false;
+      document.getElementById("bag-view").hidden = true;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderBag() {
+      const container = document.getElementById("bag-content");
+      const items = readBag();
+
+      if (!items.length) {
+        container.innerHTML = `
+          <div class="bag-panel empty-bag">
+            <h3>Your bag is taking a tiny vacation.</h3>
+            <p>Nothing in here yet. Head back to the laptop if you feel like it!</p>
+            <button class="retro-button" type="button" data-shop>Back to the laptop</button>
+          </div>`;
+        container.querySelector("[data-shop]").addEventListener("click", showShop);
+        return;
+      }
+
+      const rows = items.map((item) => `
+        <div class="bag-item">
+          <div>
+            <h3>${safeText(item.name)}</h3>
+            <p>Color: ${safeText(item.finish)} · Quantity: ${item.quantity}</p>
+            <div class="quantity">
+              <button type="button" data-action="minus" aria-label="Remove one">−</button>
+              <span>${item.quantity}</span>
+              <button type="button" data-action="plus" aria-label="Add one">+</button>
+              <button class="remove" type="button" data-action="remove">Remove</button>
+            </div>
+          </div>
+          <span class="bag-item-price">$${(item.price * item.quantity).toLocaleString("en-US")}</span>
+        </div>
+      `).join("");
+
+      const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const visits = getVisits();
+
+      container.innerHTML = `
+        <div class="bag-panel">
+          ${rows}
+          <div class="bag-summary">
+            <div class="summary-line"><span>Subtotal</span><strong>$${total.toLocaleString("en-US")}</strong></div>
+            <div class="summary-line"><span>Shipping</span><span>Not a real order</span></div>
+            <div class="summary-line total"><span>Demo total</span><span>$${total.toLocaleString("en-US")}</span></div>
+
+            <div class="counter-box" aria-label="Local page visit counter">
+              <span class="counter-label">YOU HAVE VISITED THIS PAGE</span>
+              <span class="hit-counter" aria-label="${visits} visits in this browser">
+                ${String(visits).padStart(6, "0").split("").map((digit) => `<span>${digit}</span>`).join("")}
+              </span>
+              <span class="counter-caption">A local counter on this device only. Not a visitor count.</span>
+            </div>
+
+            <p class="demo-note">This is a demo bag. No checkout, payment, or order is available.</p>
+            <div class="bag-actions">
+              <button class="retro-button secondary" type="button" data-shop>Keep looking</button>
+              <button class="retro-button" type="button" data-finish>Finish browsing</button>
+            </div>
+          </div>
+        </div>`;
+
+      container.querySelectorAll("[data-action]").forEach((button) => {
+        button.addEventListener("click", () => updateItem(button.dataset.action));
+      });
+
+      container.querySelector("[data-shop]").addEventListener("click", showShop);
+      container.querySelector("[data-finish]").addEventListener("click", () => {
+        showToast("Thanks for visiting my little corner of the web!");
+      });
+    }
+
+    function updateItem(action) {
+      let items = readBag();
+      const laptop = items.find((item) => item.id === "fieldbook-14");
+      if (!laptop) return;
+
+      if (action === "plus") laptop.quantity += 1;
+      if (action === "minus") laptop.quantity -= 1;
+      if (action === "remove" || laptop.quantity <= 0) {
+        items = items.filter((item) => item.id !== "fieldbook-14");
+      }
+
+      saveBag(items);
+      updateBagCount();
+      renderBag();
+    }
+
+    function getVisits() {
+      try {
+        return Math.max(1, Number(localStorage.getItem(VISIT_KEY)) || 1);
+      } catch {
+        return 1;
+      }
+    }
+
+    document.getElementById("add-button").addEventListener("click", () => {
+      const items = readBag();
+      const finish = document.getElementById("finish").value;
+      const laptop = items.find((item) => item.id === "fieldbook-14");
+
+      if (laptop) {
+        laptop.quantity += 1;
+        laptop.finish = finish;
+      } else {
+        items.push({
+          id: "fieldbook-14",
+          name: "Fieldbook 14",
+          finish,
+          price: 899,
+          quantity: 1
+        });
+      }
+
+      saveBag(items);
+      updateBagCount();
+      showToast("Yay! Fieldbook 14 added to your demo bag.");
+    });
+
+    document.getElementById("finish").addEventListener("change", (event) => {
+      const colors = {
+        Silver: ["#b7c2c7", "#087a89"],
+        Blue: ["#547cbb", "#14186f"],
+        Copper: ["#bb8057", "#6b245f"]
+      };
+      const [finish, screen] = colors[event.target.value];
+      document.documentElement.style.setProperty("--finish", finish);
+      document.documentElement.style.setProperty("--screen", screen);
+    });
+
+    const marquee = document.getElementById("marquee");
+    const pauseButton = document.getElementById("pause-marquee");
+
+    pauseButton.addEventListener("click", () => {
+      const paused = marquee.classList.toggle("paused");
+      pauseButton.textContent = paused ? "Play" : "Pause";
+      pauseButton.setAttribute("aria-pressed", String(paused));
+    });
+
+    document.querySelectorAll('a[href="#bag"]').forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        location.hash = "bag";
+      });
+    });
+
+    window.addEventListener("hashchange", () => {
+      if (location.hash === "#bag") showBag();
+      else showShop();
+    });
+
+    // Honest hit-counter effect: count visits in this browser only.
+    let visits = 1;
+    try {
+      visits = (Number(localStorage.getItem(VISIT_KEY)) || 0) + 1;
+      localStorage.setItem(VISIT_KEY, String(visits));
+    } catch {
+      visits = 1;
+    }
+    document.getElementById("visit-number").textContent = visits;
+
+    updateBagCount();
+    if (location.hash === "#bag") showBag();
+  </script>
+</body>
+</html>

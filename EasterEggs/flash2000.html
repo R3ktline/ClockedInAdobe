@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#293b59">
+  <title>Fieldbook 14 — The Game Dock</title>
+
+  <style>
+    :root {
+      --page: #d3d0c8;
+      --panel: #f0eee7;
+      --panel-dark: #c4c0b6;
+      --ink: #171717;
+      --muted: #55534e;
+      --navy: #293b59;
+      --navy-light: #627b9a;
+      --blue: #315a83;
+      --link: #0000cc;
+      --orange: #e48a27;
+      --green: #2f671e;
+      --border: #77746c;
+      --finish: #bcc1bf;
+      --screen: #475b70;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-height: 100%; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        repeating-linear-gradient(0deg, #00000005 0 1px, transparent 1px 3px),
+        var(--page);
+      font-family: Verdana, Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.5;
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='20' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M1 1h2v2h2v2h2v2h2v2h2v2h2v2h2v6h-5v-2h-2v-2h-2v-2h-2v-2h-2z'/%3E%3Cpath fill='%23fff' d='M2 3h2v2h2v2h2v2h2v2h2v2h2v5h-3v-2h-2v-2h-2v-2h-2v-2h-2v-2z'/%3E%3C/svg%3E") 1 1, auto;
+    }
+
+    button, select, a {
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button, a, select {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='20' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M1 1h2v2h2v2h2v2h2v2h2v2h2v2h2v6h-5v-2h-2v-2h-2v-2h-2v-2h-2z'/%3E%3Cpath fill='%23fff' d='M2 3h2v2h2v2h2v2h2v2h2v2h2v5h-3v-2h-2v-2h-2v-2h-2v-2h-2v-2z'/%3E%3C/svg%3E") 1 1, pointer;
+    }
+
+    button:focus-visible, a:focus-visible, select:focus-visible {
+      outline: 2px dotted #000;
+      outline-offset: 3px;
+    }
+
+    [hidden] { display: none !important; }
+
+    .skip-link {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      z-index: 20;
+      padding: 6px 9px;
+      transform: translateY(-150%);
+      color: #fff;
+      background: #000;
+    }
+
+    .skip-link:focus { transform: translateY(0); }
+
+    /* Full-width portal layout */
+    .site {
+      display: flex;
+      min-height: 100vh;
+      flex-direction: column;
+      background: var(--panel);
+      border-right: 1px solid #777;
+      border-left: 1px solid #777;
+    }
+
+    .top-strip {
+      display: flex;
+      min-height: 25px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 3px 11px;
+      color: #eee;
+      background: #222;
+      font-size: 10px;
+    }
+
+    .masthead {
+      display: flex;
+      min-height: 81px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 11px 18px;
+      color: white;
+      background:
+        linear-gradient(#ffffff20, transparent 50%),
+        linear-gradient(90deg, #273852, #485d78 50%, #263650);
+      border-top: 2px solid #8da0b7;
+      border-bottom: 4px ridge #a5a294;
+    }
+
+    .logo {
+      display: inline-block;
+      color: white;
+      text-decoration: none;
+    }
+
+    .logo-name {
+      display: block;
+      color: #fff;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      font-size: clamp(26px, 4vw, 39px);
+      font-weight: bold;
+      letter-spacing: -2px;
+      line-height: 1;
+      text-shadow: 2px 2px #151c29;
+    }
+
+    .logo-name .orange { color: #f3a342; }
+
+    .logo-subtitle {
+      display: block;
+      margin-top: 4px;
+      color: #d9e0e8;
+      font-size: 10px;
+    }
+
+    .secret-message {
+      max-width: 260px;
+      color: #fff0bc;
+      font-size: 10px;
+      text-align: right;
+    }
+
+    .secret-message strong {
+      display: block;
+      color: #ffcf69;
+    }
+
+    .navigation {
+      display: flex;
+      min-height: 33px;
+      align-items: stretch;
+      padding-left: 8px;
+      background: linear-gradient(#dddcd5, #bdbab1);
+      border-bottom: 1px solid #77746c;
+    }
+
+    .navigation a {
+      display: flex;
+      align-items: center;
+      padding: 0 13px;
+      border-right: 1px solid #aaa79d;
+      color: #111;
+      font-size: 10px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .navigation a:hover {
+      color: #fff;
+      background: #435b7a;
+    }
+
+    .navigation .bag-link { margin-left: auto; }
+
+    .bag-count {
+      margin-left: 5px;
+      color: #9c3d09;
+      font-weight: bold;
+    }
+
+    .announcement {
+      display: flex;
+      min-height: 28px;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      color: #111;
+      background: #f2e7bd;
+      border-bottom: 1px solid #9a8b61;
+      font-size: 10px;
+    }
+
+    .announcement-label {
+      flex: 0 0 auto;
+      padding: 2px 5px;
+      color: #fff;
+      background: #a44c22;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .ticker-window { flex: 1; overflow: hidden; }
+
+    .ticker-track {
+      display: flex;
+      width: max-content;
+      animation: ticker 34s linear infinite;
+    }
+
+    .ticker-text { padding-right: 35px; white-space: nowrap; }
+
+    .announcement.paused .ticker-track,
+    .announcement:hover .ticker-track { animation-play-state: paused; }
+
+    @keyframes ticker { to { transform: translateX(-50%); } }
+
+    .pause-button {
+      flex: 0 0 auto;
+      padding: 2px 6px;
+      border: 2px outset #fff;
+      color: #111;
+      background: #dedcd4;
+      font-size: 9px;
+    }
+
+    .body-layout {
+      display: grid;
+      flex: 1;
+      grid-template-columns: 196px minmax(0, 1fr);
+      align-items: stretch;
+    }
+
+    .sidebar {
+      padding: 12px 10px;
+      border-right: 1px solid #99968c;
+      background:
+        repeating-linear-gradient(0deg, #ffffff3b 0 1px, transparent 1px 3px),
+        #dedbd2;
+    }
+
+    .side-box {
+      margin-bottom: 13px;
+      border: 1px solid #88857b;
+      background: #f3f1ea;
+      box-shadow: 1px 1px 0 #fff inset;
+    }
+
+    .side-heading {
+      margin: 0;
+      padding: 5px 7px;
+      color: #fff;
+      background: linear-gradient(#677e9b, #3c526f);
+      border-bottom: 1px solid #26364d;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .side-content { padding: 8px; }
+
+    .side-content p {
+      margin: 0;
+      font-size: 10px;
+      line-height: 1.6;
+    }
+
+    .side-links {
+      margin: 0;
+      padding: 7px 8px 7px 21px;
+      font-size: 10px;
+    }
+
+    .side-links li { margin: 4px 0; }
+
+    .side-links a { color: var(--link); }
+
+    .online {
+      color: var(--green);
+      font-weight: bold;
+    }
+
+    .online::before {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin-right: 5px;
+      border: 1px solid #315821;
+      background: #76c94f;
+      content: "";
+    }
+
+    .counter {
+      display: flex;
+      gap: 2px;
+      justify-content: center;
+      padding: 5px;
+      border: 2px inset #bbb;
+      background: #111;
+    }
+
+    .counter span {
+      min-width: 13px;
+      padding: 2px 1px;
+      color: #f55;
+      background: #250000;
+      font: bold 13px "Courier New", monospace;
+      text-align: center;
+    }
+
+    .counter-note {
+      margin: 5px 0 0;
+      color: #555;
+      font-size: 8px;
+      line-height: 1.4;
+    }
+
+    .main-content {
+      min-width: 0;
+      padding: 16px;
+      background: #f4f2eb;
+    }
+
+    .welcome {
+      padding: 8px 10px;
+      border: 1px solid #9b927f;
+      background: #eee8d8;
+      font-size: 10px;
+      line-height: 1.6;
+    }
+
+    .welcome strong { color: #253b5a; }
+
+    .section-heading {
+      margin: 17px 0 10px;
+      padding: 5px 8px;
+      color: white;
+      background: linear-gradient(#7186a1, #435974);
+      border: 1px solid #293d57;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .product {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(270px, .95fr);
+      border: 1px solid #89867e;
+      background: #fff;
+      box-shadow: 1px 1px 0 #fff inset;
+    }
+
+    .product-art {
+      position: relative;
+      display: grid;
+      min-height: 310px;
+      place-items: center;
+      overflow: hidden;
+      border-right: 1px solid #aaa79e;
+      background:
+        linear-gradient(90deg, transparent 49.8%, #0000000a 50%, transparent 50.2%),
+        linear-gradient(0deg, transparent 49.8%, #0000000a 50%, transparent 50.2%),
+        #e7e5df;
+      background-size: 26px 26px;
+    }
+
+    .art-label {
+      position: absolute;
+      top: 9px;
+      left: 9px;
+      padding: 3px 6px;
+      border: 1px solid #6f6b61;
+      color: #222;
+      background: #f4e9c5;
+      font-size: 9px;
+      font-weight: bold;
+    }
+
+    .laptop {
+      width: min(84%, 430px);
+      filter: drop-shadow(4px 10px 6px #00000038);
+      transition: transform .18s steps(3, end);
+    }
+
+    .product-art:hover .laptop { transform: translateY(-4px); }
+
+    .laptop-screen {
+      width: 78%;
+      height: clamp(145px, 22vw, 210px);
+      margin: auto;
+      padding: 8px;
+      border: 8px ridge #a3a8a6;
+      border-bottom-width: 11px;
+      border-radius: 9px 9px 3px 3px;
+      background: #363a39;
+      box-shadow: 0 0 0 1px #333;
+    }
+
+    .screen-art {
+      display: flex;
+      height: 100%;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 11px;
+      color: white;
+      background: linear-gradient(145deg, var(--screen), #273443);
+      transition: background .2s;
+    }
+
+    .screen-art small { color: #ecebdc; font-size: 8px; }
+    .screen-art strong {
+      font-size: clamp(17px, 3vw, 27px);
+      line-height: 1;
+      text-shadow: 2px 2px #27334b;
+    }
+
+    .screen-art span { font-size: 8px; }
+
+    .laptop-base {
+      position: relative;
+      height: 24px;
+      margin-top: -1px;
+      clip-path: polygon(8% 0, 92% 0, 100% 74%, 95% 100%, 5% 100%, 0 74%);
+      border-top: 3px solid white;
+      background: linear-gradient(#e7e9e5, var(--finish) 50%, #fff 55%, #969b99);
+      transition: background .2s;
+    }
+
+    .laptop-base::after {
+      position: absolute;
+      top: 3px;
+      left: 42%;
+      width: 16%;
+      height: 4px;
+      background: #787c7a;
+      content: "";
+    }
+
+    .art-caption {
+      position: absolute;
+      right: 7px;
+      bottom: 7px;
+      left: 7px;
+      color: #444;
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .product-info { padding: 13px; }
+
+    .product-tag {
+      display: inline-block;
+      padding: 3px 6px;
+      color: #fff;
+      background: #536b87;
+      font-size: 9px;
+      font-weight: bold;
+    }
+
+    .product-info h3 {
+      margin: 8px 0 2px;
+      color: #222;
+      font-size: 23px;
+    }
+
+    .tagline {
+      margin: 0 0 10px;
+      color: #555;
+      font-size: 10px;
+    }
+
+    .description {
+      margin: 0;
+      font-size: 10px;
+      line-height: 1.7;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 10px 0;
+      padding: 8px 0;
+      border-top: 1px solid #aaa;
+      border-bottom: 1px solid #aaa;
+    }
+
+    .price { color: #8d3e12; font-size: 22px; font-weight: bold; }
+    .price-note { color: #555; font-size: 8px; text-align: right; }
+
+    .demo-note {
+      margin: 8px 0;
+      padding: 7px;
+      border: 1px solid #b9b4a8;
+      background: #f2f0e9;
+      font-size: 9px;
+      line-height: 1.5;
+    }
+
+    .finish-label {
+      display: block;
+      margin: 9px 0 4px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    select {
+      width: 100%;
+      min-height: 31px;
+      padding: 4px 6px;
+      border: 2px inset #aaa;
+      color: #111;
+      background: #fff;
+      font-size: 10px;
+    }
+
+    .button-row { display: flex; gap: 7px; margin-top: 10px; }
+
+    .button {
+      min-height: 34px;
+      padding: 6px 9px;
+      border: 2px outset #f7f7f7;
+      color: #fff;
+      background: #3a5374;
+      font-size: 9px;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .button:hover { background: #526f91; }
+    .button:active { border-style: inset; }
+    .button.primary { flex: 1; background: #844d24; }
+    .button.primary:hover { background: #9a602f; }
+    .button.secondary { color: #111; background: #dedbd2; }
+
+    .loading-box {
+      margin-top: 9px;
+      padding: 8px;
+      border: 1px solid #858177;
+      background: #e9e6de;
+    }
+
+    .loading-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 9px;
+    }
+
+    .progress {
+      height: 14px;
+      margin-top: 5px;
+      overflow: hidden;
+      border: 2px inset #aaa;
+      background: #fff;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      background: repeating-linear-gradient(90deg, #5a963c 0 9px, #77b952 9px 18px);
+      transition: width .12s linear;
+    }
+
+    .ready {
+      margin: 5px 0 0;
+      color: #2f671e;
+      font-size: 9px;
+      font-weight: bold;
+    }
+
+    .lower-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .info-box {
+      border: 1px solid #99958a;
+      background: #f7f6f1;
+    }
+
+    .info-title {
+      margin: 0;
+      padding: 5px 7px;
+      color: white;
+      background: linear-gradient(#6c8099, #455d79);
+      border-bottom: 1px solid #344962;
+      font-size: 9px;
+      font-weight: bold;
+    }
+
+    .info-body { padding: 8px; font-size: 9px; line-height: 1.6; }
+    .info-body p { margin: 0; }
+
+    .spec-list { margin: 0; padding-left: 17px; }
+    .spec-list li { margin: 2px 0; }
+
+    .footer {
+      padding: 8px 12px;
+      color: #eee;
+      background: #333;
+      font-size: 9px;
+      text-align: center;
+    }
+
+    /* Bag page, still within this file */
+    .bag-view { padding: 6px; }
+
+    .bag-view h2 { margin: 0 0 4px; font-size: 19px; }
+
+    .bag-intro {
+      margin: 0 0 11px;
+      color: #555;
+      font-size: 10px;
+    }
+
+    .bag-panel { border: 1px solid #89867e; background: #fff; }
+
+    .bag-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #bbb;
+    }
+
+    .bag-item h3 { margin: 0; font-size: 13px; }
+    .bag-item p { margin: 3px 0 0; color: #555; font-size: 9px; }
+    .bag-price { color: #844d24; font-size: 11px; font-weight: bold; }
+
+    .quantity { display: flex; align-items: center; gap: 5px; margin-top: 7px; }
+
+    .quantity button, .bag-action {
+      min-width: 27px;
+      min-height: 27px;
+      padding: 3px 7px;
+      border: 2px outset #f7f7f7;
+      color: #111;
+      background: #dedbd2;
+      font-size: 9px;
+    }
+
+    .quantity .remove { color: #702515; }
+
+    .bag-summary { padding: 10px; }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 9px;
+      padding: 4px 0;
+      font-size: 10px;
+    }
+
+    .summary-line.total {
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px solid #999;
+      font-weight: bold;
+    }
+
+    .bag-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+
+    .empty { padding: 18px; border: 1px solid #999; text-align: center; }
+    .empty h3 { margin: 0 0 5px; }
+    .empty p { margin: 0 0 10px; color: #555; font-size: 10px; }
+
+    .toast {
+      position: fixed;
+      right: 10px;
+      bottom: 10px;
+      z-index: 30;
+      max-width: min(330px, calc(100vw - 20px));
+      padding: 8px 11px;
+      border: 2px outset #fff;
+      color: #fff;
+      background: #354c6d;
+      box-shadow: 2px 2px 0 #333;
+      font-size: 10px;
+    }
+
+    @media (max-width: 760px) {
+      .body-layout { grid-template-columns: 160px minmax(0, 1fr); }
+      .product { grid-template-columns: 1fr; }
+      .product-art {
+        min-height: 260px;
+        border-right: 0;
+        border-bottom: 1px solid #aaa;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .body-layout { grid-template-columns: 1fr; }
+      .sidebar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        border-right: 0;
+        border-bottom: 1px solid #999;
+      }
+      .side-box { margin: 0; }
+      .side-box:last-child { grid-column: 1 / -1; }
+      .main-content { padding: 11px; }
+      .masthead { align-items: flex-start; flex-direction: column; }
+      .secret-message { text-align: left; }
+      .navigation { flex-wrap: wrap; padding: 4px; }
+      .navigation a { min-height: 29px; padding: 0 8px; }
+      .navigation .bag-link { margin-left: 0; }
+    }
+
+    @media (max-width: 390px) {
+      .sidebar { grid-template-columns: 1fr; }
+      .side-box:last-child { grid-column: auto; }
+      .lower-panels { grid-template-columns: 1fr; }
+      .top-strip { font-size: 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ticker-track { animation: none; }
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <div class="site">
+    <div class="top-strip">
+      <span>THE GAME DOCK · GAMES, GEAR &amp; GOOD TIMES</span>
+      <span>Welcome, visitor!</span>
+    </div>
+
+    <header class="masthead">
+      <a class="logo" id="secret-logo" href="#home" aria-label="The Game Dock home. Hover for a secret.">
+        <span class="logo-name">THE GAME <span class="orange">DOCK</span></span>
+        <span class="logo-subtitle">A little corner of the web for games and gadgets</span>
+      </a>
+
+      <div class="secret-message">
+        <strong id="secret-text" hidden>SECRET FOUND!</strong>
+        <span id="secret-hint">Psst... hover over the logo for a little surprise.</span>
+      </div>
+    </header>
+
+    <nav class="navigation" aria-label="Main navigation">
+      <a href="#home">Home</a>
+      <a href="#laptop">Laptop Zone</a>
+      <a href="#about">About</a>
+      <a class="bag-link" href="#bag">My bag (<span id="bag-count">0</span>)</a>
+    </nav>
+
+    <div class="announcement" id="announcement">
+      <span class="announcement-label">Site news</span>
+      <div class="ticker-window" aria-label="Announcement">
+        <div class="ticker-track">
+          <span class="ticker-text">Welcome to The Game Dock! Check out the Fieldbook 14 and take a look around. No pop-ups, no rush. &nbsp; ★ &nbsp;</span>
+          <span class="ticker-text" aria-hidden="true">Welcome to The Game Dock! Check out the Fieldbook 14 and take a look around. No pop-ups, no rush. &nbsp; ★ &nbsp;</span>
+        </div>
+      </div>
+      <button class="pause-button" id="pause-button" type="button" aria-pressed="false">Pause</button>
+    </div>
+
+    <div class="body-layout">
+      <aside class="sidebar" aria-label="Side navigation and notes">
+        <section class="side-box">
+          <h2 class="side-heading">Quick links</h2>
+          <ul class="side-links">
+            <li><a href="#laptop">Meet the laptop</a></li>
+            <li><a href="#specifications">Specs &amp; details</a></li>
+            <li><a href="#bag">Check my bag</a></li>
+            <li><a href="#about">About this page</a></li>
+          </ul>
+        </section>
+
+        <section class="side-box">
+          <h2 class="side-heading">From the web desk</h2>
+          <div class="side-content">
+            <p>This page is a playful throwback to browser-game portals and early web shops.</p>
+          </div>
+        </section>
+
+        <section class="side-box">
+          <h2 class="side-heading">Site status</h2>
+          <div class="side-content">
+            <p><span class="online">Online</span></p>
+            <p style="margin-top:5px">No plug-in needed.</p>
+          </div>
+        </section>
+
+        <section class="side-box">
+          <h2 class="side-heading">Visitor counter</h2>
+          <div class="side-content">
+            <div class="counter" id="visit-counter" aria-label="Visits in this browser"></div>
+            <p class="counter-note">Local count on this device only. Not a public visitor total.</p>
+          </div>
+        </section>
+      </aside>
+
+      <main class="main-content" id="main-content">
+        <section id="shop-view">
+          <div class="welcome" id="home">
+            <strong>Hey there, visitor!</strong>
+            <span>Welcome to our little corner of the internet. This page is a laptop concept, not a real shop.</span>
+          </div>
+
+          <h1 class="section-heading" id="laptop">Today’s featured gear: Fieldbook 14</h1>
+
+          <section class="product" aria-label="Fieldbook 14 laptop">
+            <div class="product-art">
+              <span class="art-label">New demo item</span>
+
+              <div class="laptop" role="img" aria-label="Illustration of the Fieldbook 14 laptop">
+                <div class="laptop-screen">
+                  <div class="screen-art" id="screen-art">
+                    <small>THE GAME DOCK PRESENTS</small>
+                    <strong>Your next<br>big project.</strong>
+                    <span>FIELDBOOK 14 · EVERYDAY EDITION</span>
+                  </div>
+                </div>
+                <div class="laptop-base"></div>
+              </div>
+
+              <span class="art-caption">Laptop illustration made with HTML and CSS</span>
+            </div>
+
+            <article class="product-info">
+              <span class="product-tag">Everyday laptop · fictional demo</span>
+              <h2 style="margin:8px 0 2px;font-size:23px">Fieldbook 14</h2>
+              <p class="tagline">For projects, playlists, and your next big idea.</p>
+
+              <p class="description">
+                A 14-inch display, comfortable keyboard, and room for everyday
+                work, creative projects, and a good number of browser tabs.
+              </p>
+
+              <div class="price-row">
+                <span class="price">$899</span>
+                <span class="price-note">Illustrative demo price<br>Not a real offer</span>
+              </div>
+
+              <p class="demo-note">
+                This is a fictional product for a design demo. There is no checkout or purchase.
+              </p>
+
+              <label class="finish-label" for="finish">Choose a color:</label>
+              <select id="finish">
+                <option value="Silver">Silver</option>
+                <option value="Blue">Blue</option>
+                <option value="Copper">Copper</option>
+              </select>
+
+              <div class="button-row">
+                <button class="button primary" id="add-button" type="button">Add to my bag</button>
+                <a class="button secondary" href="#bag">Check my bag</a>
+              </div>
+
+              <section class="loading-box" id="loading-box" aria-live="polite" hidden>
+                <div class="loading-line">
+                  <span id="loading-label">Loading demo item...</span>
+                  <span id="loading-number">0%</span>
+                </div>
+                <div class="progress" role="progressbar" aria-label="Simulated loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                  <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <p id="ready-message" class="ready" hidden>Ready! The demo item is in your bag.</p>
+              </section>
+            </article>
+          </section>
+
+          <div class="lower-panels">
+            <section class="info-box" id="specifications">
+              <h2 class="info-title">Laptop details</h2>
+              <div class="info-body">
+                <ul class="spec-list">
+                  <li>14-inch display</li>
+                  <li>16 GB memory</li>
+                  <li>512 GB solid-state storage</li>
+                  <li>For everyday projects and browsing</li>
+                </ul>
+              </div>
+            </section>
+
+            <section class="info-box" id="about">
+              <h2 class="info-title">About this page</h2>
+              <div class="info-body">
+                <p>
+                  Inspired by early-2000s browser game sites: compact menus,
+                  bevelled buttons, side panels, and a little motion.
+                  The loading bar is a harmless simulation.
+                </p>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="bag-view" id="bag-view" hidden>
+          <h1 class="section-heading">My demo bag</h1>
+          <p class="bag-intro">This bag is just for the demo. No order or payment can be made.</p>
+          <div id="bag-content"></div>
+        </section>
+      </main>
+    </div>
+
+    <footer class="footer">
+      The Game Dock · A playful web design concept · Fictional product · No orders taken
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script>
+    const BAG_KEY = "game-dock-fieldbook-bag";
+    const VISIT_KEY = "game-dock-local-visits";
+    const toast = document.getElementById("toast");
+    let toastTimer;
+    let loadingTimer;
+
+    function readBag() {
+      try {
+        const value = JSON.parse(localStorage.getItem(BAG_KEY) || "[]");
+        return Array.isArray(value) ? value : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveBag(items) {
+      try {
+        localStorage.setItem(BAG_KEY, JSON.stringify(items));
+      } catch {
+        // Keep the page usable when browser storage is disabled.
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]);
+    }
+
+    function updateBagCount() {
+      const count = readBag().reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById("bag-count").textContent = count;
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.hidden = true; }, 2500);
+    }
+
+    function addToBag() {
+      const items = readBag();
+      const finish = document.getElementById("finish").value;
+      const laptop = items.find((item) => item.id === "fieldbook-14");
+
+      if (laptop) {
+        laptop.quantity += 1;
+        laptop.finish = finish;
+      } else {
+        items.push({
+          id: "fieldbook-14",
+          name: "Fieldbook 14",
+          finish,
+          price: 899,
+          quantity: 1
+        });
+      }
+
+      saveBag(items);
+      updateBagCount();
+    }
+
+    function runFakeLoading() {
+      const box = document.getElementById("loading-box");
+      const fill = document.getElementById("progress-fill");
+      const number = document.getElementById("loading-number");
+      const label = document.getElementById("loading-label");
+      const progress = document.querySelector('[role="progressbar"]');
+      const ready = document.getElementById("ready-message");
+      const button = document.getElementById("add-button");
+
+      clearInterval(loadingTimer);
+      box.hidden = false;
+      ready.hidden = true;
+      button.disabled = true;
+      button.textContent = "Adding...";
+
+      let value = 0;
+
+      loadingTimer = setInterval(() => {
+        value = Math.min(99, value + 11);
+        fill.style.width = value + "%";
+        number.textContent = value + "%";
+        progress.setAttribute("aria-valuenow", value);
+
+        if (value >= 99) {
+          clearInterval(loadingTimer);
+          label.textContent = "Almost ready...";
+          setTimeout(() => {
+            addToBag();
+            label.textContent = "Demo item loaded!";
+            ready.hidden = false;
+            button.disabled = false;
+            button.textContent = "Add another to my bag";
+            showToast("Added to your demo bag. No purchase was made.");
+          }, 450);
+        }
+      }, 110);
+    }
+
+    function showBag() {
+      document.getElementById("shop-view").hidden = true;
+      document.getElementById("bag-view").hidden = false;
+      renderBag();
+      window.scrollTo(0, 0);
+    }
+
+    function showShop() {
+      document.getElementById("shop-view").hidden = false;
+      document.getElementById("bag-view").hidden = true;
+      window.scrollTo(0, 0);
+    }
+
+    function renderBag() {
+      const container = document.getElementById("bag-content");
+      const items = readBag();
+
+      if (!items.length) {
+        container.innerHTML = `
+          <div class="empty">
+            <h3>Your bag is empty.</h3>
+            <p>Head back to the laptop if you’d like to try the demo.</p>
+            <button class="button" type="button" data-shop>Back to Laptop Zone</button>
+          </div>`;
+        container.querySelector("[data-shop]").addEventListener("click", showShop);
+        return;
+      }
+
+      const rows = items.map((item) => `
+        <div class="bag-item">
+          <div>
+            <h3>${escapeHtml(item.name)}</h3>
+            <p>Color: ${escapeHtml(item.finish)} · Quantity: ${item.quantity}</p>
+            <div class="quantity">
+              <button type="button" data-action="minus" aria-label="Decrease quantity">−</button>
+              <span>${item.quantity}</span>
+              <button type="button" data-action="plus" aria-label="Increase quantity">+</button>
+              <button class="remove" type="button" data-action="remove">Remove</button>
+            </div>
+          </div>
+          <strong class="bag-price">$${(item.price * item.quantity).toLocaleString("en-US")}</strong>
+        </div>
+      `).join("");
+
+      const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+      container.innerHTML = `
+        <div class="bag-panel">
+          ${rows}
+          <div class="bag-summary">
+            <div class="summary-line"><span>Subtotal</span><strong>$${total.toLocaleString("en-US")}</strong></div>
+            <div class="summary-line"><span>Shipping</span><span>Not applicable</span></div>
+            <div class="summary-line total"><span>Demo total</span><span>$${total.toLocaleString("en-US")}</span></div>
+            <p class="demo-note">This is a demo bag only. No order or payment is available.</p>
+            <div class="bag-actions">
+              <button class="button secondary" type="button" data-shop>Keep browsing</button>
+              <button class="button" type="button" data-done>Close bag</button>
+            </div>
+          </div>
+        </div>`;
+
+      container.querySelectorAll("[data-action]").forEach((button) => {
+        button.addEventListener("click", () => changeBag(button.dataset.action));
+      });
+
+      container.querySelector("[data-shop]").addEventListener("click", showShop);
+      container.querySelector("[data-done]").addEventListener("click", () => {
+        showToast("Thanks for visiting The Game Dock!");
+      });
+    }
+
+    function changeBag(action) {
+      let items = readBag();
+      const laptop = items.find((item) => item.id === "fieldbook-14");
+      if (!laptop) return;
+
+      if (action === "plus") laptop.quantity += 1;
+      if (action === "minus") laptop.quantity -= 1;
+
+      if (action === "remove" || laptop.quantity <= 0) {
+        items = items.filter((item) => item.id !== "fieldbook-14");
+      }
+
+      saveBag(items);
+      updateBagCount();
+      renderBag();
+    }
+
+    // Logo secret works with hover, keyboard focus, or click.
+    const logo = document.getElementById("secret-logo");
+
+    function revealSecret() {
+      document.getElementById("secret-text").hidden = false;
+      document.getElementById("secret-hint").textContent =
+        "You found the portal secret. Nice work!";
+    }
+
+    logo.addEventListener("mouseenter", revealSecret);
+    logo.addEventListener("focus", revealSecret);
+    logo.addEventListener("click", revealSecret);
+
+    // Pause the scrolling announcement.
+    const announcement = document.getElementById("announcement");
+    const pauseButton = document.getElementById("pause-button");
+
+    pauseButton.addEventListener("click", () => {
+      const paused = announcement.classList.toggle("paused");
+      pauseButton.textContent = paused ? "Play" : "Pause";
+      pauseButton.setAttribute("aria-pressed", String(paused));
+    });
+
+    // Change the laptop illustration color.
+    document.getElementById("finish").addEventListener("change", (event) => {
+      const palettes = {
+        Silver: ["#bcc1bf", "#475b70"],
+        Blue: ["#627b9a", "#24395a"],
+        Copper: ["#a97758", "#514039"]
+      };
+
+      const [finish, screen] = palettes[event.target.value];
+      document.documentElement.style.setProperty("--finish", finish);
+      document.documentElement.style.setProperty("--screen", screen);
+    });
+
+    document.getElementById("add-button").addEventListener("click", runFakeLoading);
+
+    document.querySelectorAll('a[href="#bag"]').forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        location.hash = "bag";
+      });
+    });
+
+    window.addEventListener("hashchange", () => {
+      if (location.hash === "#bag") showBag();
+      else showShop();
+    });
+
+    // Honest per-browser visit counter; not a shared visitor statistic.
+    let visits = 1;
+    try {
+      visits = (Number(localStorage.getItem(VISIT_KEY)) || 0) + 1;
+      localStorage.setItem(VISIT_KEY, String(visits));
+    } catch {
+      visits = 1;
+    }
+
+    document.getElementById("visit-counter").innerHTML =
+      String(visits).padStart(6, "0").split("").map((digit) => `<span>${digit}</span>`).join("");
+
+    updateBagCount();
+    if (location.hash === "#bag") showBag();
+  </script>
+</body>
+</html>
