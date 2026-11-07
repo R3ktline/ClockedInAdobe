@@ -12,10 +12,11 @@ const registry = Registry.parse(taraba.registry);
 const env = { ...process.env };
 afterEach(() => { process.env = { ...env }; });
 
-const fresh = (template: Template = "product") => createVisit({
-  store: "taraba", template, partner: anonymousPartner, persona: NEUTRAL_PERSONA, reasons: [], curtain: true,
-  slide: buildSlide({ persona: NEUTRAL_PERSONA, template, registry, brand }),
-});
+const fresh = (template: Template = "product", from: Record<string, string> = {}) => {
+  const base = buildSlide({ persona: NEUTRAL_PERSONA, template, registry, brand });
+  const slide = { ...base, blocks: base.blocks.map((b) => ({ ...b, variant: from[b.id] ?? b.variant })) };
+  return createVisit({ store: "taraba", template, partner: anonymousPartner, persona: NEUTRAL_PERSONA, reasons: [], curtain: true, slide });
+};
 const ask = (visit: ReturnType<typeof fresh>, message: string) => {
   delete process.env.DEEPSEEK_API_KEY; // offline stand-in
   return runDirector(visit, registry, brand, ["chat"], message, { big: true });
@@ -23,8 +24,8 @@ const ask = (visit: ReturnType<typeof fresh>, message: string) => {
 const status = (o: Awaited<ReturnType<typeof ask>>, re: RegExp) => o.understood?.find((p) => re.test(p.wanted))?.status;
 
 describe("curtain mode: a typed request (offline stand-in)", () => {
-  it("product page: photos are already smallest, sorting is not offered, and it says both", async () => {
-    const o = await ask(fresh(), "make my photos smaller and sort the products by reviews");
+  it("product page: photos already at their smallest, sorting is not offered, and it says both", async () => {
+    const o = await ask(fresh("product", { gallery: "side_large" }), "make my photos smaller and sort the products by reviews");
     expect(o.decision).toBe("hold");
     expect(status(o, /photos smaller/)).toBe("already");
     expect(status(o, /sorted/)).toBe("cannot");

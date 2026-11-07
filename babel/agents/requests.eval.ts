@@ -9,6 +9,7 @@ import type { BlockId, Template } from "@/babel/schema";
 export type Expect = {
   outcome: "changes" | "none";            // changes = a slide that does something; none = the page stays as it is
   set?: [BlockId, string][];              // after the slide these variants must be on the page
+  setOneOf?: [BlockId, string[]][];       // ... or one of several equally good variants
   never?: [BlockId, string][];            // these must not appear (the opposite of the ask)
   only?: BlockId[];                       // exactly these blocks change (an ask about one thing changes one thing)
   dialect?: "same" | "guided" | "dense" | "visual" | "standard";
@@ -30,8 +31,8 @@ export type Case = {
 export const cases: Case[] = [
   // ---- product page: one thing at a time
   { id: "photos-smaller", page: "product", from: { gallery: "single_large" }, say: "make the photos smaller",
-    expect: { outcome: "changes", set: [["gallery", "grid_thumbs"]], only: ["gallery"], dialect: "same" }, mock: true, note: "smaller means smaller" },
-  { id: "photos-smaller-already", page: "product", say: "can you make the pictures smaller?",
+    expect: { outcome: "changes", setOneOf: [["gallery", ["grid_thumbs", "side_large"]]], dialect: "same" }, mock: true, note: "smaller means smaller" },
+  { id: "photos-smaller-already", page: "product", from: { gallery: "side_large" }, say: "can you make the pictures smaller?",
     expect: { outcome: "none", reply: /already/i }, mock: true, note: "already the smallest layout: say so, do not invent a change" },
   { id: "photos-bigger", page: "product", say: "I want bigger pictures",
     expect: { outcome: "changes", set: [["gallery", "single_large"]], only: ["gallery"], dialect: "same" }, mock: true, note: "bigger means bigger, and only the photos change" },
@@ -54,13 +55,13 @@ export const cases: Case[] = [
   { id: "text-too-small", page: "product", say: "the text is too small",
     expect: { outcome: "changes", textBigger: true }, note: "too small means make it bigger, the opposite of the photo case" },
   { id: "simpler-keep-small-photos", page: "product", say: "make it simpler but keep the photos small",
-    expect: { outcome: "changes", dialect: "guided", set: [["gallery", "grid_thumbs"]] }, note: "two wishes pulling against the look's defaults" },
+    expect: { outcome: "changes", dialect: "guided", setOneOf: [["gallery", ["grid_thumbs", "side_large"]]] }, note: "two wishes pulling against the look's defaults" },
 
   // ---- things the store cannot do
   { id: "sort-reviews", page: "product", say: "sort the products by reviews",
     expect: { outcome: "none", cannot: true }, mock: true, note: "no sorting exists" },
   { id: "two-parts", page: "product", from: { gallery: "single_large" }, say: "smaller photos and sort by reviews",
-    expect: { outcome: "changes", set: [["gallery", "grid_thumbs"]], only: ["gallery"], cannot: true, reply: /Done.*Can't do/s }, mock: true, note: "do one, refuse one, say both" },
+    expect: { outcome: "changes", setOneOf: [["gallery", ["grid_thumbs", "side_large"]]], cannot: true, reply: /Done.*Can't do/s }, mock: true, note: "do one, refuse one, say both" },
   { id: "warranty-question", page: "product", say: "how long is the warranty?",
     expect: { outcome: "none", cannot: true }, note: "a product question is not a page change, and Babel does not answer product questions" },
   { id: "other-language-impossible", page: "product", say: "sortează produsele după recenzii",

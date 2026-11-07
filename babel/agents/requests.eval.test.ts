@@ -37,6 +37,7 @@ export function grade(c: Case, o: DirectorOutcome, prev: Slide): string[] {
   if (slide) {
     const now = (b: string) => slide.blocks.find((x) => x.id === b)?.variant;
     for (const [b, v] of e.set ?? []) if (now(b) !== v) f.push(`${b} should be ${v}, is ${now(b)}`);
+    for (const [b, vs] of e.setOneOf ?? []) if (!vs.includes(now(b) ?? "")) f.push(`${b} should be one of ${vs.join(", ")}, is ${now(b)}`);
     for (const [b, v] of e.never ?? []) if (now(b) === v) f.push(`${b} must not be ${v}`);
     if (e.only && JSON.stringify([...changed].sort()) !== JSON.stringify([...e.only].sort())) f.push(`only ${e.only.join(", ")} should change, but ${changed.join(", ") || "nothing"} did`);
     if (e.dialect === "same" && slide.persona.dialect !== prev.persona.dialect) f.push(`the look changed to ${slide.persona.dialect}`);
