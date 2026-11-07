@@ -22,9 +22,10 @@ export function readShopper(ctx: PartnerContext, events: InteractionEvent[] = []
 export function initialPersona(ctx: PartnerContext, prior?: Groups): { persona: Persona; reasons: string[]; copyRegister: CopyRegister } {
   if (!ctx.consent.personalization) return { persona: NEUTRAL_PERSONA, reasons: ["no consent: standard view"], copyRegister: "standard" };
   const { model } = readShopper(ctx, [], prior);
+  const from = !prior ? "" : ctx.visitor.returning ? "remembered from the last visit · " : "remembered from earlier pages · ";
   return {
     persona: { dialect: model.dialect, need: model.need, confidence: model.confidence },
-    reasons: [`${prior ? "remembered from earlier pages · " : ""}dialect: ${model.dialectWhy}`, `need: ${model.needWhy}`],
+    reasons: [`${from}dialect: ${model.dialectWhy}`, `need: ${model.needWhy}`],
     copyRegister: model.copyRegister,
   };
 }

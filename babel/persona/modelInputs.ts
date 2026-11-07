@@ -70,7 +70,10 @@ export function modelInputs(events: InteractionEvent[], partner: PartnerContext)
   if (partner.consent.partnerData && orders) add("prior_orders", orders);
   if (partner.campaign?.intentTag === "deal") add("utm_intent_deal");
   const src = partner.campaign?.utmSource?.toLowerCase() ?? "";
-  if (/instagram|tiktok|facebook|social/.test(src)) add("ref_social");
+  if (/instagram|tiktok|facebook|pinterest|social/.test(src)) add("ref_social");
+  // Came back without buying. [ASSUMPTION] a returning visitor with no purchase on record; a purchase
+  // would arrive as orderCategories (prior_orders) and pull the other way.
+  if (partner.visitor.returning && !orders) add("repeat_visit_no_cart", Math.max(1, partner.visitor.visits - 1));
   if (/compar|price/.test(src)) add("ref_price_compare");
   if (/review/.test(src)) add("ref_review_site");
 

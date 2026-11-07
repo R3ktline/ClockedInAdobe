@@ -7,9 +7,11 @@ import type { LlmTranscript } from "@/babel/agents/director";
 import { changedBlocks, describeDiff } from "@/babel/schema/diff";
 import { buildSlide, NEUTRAL_PERSONA } from "@/babel/persona";
 import type { BlockId, BrandKit, EventType, InteractionEvent, PartnerContext, Registry, Slide, Template } from "@/babel/schema";
-import { GhostCursorView, runGhost, type GhostCursor } from "./Ghost";
 import { DebugPanel } from "./DebugPanel";
+import { GhostCursorView, runGhost, type GhostControl, type GhostCursor, type GhostPlayback } from "./Ghost";
+import { LabPanel, memoryKey, type SavedMemory } from "./LabPanel";
 import { SlideControl } from "./SlideControl";
+import { ChatBox } from "./ChatBox";
 
 type TrackExtra = Omit<InteractionEvent, "t" | "type">;
 
@@ -23,7 +25,10 @@ type BabelContext = {
   cursor: number;
   standard: boolean;
   changed: ReadonlySet<BlockId>;
-  ghost?: { label: string; note: string; step: number };
+  ghost?: { label: string; note: string; step: number } & LabInfo;
+  visitId: string | null;
+  // Lab: the ghost's playback, and controls to pause it or go one step at a time.
+  player?: { state: GhostPlayback | null; pause: () => void; play: () => void; step: () => void; setStepMode: (on: boolean) => void };
   apply: Apply;
   calm: CalmEntry[];
   agent: AgentStatus;
@@ -32,8 +37,8 @@ type BabelContext = {
   go: (delta: -1 | 1) => void;
   setStandard: (on: boolean) => void;
   forgetMe: () => Promise<void>;
-  visitId: string | null;
   askNow: () => Promise<void>; // debug: ask the agent to look right now, whatever the pacing says
+  chat: (message: string) => Promise<string>; // the shopper's typed request; resolves to the agent's answer in words
 };
 
 // How a new slide reaches a page the shopper is looking at (?apply=…):
@@ -71,8 +76,21 @@ export type BabelProviderProps = {
   brand: BrandKit;
   partner: PartnerContext;                                    // what the store chooses to share, with consent
   // demo: replay a synthetic shopper; `next` is the page it walks on to (step 0 starts from a clean memory)
-  ghost?: { label: string; events: InteractionEvent[]; step?: number; next?: string };
+  ghost?: { label: string; events: InteractionEvent[]; step?: number; next?: string } & LabInfo;
   children: ReactNode;
+};
+
+// Lab: "pause after each step" is kept for the browser tab, so it carries over from page to page.
+const STEP_KEY = "babel.lab.stepMode";
+const readStepMode = () => { try { return sessionStorage.getItem(STEP_KEY) === "1"; } catch { return false; } };
+const writeStepMode = (on: boolean) => { try { sessionStorage.setItem(STEP_KEY, on ? "1" : "0"); } catch { /* ignore */ } };
+
+// Lab (testing) extras on a ghost run: the indicators panel, the return visit, a forced format.
+export type LabInfo = {
+  lab?: boolean;
+  visit?: number;                                   // 2 = return visit, starts from the browser's memory
+  variant?: { dialect: Slide["persona"]["dialect"]; need: Slide["persona"]["need"] };
+  last?: boolean;                                   // last scripted page of this visit
 };
 
 export function BabelProvider(p: BabelProviderProps) {
@@ -90,7 +108,10 @@ export function BabelProvider(p: BabelProviderProps) {
   const [lastChange, setLastChange] = useState<LastChange | null>(null);
   const [apply, setApply] = useState<Apply>("quiet");
   const [calm, setCalm] = useState<CalmEntry[]>([]);
-  const [visitIdState, setVisitIdState] = useState<string | null>(null);
+  const [visitIdState, setVisitIdState] = useState<string | null>(null); // for the lab panel
+  const lab = !!p.ghost?.lab;
+  const [playback, setPlayback] = useState<GhostPlayback | null>(null);  // lab: pause / step through
+  const playerRef = useRef<GhostControl | null>(null);
 
   const applyRef = useRef<Apply>("quiet");
   const pending = useRef<Slide | null>(null);  // arrived, not yet on screen (quiet mode)
@@ -139,11 +160,11 @@ export function BabelProvider(p: BabelProviderProps) {
     if (!prev || prev.id === next.id) return;
     if (applyRef.current === "live") { // a flash on the changed blocks is the opposite of unnoticed
       setChanged(new Set(changedBlocks(prev.blocks, next.blocks)));
-      setTimeout(() => setChanged(new Set()), 2500);
+      setTimeout(() => setChanged(new Set()), lab ? 7000 : 2500); // lab: long enough to watch
     }
     const lines = describeDiff(prev, next, labels);
     if (lines.length) setLastChange({ from: prev.index + 1, to: next.index + 1, lines, rationale: next.rationale, at: Date.now() });
-  }, [labels]);
+  }, [labels, lab]);
 
   // Would the shopper see this slide arrive? Yes if a changed block is on screen or the whole look changes.
   const log = useCallback((e: CalmEntry) => setCalm((l) => {
@@ -189,7 +210,8 @@ export function BabelProvider(p: BabelProviderProps) {
     if (started.current) return; // React dev mode mounts twice; one visit per page
     started.current = true;
     const mode = new URLSearchParams(location.search).get("apply");
-    applyRef.current = mode === "live" || mode === "next" ? mode : "quiet";
+    // The lab is for watching, so changes land at once unless asked otherwise.
+    applyRef.current = mode === "live" || mode === "next" || mode === "quiet" ? mode : lab ? "live" : "quiet";
     setApply(applyRef.current);
     const visitorId = (() => {
       if (p.ghost) return `ghost:${p.ghost.label.toLowerCase()}`;
@@ -207,12 +229,22 @@ export function BabelProvider(p: BabelProviderProps) {
       prefersReducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
       prefersContrast: matchMedia("(prefers-contrast: more)").matches,
     };
+    // Lab return visit: the server forgot everything when the site closed; the browser kept the
+    // shopper's capped group sums (consented localStorage) and hands them back on the first page.
+    const memory = (() => {
+      if (!p.ghost?.lab || p.ghost.visit !== 2 || p.ghost.step !== 0) return undefined;
+      try {
+        const raw = localStorage.getItem(memoryKey(p.ghost.label.toLowerCase()));
+        return raw ? (JSON.parse(raw) as SavedMemory).groups : undefined;
+      } catch { return undefined; }
+    })();
     fetch("/api/visit", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         store: p.store, template: p.template, productId: p.productId, partner: { ...p.partner, device },
         visitorId, fresh: p.ghost ? p.ghost.step === 0 : undefined, // step 0 = a new run; later pages and click-throughs keep the memory
+        memory, variant: p.ghost?.variant,
       }),
     })
       .then((r) => r.json())
@@ -227,7 +259,11 @@ export function BabelProvider(p: BabelProviderProps) {
           const next = p.ghost.next;
           // Walk on only once the agent has answered, so the page's last change is not cut off.
           const walk = (until: number) => (slideWanted.current && Date.now() < until ? setTimeout(() => walk(until), 500) : location.assign(next!));
-          runGhost(p.ghost.events, { push, note: setGhostNote, cursor: setGhostCursor, done: next ? () => walk(Date.now() + 20_000) : undefined });
+          const run = runGhost(p.ghost.events, {
+            push, note: setGhostNote, cursor: setGhostCursor, done: next ? () => walk(Date.now() + 20_000) : undefined,
+            stepMode: lab && readStepMode(), state: lab ? setPlayback : undefined,
+          });
+          playerRef.current = run.control;
         } else {
           push({ t: 0, type: "page_view", productId: p.productId });
         }
@@ -236,16 +272,17 @@ export function BabelProvider(p: BabelProviderProps) {
   }, []); // once per page: the props describe the page, not live state
 
   // 2. Ask for a slide once the shopper pauses.
-  const requestSlide = useCallback(async () => {
+  // `message` = something the shopper typed: skips the scroll pause and returns the agent's answer in words.
+  const requestSlide = useCallback(async (message?: string): Promise<string | undefined> => {
     if (!visitId.current) return;
-    if (performance.now() - lastScrollAt.current < PAUSE_MS) {
-      setTimeout(requestSlide, 300);
+    if (!message && performance.now() - lastScrollAt.current < PAUSE_MS) {
+      setTimeout(() => requestSlide(), 300);
       return;
     }
-    setAgent({ state: "thinking", text: "reading the signals and deciding…" });
+    setAgent({ state: "thinking", text: message ? "reading your request…" : "reading the signals and deciding…" });
     const asked = performance.now();
     const r = await fetch("/api/slide", {
-      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current }),
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current, message }),
     }).then((x) => x.json()).catch(() => null) as { decision?: string; slide?: Slide; reason?: string; llm?: LlmTranscript; urgent?: boolean } | null;
     slideWanted.current = false; // held until the answer is in, so the ghost can wait for it
     const secs = ((performance.now() - asked) / 1000).toFixed(1);
@@ -260,7 +297,16 @@ export function BabelProvider(p: BabelProviderProps) {
       if (applyRef.current === "live" || r.urgent) land(next, list[cursorRef.current], r.urgent);
       else { pending.current = next; tryLand(); }
     }
+    if (!message) return;
+    if (r?.decision === "slide" && r.slide) return r.slide.rationale;
+    if (r?.decision === "hold") return `I kept the page as it is: ${r.reason}`;
+    return r?.reason ?? "Babel could not be reached.";
   }, [land, tryLand]);
+
+  const chat = useCallback(async (message: string) => {
+    track("chat_message", { value: message.length }); // the text itself is not kept as a signal
+    return (await requestSlide(message)) ?? "Babel could not be reached.";
+  }, [requestSlide, track]);
 
   const askNow = useCallback(async () => {
     if (!visitId.current || slideWanted.current) return;
@@ -400,17 +446,29 @@ export function BabelProvider(p: BabelProviderProps) {
 
   const ctx: BabelContext = {
     store: p.store, template: p.template, registry: p.registry, brand: p.brand,
-    slide, slides, cursor, standard, changed, track, go, setStandard, forgetMe, visitId: visitIdState, askNow, agent, lastChange, apply, calm,
-    ghost: p.ghost ? { label: p.ghost.label, note: ghostNote, step: p.ghost.step ?? 0 } : undefined,
+    slide, slides, cursor, standard, changed, track, go, setStandard, forgetMe, visitId: visitIdState, askNow, chat, agent, lastChange, apply, calm,
+    player: lab ? {
+      state: playback,
+      pause: () => playerRef.current?.pause(),
+      // Play means play on: it also switches "pause after each step" off (Next step is for one action).
+      play: () => { writeStepMode(false); playerRef.current?.setStepMode(false); playerRef.current?.play(); },
+      step: () => playerRef.current?.step(),
+      setStepMode: (on: boolean) => { writeStepMode(on); playerRef.current?.setStepMode(on); },
+    } : undefined,
+    ghost: p.ghost
+      ? { label: p.ghost.label, note: ghostNote, step: p.ghost.step ?? 0, lab: p.ghost.lab, visit: p.ghost.visit, variant: p.ghost.variant, last: p.ghost.last }
+      : undefined,
   };
 
   return (
     <Ctx.Provider value={ctx}>
       <MotionConfig reducedMotion={slide.theme.motion === "reduced" ? "always" : "never"}>
-        <div style={style} data-contrast={slide.theme.contrast} data-dialect={standard ? undefined : slide.persona.dialect} className="min-h-screen">
+        <div style={style} data-contrast={slide.theme.contrast} data-dialect={standard ? undefined : slide.persona.dialect} className={`min-h-screen ${lab ? "babel-lab pl-[370px]" : ""}`}>
           {p.children}
           <SlideControl />
+          <ChatBox />
           <DebugPanel />
+          {lab && <LabPanel />}
           {p.ghost && <GhostCursorView c={ghostCursor} name={p.ghost.label} />}
         </div>
       </MotionConfig>
