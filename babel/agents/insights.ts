@@ -17,7 +17,8 @@ const SYSTEM_PROMPT = readFileSync(path.join(process.cwd(), "prompts", "insights
 const BUDGET_MS = Number(process.env.BABEL_INSIGHTS_BUDGET_MS ?? 15_000);
 const MAX_BLOCKS = 4; // same size as a minor slide's change budget
 // Held back from the model's wording (GUARDRAILS §3, rule 8): no pressure tactics, no people-labels.
-const BANNED = /\b(discount|sale|% off|countdown|hurry|limited stock|scarcity|urgen\w*|elderly|senior|young|older|boomer|gen z|millennial)\b/i;
+// (exported for the merchant chat agent, which enforces the same wording rule)
+export const BANNED = /\b(discount|sale|% off|countdown|hurry|limited stock|scarcity|urgen\w*|elderly|senior|young|older|boomer|gen z|millennial)\b/i;
 
 // The bar a change must clear before the model sees it. Read per call so tests and demos can lower it.
 const bar = () => ({
@@ -100,10 +101,10 @@ export function eligible(g: Group): Candidate[] {
     .sort((a, b) => b.visits - a.visits || b.met - a.met);
 }
 
-const say = (c: DefaultChange) =>
+export const say = (c: DefaultChange) =>
   [c.variant && `"${c.variant.replaceAll("_", " ")}"`, c.collapsed !== undefined && (c.collapsed ? "collapsed" : "expanded"), c.order && `at position ${c.order}`]
     .filter(Boolean).join(" ") || "moved";
-const evidenceLine = (g: Group, c: Candidate) =>
+export const evidenceLine = (g: Group, c: Candidate) =>
   `${c.visits} of ${g.sessions} sessions ended up with ${c.change.id}: ${say(c.change)}` +
   ` · bet came true ${c.met} of ${c.scored} checked · pressed back ${c.undone} of ${c.slides} times`;
 
