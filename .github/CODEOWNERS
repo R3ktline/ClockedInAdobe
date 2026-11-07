@@ -1,0 +1,36 @@
+# Track ownership (see AGENTS.md "Team and ownership").
+# Logins taken from commit authors; verify each one has access to the repo.
+# Later rules win, so the catch-all comes first.
+
+*                         @R3ktline
+
+# Track A: schema, data, gateway, guardrails (bogdan)
+/babel/schema/            @R3ktline
+/babel/guardrails/        @R3ktline
+/babel/tools/             @R3ktline
+/data/catalog.json        @R3ktline
+/app/api/a2a/             @R3ktline
+/app/api/mcp/             @R3ktline
+/app/.well-known/         @R3ktline
+
+# Track B: stores and slide UI (Ionut)
+/stores/                  @ionutdautema
+/app/[store]/             @ionutdautema
+/babel/sdk/               @ionutdautema
+
+# Track C: agents and LLM (David)
+/babel/llm/               @Ddavid10101
+/babel/agents/            @Ddavid10101
+/babel/persona/           @Ddavid10101
+/prompts/                 @Ddavid10101
+/app/api/slide/           @Ddavid10101
+/app/api/chat/            @Ddavid10101
+/data/slide-cache/        @Ddavid10101
+
+# Track D: signals, markers, merchant panel (Matei)
+/babel/sdk/signals.ts     @estegucci-oss
+/babel/markers/           @estegucci-oss
+/app/merchant/            @estegucci-oss
+/app/api/events/          @estegucci-oss
+/data/shoppers/           @estegucci-oss
+/data/sessions/           @estegucci-oss

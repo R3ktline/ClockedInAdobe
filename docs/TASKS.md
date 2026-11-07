@@ -1,0 +1,67 @@
+# Tasks
+
+The shared board for the 12-hour build. Claim a task by putting your name in it **and pushing** before you start. One line per change, so merges don't conflict.
+
+Status: `todo` · `doing` · `blocked` · `review` · `done`
+Format: `- [status] [track] task (owner) · notes / PR link`
+
+Tracks: **A** bogdan · **B** Ionut · **C** David · **D** Matei ([AGENTS.md](../AGENTS.md#team-and-ownership)).
+
+## Phase 1: foundation (bogdan, solo)
+
+bogdan builds the base and a thin proof of concept that touches every track's folder, so each track starts Phase 2 from working code instead of four competing scaffolds. Nobody else pushes app code during this phase.
+
+- [todo] [A] Scaffold Next.js + TS + Tailwind + Framer Motion + zod + `openai`; scripts `dev`, `typecheck`, `lint`, `test`; folder skeleton from [SPEC §12](../SPEC.md#12-repo-layout); fill in the Commands table in AGENTS.md (bogdan) ·
+- [todo] [A] `babel/schema`: first version of every zod schema (bogdan) ·
+- [todo] [A] Seed catalog across the 6 categories, enough for the PoC (bogdan) · grown to ~60 in Phase 2
+- [todo] [B] Taraba skeleton: home, category, product pages built from `<BabelBlock>`, brand kit, registry, two variants on a few blocks (bogdan) ·
+- [todo] [B] `babel/sdk`: `BabelProvider`, `BabelBlock`, basic SlidePlayer (transition, ◀ ▶, Standard view) (bogdan) ·
+- [todo] [D] Signals → `/api/events` → `babel/markers` with 3 markers (`hesitation`, `trustNeed`, `infoAppetite`) (bogdan) ·
+- [todo] [C] `babel/llm` (DeepSeek client + mock + usage logging), `babel/persona` slide-0 rules, minimal Director with `proposeSlide` (bogdan) ·
+- [todo] [A] `validateSlide`: schema, registry, brand clamp, change budget (bogdan) ·
+- [todo] [D] Bare `/merchant` page (markers + Director trace) and one ghost shopper (Radu) (bogdan) ·
+
+**Foundation checkpoint:** the Radu ghost shopper runs on Taraba; his markers rise on `/merchant`; the Director (real DeepSeek) proposes a slide; the validator accepts or makes it repair; the page moves to slide 2 and ◀ goes back. With DeepSeek unreachable, the Director holds and the store still works. CI is green. When this is met, bogdan marks it `done` here and tells the team.
+
+**While Phase 1 runs (prep only, no app code pushed):**
+- Ionut: designs for the 4 dialects on Taraba, and Croiala's look.
+- David: drafts of the Director and Concierge prompts from [GUARDRAILS §6](GUARDRAILS.md#6-draft-prompts), and the tool list.
+- Matei: event streams for the 10 shoppers ([SPEC §3.4](../SPEC.md#34-the-10-demo-shoppers)) and marker weights from [MARKERS.md](MARKERS.md).
+
+## Phase 2: P0 per track ([SPEC §13](../SPEC.md#13-scope))
+
+- [todo] [A] Full catalog: ~60 products, 3 copy registers, policies, store-wide promotions (bogdan) ·
+- [todo] [A] Return-visit major slide with carry-over (validator side) (bogdan) · with C
+- [todo] [A] Policy layer + red-team fixtures from [GUARDRAILS §7](GUARDRAILS.md#7-red-team-fixtures-scriptseval-fixtures) passing (bogdan) ·
+- [todo] [A] A2A Agent Card + `search_products`, `compare_products`, `create_handoff_link`; `/{store}/h/{id}` route with B (bogdan) ·
+- [todo] [A] `scripts/buyer-agent.ts` (DeepSeek-driven buyer agent over A2A) (bogdan) ·
+- [todo] [B] All block variants for the 4 dialects on Taraba (hero, productList, filters, gallery, summary, specs, trust, buyBox, compare, continuity, assist) (Ionut) ·
+- [todo] [B] SlidePlayer polish: change highlight, Why? panel, undo (Ionut) ·
+- [todo] [C] Director: all tools, hypothesis scoring, repair loop, 6 s budget, learned priors slot (David) ·
+- [todo] [C] Slide cache + `build-slide-cache` script; persona rules tuned on the 10 shoppers (David) ·
+- [todo] [D] All 13 markers + evidence + triggers, unit-tested (incl. "volume is not interest") (Matei) ·
+- [todo] [D] Ghost shopper runner for all 10 shoppers (Matei) ·
+- [todo] [D] `/merchant`: live sessions, full Director trace (Matei) ·
+
+**Checkpoint:** the full P0 path runs end to end with replayed responses. **Record the backup video now.**
+
+## Phase 3: P1
+
+- [todo] [B] Croiala store: brand kit, registry, variants; clamp log visible (Ionut) ·
+- [todo] [C] Concierge chat → explicit slides (David) ·
+- [todo] [C] Insights agent cards + "approve as default" (David) · panel UI with D
+- [todo] [A] MCP endpoint over `babel/tools` (bogdan) ·
+- [todo] [D] Persona table vs Standard-view holdout (simulated, labelled) (Matei) ·
+- [todo] [C] Cost meter: usage → cost from DeepSeek's pricing page; per-1,000-visits figure (David) · [SPEC §14](../SPEC.md#14-cost)
+- [todo] [D] LLM synthetic shoppers (Matei) ·
+
+## Phase 4: demo (last ~3 hours)
+
+- [todo] [B] Simulator panel, side-by-side view, presenter hotkeys, demo-mode slow transitions (Ionut) ·
+- [todo] [C] Record/replay for scripted beats; warm the slide cache (David) ·
+- [todo] [all] Rehearse [DEMO.md](DEMO.md) twice on a projector-sized screen; go through [DEMOQUESTIONS.md](DEMOQUESTIONS.md) (all) ·
+- [todo] [all] Final backup video, cost-vs-value slide, closing slide (all) ·
+
+## Blocked / needs another track
+
+<!-- - [blocked] [B] needs `emphasis` field on Slide blocks (Ionut) · waiting on A -->
