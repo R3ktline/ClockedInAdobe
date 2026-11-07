@@ -1,23 +1,62 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBabel } from "./BabelProvider";
 
-// The shopper's control over Babel: page through slides, see why, or switch personalization off.
+const CHANGE_CARD_MS = 15_000;
+
+// The shopper's control over Babel: page through views, see why, or switch personalization off.
+// In ghost (testing) mode it also shows what the agent is doing and what the model answered.
 export function SlideControl() {
-  const { slides, cursor, go, standard, setStandard, slide, ghost, track } = useBabel();
+  const { slides, cursor, go, standard, setStandard, slide, ghost, track, agent, lastChange } = useBabel();
   const [whyOpen, setWhyOpen] = useState(false);
+  const [changeVisible, setChangeVisible] = useState(false);
+  useEffect(() => {
+    if (!lastChange) return;
+    setChangeVisible(true);
+    const id = setTimeout(() => setChangeVisible(false), CHANGE_CARD_MS);
+    return () => clearTimeout(id);
+  }, [lastChange]);
+
   const btn = "rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 disabled:opacity-35 disabled:hover:bg-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--c-primary)]";
+  const box = "w-96 max-w-full rounded-xl border border-black/10 p-4 shadow-xl";
+  const card = `${box} bg-white text-[#14171f]`;
+  const changes = lastChange && (
+    <>
+      <p className="font-semibold">What changed · view {lastChange.from} → {lastChange.to}</p>
+      <ul className="mt-1 list-disc pl-5 text-[#3c4250]">
+        {lastChange.lines.map((l) => <li key={l}>{l}</li>)}
+      </ul>
+    </>
+  );
 
   return (
-    <div className="fixed right-4 bottom-4 z-50 flex max-w-[calc(100vw-2rem)] flex-col items-end gap-2 text-[15px]" style={{ fontSize: 15 }}>
+    <div className="fixed right-4 bottom-4 z-50 flex max-w-[calc(100vw-2rem)] flex-col items-end gap-2" style={{ fontSize: 15 }}>
       {ghost && (
-        <div className="rounded-xl bg-[#14171f] px-3 py-2 text-white shadow-lg" role="status" aria-live="polite">
-          <span className="font-semibold">Synthetic shopper · {ghost.label}</span>
-          {ghost.note && <span className="text-white/75"> {ghost.note}</span>}
+        <div className={`${box} bg-[#14171f] text-white`} role="status" aria-live="polite">
+          <p><span className="font-semibold">Synthetic shopper · {ghost.label}</span> <span className="text-white/75">{ghost.note}</span></p>
+          <p className="mt-1">
+            <span className="font-semibold">Babel agent:</span>{" "}
+            <span className={agent.state === "thinking" ? "animate-pulse text-amber-300" : "text-white/75"}>{agent.text}</span>
+          </p>
+          {agent.llm && (
+            <details className="mt-2 text-sm">
+              <summary className="cursor-pointer text-white/75">Model&apos;s answer · {agent.llm.model}</summary>
+              <ol className="mt-2 flex max-h-72 flex-col gap-2 overflow-auto">
+                {agent.llm.rounds.map((r, i) => (
+                  <li key={i} className="rounded-lg bg-white/10 p-2">
+                    <p className="text-white/60">round {i + 1} · {(r.ms / 1000).toFixed(1)}s · {r.verdict}</p>
+                    {r.said && <p className="mt-1 whitespace-pre-wrap">{r.said}</p>}
+                    {r.call && <pre className="mt-1 overflow-auto text-xs whitespace-pre-wrap">{r.call.name}({JSON.stringify(r.call.args, null, 1)})</pre>}
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )}
         </div>
       )}
+      {changeVisible && !whyOpen && lastChange && <div className={card} role="status">{changes}</div>}
       {whyOpen && (
-        <div className="w-80 max-w-full rounded-xl border border-black/10 bg-white p-4 text-[#14171f] shadow-xl" role="dialog" aria-label="Why this view">
+        <div className={card} role="dialog" aria-label="Why this view">
           <p className="font-semibold">{standard ? "Standard view" : "Why this view?"}</p>
           <p className="mt-1 text-[#3c4250]">
             {standard ? "Personalization is off. Everyone sees this page." : slide.rationale}
@@ -27,6 +66,7 @@ export function SlideControl() {
               View {slide.persona.dialect} · focus {slide.persona.need} · chosen by {slide.source === "director" ? "the Babel agent" : "starting rules"}. Prices and product facts are the same for everyone.
             </p>
           )}
+          {!standard && lastChange && <div className="mt-3 border-t border-black/10 pt-3">{changes}</div>}
         </div>
       )}
       <nav aria-label="Page views" className="flex items-center gap-1 rounded-full border border-black/10 bg-white p-1 text-[#14171f] shadow-lg">

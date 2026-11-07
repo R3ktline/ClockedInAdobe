@@ -3,9 +3,11 @@
 // signals, asks for a new slide at pauses, and applies slides with the store's brand kit.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { MotionConfig } from "framer-motion";
-import { changedBlocks } from "@/babel/guardrails/validateSlide";
+import type { LlmTranscript } from "@/babel/agents/director";
+import { changedBlocks, describeDiff } from "@/babel/schema/diff";
 import { buildSlide, NEUTRAL_PERSONA } from "@/babel/persona";
 import type { BlockId, BrandKit, EventType, InteractionEvent, PartnerContext, Registry, Slide, Template } from "@/babel/schema";
+import { GhostCursorView, runGhost, type GhostCursor } from "./Ghost";
 import { SlideControl } from "./SlideControl";
 
 type TrackExtra = Omit<InteractionEvent, "t" | "type">;
@@ -21,10 +23,17 @@ type BabelContext = {
   standard: boolean;
   changed: ReadonlySet<BlockId>;
   ghost?: { label: string; note: string };
+  agent: AgentStatus;
+  lastChange: LastChange | null;
   track: (type: EventType, extra?: TrackExtra) => void;
   go: (delta: -1 | 1) => void;
   setStandard: (on: boolean) => void;
 };
+
+// What the Babel agent is doing right now, for the testing overlay.
+export type AgentStatus = { state: "idle" | "thinking" | "changed" | "held"; text: string; llm?: LlmTranscript };
+// The literal changes between the previous and the current view, in the store's own block names.
+export type LastChange = { from: number; to: number; lines: string[]; rationale: string; at: number };
 
 const Ctx = createContext<BabelContext | null>(null);
 
@@ -62,6 +71,9 @@ export function BabelProvider(p: BabelProviderProps) {
   const [standard, setStandardState] = useState(false);
   const [changed, setChanged] = useState<ReadonlySet<BlockId>>(new Set());
   const [ghostNote, setGhostNote] = useState("");
+  const [ghostCursor, setGhostCursor] = useState<GhostCursor>({ x: 0, y: 0, label: "", clicks: 0, visible: false });
+  const [agent, setAgent] = useState<AgentStatus>({ state: "idle", text: "watching" });
+  const [lastChange, setLastChange] = useState<LastChange | null>(null);
 
   const visitId = useRef<string | null>(null);
   const t0 = useRef(0);
@@ -98,13 +110,18 @@ export function BabelProvider(p: BabelProviderProps) {
     push({ t, type, ...extra });
   }, [push]);
 
-  // Highlight the blocks a transition changed, briefly.
+  // Highlight the blocks a transition changed, briefly, and spell the changes out.
+  const labels = useMemo(
+    () => Object.fromEntries(Object.entries(p.registry[p.template] ?? {}).map(([id, b]) => [id, b!.label])),
+    [p.registry, p.template],
+  );
   const showSlide = useCallback((next: Slide, prev: Slide | undefined) => {
-    if (prev) {
-      setChanged(new Set(changedBlocks(prev.blocks, next.blocks)));
-      setTimeout(() => setChanged(new Set()), 2500);
-    }
-  }, []);
+    if (!prev || prev.id === next.id) return;
+    setChanged(new Set(changedBlocks(prev.blocks, next.blocks)));
+    setTimeout(() => setChanged(new Set()), 2500);
+    const lines = describeDiff(prev, next, labels);
+    if (lines.length) setLastChange({ from: prev.index + 1, to: next.index + 1, lines, rationale: next.rationale, at: Date.now() });
+  }, [labels]);
 
   // 1. Start the visit. Until slide 0 arrives the store renders its neutral page.
   const started = useRef(false);
@@ -131,12 +148,7 @@ export function BabelProvider(p: BabelProviderProps) {
         show([r.slide], 0);
         showSlide(r.slide, neutral);
         if (p.ghost) {
-          for (const e of p.ghost.events) {
-            setTimeout(() => {
-              push(e);
-              setGhostNote(describe(e));
-            }, e.t);
-          }
+          runGhost(p.ghost.events, { push, note: setGhostNote, cursor: setGhostCursor });
         } else {
           push({ t: 0, type: "page_view", productId: p.productId });
         }
@@ -152,9 +164,15 @@ export function BabelProvider(p: BabelProviderProps) {
       return;
     }
     slideWanted.current = false;
+    setAgent({ state: "thinking", text: "reading the signals and deciding…" });
+    const asked = performance.now();
     const r = await fetch("/api/slide", {
       method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current }),
-    }).then((x) => x.json()).catch(() => null) as { decision?: string; slide?: Slide } | null;
+    }).then((x) => x.json()).catch(() => null) as { decision?: string; slide?: Slide; reason?: string; llm?: LlmTranscript } | null;
+    const secs = ((performance.now() - asked) / 1000).toFixed(1);
+    if (r?.decision === "slide" && r.slide) setAgent({ state: "changed", text: `made view ${r.slide.index + 1} in ${secs}s`, llm: r.llm });
+    else if (r?.decision === "hold") setAgent({ state: "held", text: `kept this view (${r.reason}) after ${secs}s`, llm: r.llm });
+    else setAgent({ state: "idle", text: "watching" });
     if (r?.decision === "slide" && r.slide) {
       const list = slidesRef.current;
       showSlide(r.slide, list[cursorRef.current]);
@@ -233,7 +251,7 @@ export function BabelProvider(p: BabelProviderProps) {
 
   const ctx: BabelContext = {
     store: p.store, template: p.template, registry: p.registry, brand: p.brand,
-    slide, slides, cursor, standard, changed, track, go, setStandard,
+    slide, slides, cursor, standard, changed, track, go, setStandard, agent, lastChange,
     ghost: p.ghost ? { label: p.ghost.label, note: ghostNote } : undefined,
   };
 
@@ -243,22 +261,9 @@ export function BabelProvider(p: BabelProviderProps) {
         <div style={style} data-contrast={slide.theme.contrast} className="min-h-screen">
           {p.children}
           <SlideControl />
+          {p.ghost && <GhostCursorView c={ghostCursor} name={p.ghost.label} />}
         </div>
       </MotionConfig>
     </Ctx.Provider>
   );
-}
-
-const EVENT_TEXT: Partial<Record<EventType, string>> = {
-  page_view: "opened the product page",
-  hover_price: "is looking at the price",
-  review_open: "opened the reviews",
-  policy_open: "opened the policy",
-  idle: "stopped for a moment",
-  add_to_cart: "added it to the cart",
-  remove_from_cart: "removed it from the cart",
-};
-function describe(e: InteractionEvent) {
-  const base = EVENT_TEXT[e.type] ?? e.type.replaceAll("_", " ");
-  return e.type === "policy_open" && typeof e.value === "string" ? `opened the ${e.value} policy` : base;
 }

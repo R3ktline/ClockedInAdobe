@@ -19,3 +19,10 @@ body {
 }
 
 [data-contrast="high"] .border-black\/10 { border-color: rgb(0 0 0 / 0.6); }
+
+/* Ghost shopper click ripple (demo/testing). */
+.babel-ghost-click { animation: babel-ghost-click 600ms ease-out forwards; }
+@keyframes babel-ghost-click {
+  from { transform: scale(0.3); opacity: 1; }
+  to { transform: scale(1.8); opacity: 0; }
+}

@@ -22,17 +22,17 @@ export async function POST(req: Request) {
   try {
     const prev = visit.slides.at(-1)!;
     const o = await runDirector(visit, cfg.registry, cfg.brand);
-    const common = { at: elapsed(visit), triggers, errors: o.errors, clamps: o.clamps, rounds: o.rounds, ms: o.ms, mocked: o.mocked };
+    const common = { at: elapsed(visit), triggers, errors: o.errors, clamps: o.clamps, rounds: o.rounds, ms: o.ms, mocked: o.mocked, llm: o.transcript };
     if (o.decision === "slide" && o.slide) {
       addSlide(visit, o.slide);
       visit.trace.push({
         ...common, kind: "slide", hypothesis: o.slide.hypothesis, diff: describeDiff(prev, o.slide),
         text: `slide ${o.slide.index} (${o.slide.kind}): ${o.slide.rationale}`,
       });
-      return Response.json({ decision: "slide", slide: o.slide });
+      return Response.json({ decision: "slide", slide: o.slide, llm: o.transcript });
     }
     visit.trace.push({ ...common, kind: "hold", text: `hold: ${o.reason}` });
-    return Response.json({ decision: "hold", reason: o.reason });
+    return Response.json({ decision: "hold", reason: o.reason, llm: o.transcript });
   } finally {
     visit.directorBusy = false;
   }

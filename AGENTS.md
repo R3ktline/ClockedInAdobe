@@ -69,7 +69,7 @@ Each person runs their own agents on their own machine. Agents coordinate only t
 | `npm run dev` | Dev server on :3000. `/` index, `/taraba` store, `/merchant` panel |
 | `npm run typecheck` / `npm test` / `npm run build` | CI checks (tsc, vitest, Next build) |
 
-Demo URLs: `/taraba/p/home-wm-01?ghost=radu` replays the synthetic shopper Radu in the page (`?ghost=<id>` for any fixture in `data/shoppers/`); open `/merchant` alongside to watch markers and the Director's trace.
+Demo URLs: `/taraba/p/home-wm-01?ghost=radu` replays the synthetic shopper Radu in the page (`?ghost=<id>` for any fixture in `data/shoppers/`). A visible cursor scrolls to and really clicks each element (stores tag clickable elements with `data-ghost="<event>[:<value>]"`), a dark card shows what the agent is doing and the model's raw answer, and a "What changed" card lists each change in plain words. `/merchant` shows the markers, the Director's trace and the full LLM conversation (what it was shown, what it answered, the validator's verdict).
 
 **Without `DEEPSEEK_API_KEY` the LLM is mocked** (`babel/llm`, deterministic answers per agent), so everything runs offline; the merchant panel says "mock". `BABEL_LLM=mock` forces the mock even with a key. `BABEL_MIN_SLIDE_GAP_MS` (default 20000) sets the pause between slides.
 

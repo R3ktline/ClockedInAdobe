@@ -1,15 +1,18 @@
 // In-memory visit state shared by the API routes (demo scope: one Node process, no database).
 import type {
-  BlockId, Hypothesis, InteractionEvent, MarkerId, Markers, PartnerContext, Persona, Slide, Template,
+  Hypothesis, InteractionEvent, MarkerId, Markers, PartnerContext, Persona, Slide, Template,
 } from "@/babel/schema";
 import { computeMarkers, findTriggers } from "@/babel/markers";
-import { changedBlocks } from "@/babel/guardrails/validateSlide";
+import type { LlmTranscript } from "@/babel/agents/director";
+
+// "checkin" = a routine look by the agent, not a threshold crossing.
+export type Trigger = MarkerId | "checkin";
 
 export type TraceEntry = {
   at: number; // ms since visit start
   kind: "visit" | "trigger" | "slide" | "hold" | "result" | "skip";
   text: string;
-  triggers?: MarkerId[];
+  triggers?: Trigger[];
   markers?: Partial<Record<MarkerId, number>>;
   hypothesis?: Hypothesis;
   diff?: string[];
@@ -19,6 +22,7 @@ export type TraceEntry = {
   ms?: number;
   mocked?: boolean;
   met?: boolean;
+  llm?: LlmTranscript;
 };
 
 export type Visit = {
@@ -35,7 +39,9 @@ export type Visit = {
   slideAt: Record<string, { t: number; markers: Markers }>;
   scored: string[];
   trace: TraceEntry[];
-  pendingTriggers: MarkerId[];
+  pendingTriggers: Trigger[];
+  lastLookAt: number;      // when the agent was last asked to look
+  eventsAtLastLook: number;
   directorBusy: boolean;
   lastDirectorSlideAt?: number;
   minorCount: number;
@@ -44,6 +50,10 @@ export type Visit = {
 
 const MIN_GAP_MS = Number(process.env.BABEL_MIN_SLIDE_GAP_MS ?? 20_000);
 const MAX_MINOR_SLIDES = 5;
+// The agent also takes a look on its own after this long with new activity, so changes are not only
+// threshold-driven. 0 turns check-ins off.
+const CHECKIN_MS = Number(process.env.BABEL_CHECKIN_MS ?? 15_000);
+const CHECKIN_MIN_EVENTS = 3;
 
 const g = globalThis as unknown as { __babelVisits?: Map<string, Visit> };
 const visits: Map<string, Visit> = (g.__babelVisits ??= new Map());
@@ -70,6 +80,8 @@ export function createVisit(init: {
     scored: [],
     trace: [{ at: 0, kind: "visit", text: `slide 0 from rules: ${init.persona.dialect} × ${init.persona.need}`, diff: init.reasons }],
     pendingTriggers: [],
+    lastLookAt: 0,
+    eventsAtLastLook: 0,
     directorBusy: false,
     minorCount: 0,
     standardView: !init.partner.consent.personalization,
@@ -92,15 +104,23 @@ export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: b
   v.markers = computeMarkers(v.events, now);
   scoreHypotheses(v, now);
 
-  const crossed = findTriggers(prev, v.markers);
-  if (!crossed.length || v.standardView) return { trigger: false };
+  const crossed: Trigger[] = findTriggers(prev, v.markers);
+  const fresh = v.events.length - v.eventsAtLastLook;
+  const checkin = !crossed.length && CHECKIN_MS > 0 && now - v.lastLookAt >= CHECKIN_MS && fresh >= CHECKIN_MIN_EVENTS;
+  if ((!crossed.length && !checkin) || v.standardView) return { trigger: false };
   const tooSoon = v.lastDirectorSlideAt !== undefined && now - v.lastDirectorSlideAt < MIN_GAP_MS;
   if (tooSoon || v.minorCount >= MAX_MINOR_SLIDES) {
-    v.trace.push({ at: now, kind: "skip", text: `${crossed.join(", ")} crossed, but ${tooSoon ? "the last slide was too recent" : "the slide limit is reached"}`, triggers: crossed });
+    if (!checkin) v.trace.push({ at: now, kind: "skip", text: `${crossed.join(", ")} crossed, but ${tooSoon ? "the last slide was too recent" : "the slide limit is reached"}`, triggers: crossed });
     return { trigger: false };
   }
-  v.pendingTriggers = [...new Set([...v.pendingTriggers, ...crossed])];
-  v.trace.push({ at: now, kind: "trigger", text: `${crossed.join(", ")} crossed ${0.6}`, triggers: crossed, markers: values(v.markers) });
+  const triggers: Trigger[] = checkin ? ["checkin"] : crossed;
+  v.pendingTriggers = [...new Set([...v.pendingTriggers, ...triggers])];
+  v.lastLookAt = now;
+  v.eventsAtLastLook = v.events.length;
+  v.trace.push({
+    at: now, kind: "trigger", triggers, markers: values(v.markers),
+    text: checkin ? `check-in: ${fresh} new events, the agent takes a look` : `${crossed.join(", ")} crossed 0.6`,
+  });
   return { trigger: true };
 }
 
@@ -129,23 +149,4 @@ export function addSlide(v: Visit, slide: Slide) {
   if (slide.kind === "minor") v.minorCount++;
 }
 
-// Human-readable change list between two slides, for the trace and the merchant panel.
-export function describeDiff(prev: Slide, next: Slide): string[] {
-  const out: string[] = [];
-  const before = new Map(prev.blocks.map((b) => [b.id, b]));
-  const changed = new Set(changedBlocks(prev.blocks, next.blocks)); // blocks pushed aside don't count as moved
-  for (const b of next.blocks) {
-    const p = before.get(b.id as BlockId);
-    if (!p) { out.push(`${b.id}: added (${b.variant})`); continue; }
-    if (p.variant !== b.variant) out.push(`${b.id}: ${p.variant} → ${b.variant}`);
-    if (p.order !== b.order && changed.has(b.id)) out.push(`${b.id}: position ${p.order} → ${b.order}`);
-    if (!!p.collapsed !== !!b.collapsed) out.push(`${b.id}: ${b.collapsed ? "collapsed" : "expanded"}`);
-  }
-  if (prev.persona.dialect !== next.persona.dialect) out.push(`dialect: ${prev.persona.dialect} → ${next.persona.dialect}`);
-  if (prev.persona.need !== next.persona.need) out.push(`need: ${prev.persona.need} → ${next.persona.need}`);
-  if (prev.copyRegister !== next.copyRegister) out.push(`copy: ${prev.copyRegister} → ${next.copyRegister}`);
-  for (const k of Object.keys(next.theme) as (keyof Slide["theme"])[]) {
-    if (prev.theme[k] !== next.theme[k]) out.push(`theme.${k}: ${prev.theme[k]} → ${next.theme[k]}`);
-  }
-  return out;
-}
+export { describeDiff } from "@/babel/schema/diff";

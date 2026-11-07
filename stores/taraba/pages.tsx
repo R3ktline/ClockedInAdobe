@@ -104,15 +104,18 @@ function Benefits({ p }: { p: Product }) {
   );
 }
 
-function BuyBox({ p, variant, onAdd }: { p: Product; variant: "standard" | "calm" | "prominent_simple"; onAdd: () => void }) {
+type Cart = { count: number; add: () => void; remove: () => void };
+
+function BuyBox({ p, variant, cart }: { p: Product; variant: "standard" | "calm" | "prominent_simple"; cart: Cart }) {
   const { track } = useBabel();
-  const add = () => { track("add_to_cart", { blockId: "buyBox", productId: p.id }); onAdd(); };
+  const add = () => { track("add_to_cart", { blockId: "buyBox", productId: p.id }); cart.add(); };
+  const remove = () => { track("remove_from_cart", { blockId: "buyBox", productId: p.id }); cart.remove(); };
   const promo = variant === "standard" && p.promotion;
   const big = variant === "prominent_simple";
   return (
     <div className={`${card} p-5`} onMouseEnter={() => track("hover_price", { blockId: "buyBox", productId: p.id })}>
       <div className="flex flex-wrap items-baseline gap-3">
-        <span className={`${big ? "text-5xl" : "text-3xl"} font-extrabold`}>{lei.format(p.price)}</span>
+        <span data-ghost="hover_price" className={`${big ? "text-5xl" : "text-3xl"} font-extrabold`}>{lei.format(p.price)}</span>
         {promo && (
           <>
             <span className="text-[var(--c-muted)] line-through">{lei.format(p.promotion!.oldPrice)}</span>
@@ -126,11 +129,17 @@ function BuyBox({ p, variant, onAdd }: { p: Product; variant: "standard" | "calm
           : big ? `It arrives in ${p.policies.deliveryDays} days.` : `${p.stock > 0 ? "In stock" : "Out of stock"} · delivery in ${p.policies.deliveryDays} days`}
       </p>
       <button
+        data-ghost="add_to_cart"
         onClick={add}
         className={`mt-4 ${big ? "w-full py-4 text-xl" : "px-6 py-3"} rounded-[var(--babel-radius)] bg-[var(--c-primary)] font-bold text-white hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--c-primary)]`}
       >
         Add to cart
       </button>
+      {cart.count > 0 && (
+        <button data-ghost="remove_from_cart" onClick={remove} className="mt-4 ml-3 rounded-[var(--babel-radius)] px-4 py-3 font-semibold text-[var(--c-primary)] hover:bg-black/5">
+          Remove from cart ({cart.count})
+        </button>
+      )}
     </div>
   );
 }
@@ -155,7 +164,7 @@ function Specs({ p, limit }: { p: Product; limit?: number }) {
       {rows(limit ? p.specs.slice(0, limit) : p.specs)}
       {limit && p.specs.length > limit && (
         <details className="mt-2" onToggle={(e) => e.currentTarget.open && track("block_open", { blockId: "specs" })}>
-          <summary className="cursor-pointer font-semibold text-[var(--c-primary)]">All {p.specs.length} specifications</summary>
+          <summary data-ghost="block_open" className="cursor-pointer font-semibold text-[var(--c-primary)]">All {p.specs.length} specifications</summary>
           {rows(p.specs.slice(limit))}
         </details>
       )}
@@ -167,7 +176,7 @@ function Policy({ p, kind, title, children }: { p: Product; kind: string; title:
   const { track } = useBabel();
   return (
     <details className="group" onToggle={(e) => e.currentTarget.open && track("policy_open", { blockId: "trust", productId: p.id, value: kind })}>
-      <summary className="cursor-pointer font-semibold text-[var(--c-primary)]">{title}</summary>
+      <summary data-ghost={`policy_open:${kind}`} className="cursor-pointer font-semibold text-[var(--c-primary)]">{title}</summary>
       <p className="mt-1 text-[var(--c-muted)]">{children}</p>
     </details>
   );
@@ -203,7 +212,7 @@ function Trust({ p, policiesFirst }: { p: Product; policiesFirst: boolean }) {
         <p><span className="font-semibold">Watch out for:</span> {p.reviewSummary.cons.join(", ")}</p>
       </div>
       <details className="mt-2" onToggle={(e) => e.currentTarget.open && track("review_open", { blockId: "trust", productId: p.id })}>
-        <summary className="cursor-pointer font-semibold text-[var(--c-primary)]">Read reviews</summary>
+        <summary data-ghost="review_open" className="cursor-pointer font-semibold text-[var(--c-primary)]">Read reviews</summary>
         <p className="mt-1 text-[var(--c-muted)]">Review texts load from the store's review system (not part of the demo catalog).</p>
       </details>
     </div>
@@ -217,10 +226,11 @@ function Trust({ p, policiesFirst }: { p: Product; policiesFirst: boolean }) {
 }
 
 export function ProductPage({ product: p, partner, ghost }: Common & { product: Product }) {
-  const [cart, setCart] = useState(0);
+  const [count, setCount] = useState(0);
+  const cart: Cart = { count, add: () => setCount((c) => c + 1), remove: () => setCount((c) => Math.max(0, c - 1)) };
   return (
     <BabelProvider store="taraba" template="product" productId={p.id} registry={registry} brand={brand} partner={partner} ghost={ghost}>
-      <Header cart={cart} />
+      <Header cart={count} />
       <main className="mx-auto max-w-3xl px-4 py-6 pb-28">
         <nav aria-label="Breadcrumb" className="text-sm text-[var(--c-muted)]">
           <Link href="/taraba" className="hover:underline">Taraba</Link> /{" "}
@@ -234,9 +244,9 @@ export function ProductPage({ product: p, partner, ghost }: Common & { product: 
           <BabelBlock
             id="buyBox"
             variants={{
-              standard: <BuyBox p={p} variant="standard" onAdd={() => setCart((c) => c + 1)} />,
-              calm: <BuyBox p={p} variant="calm" onAdd={() => setCart((c) => c + 1)} />,
-              prominent_simple: <BuyBox p={p} variant="prominent_simple" onAdd={() => setCart((c) => c + 1)} />,
+              standard: <BuyBox p={p} variant="standard" cart={cart} />,
+              calm: <BuyBox p={p} variant="calm" cart={cart} />,
+              prominent_simple: <BuyBox p={p} variant="prominent_simple" cart={cart} />,
             }}
           />
           <BabelBlock id="specs" variants={{ table_key: <Specs p={p} limit={3} />, table_full: <Specs p={p} /> }} />

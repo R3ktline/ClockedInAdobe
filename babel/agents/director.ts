@@ -45,20 +45,30 @@ export type DirectorOutcome = {
   rounds: number;
   ms: number;
   mocked: boolean;
+  transcript: LlmTranscript; // for the merchant panel: what the model saw and said
+};
+
+// One entry per model round, so you can read the agent's reasoning while testing.
+export type LlmTranscript = {
+  model: string;
+  input: string; // the observation sent this turn (the static prompt and registry are left out)
+  rounds: { said: string; call?: { name: string; args: unknown }; verdict: string; ms: number }[];
 };
 
 export async function runDirector(visit: Visit, registry: Registry, brand: BrandKit): Promise<DirectorOutcome> {
   const started = Date.now();
   const prev = visit.slides.at(-1)!;
   const kind: Slide["kind"] = visit.returning && prev.index === 0 ? "major" : "minor";
-  const out: DirectorOutcome = { decision: "hold", clamps: [], errors: [], rounds: 0, ms: 0, mocked: isMocked() };
+  const input = JSON.stringify(observation(visit, prev, kind), null, 1);
+  const transcript: LlmTranscript = { model: isMocked() ? "mock" : process.env.DEEPSEEK_MODEL ?? "", input, rounds: [] };
+  const out: DirectorOutcome = { decision: "hold", clamps: [], errors: [], rounds: 0, ms: 0, mocked: isMocked(), transcript };
   const done = (o: Partial<DirectorOutcome>) => ({ ...out, ...o, ms: Date.now() - started });
 
   // Static parts first so DeepSeek's prefix cache can reuse them (GUARDRAILS §5).
   const messages: ChatCompletionMessageParam[] = [
     { role: "system", content: SYSTEM_PROMPT },
     { role: "system", content: `REGISTRY\n${JSON.stringify(registry[prev.template])}\n\nBRAND RANGES\n${JSON.stringify(brand.ranges)}` },
-    { role: "user", content: `<data>\n${JSON.stringify(observation(visit, prev, kind), null, 1)}\n</data>` },
+    { role: "user", content: `<data>\n${input}\n</data>` },
   ];
 
   const abort = new AbortController();
@@ -66,14 +76,20 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
   try {
     for (let round = 1; round <= MAX_ROUNDS; round++) {
       out.rounds = round;
+      const roundStart = Date.now();
       const msg = await chat({ agent: "director", messages, tools: TOOLS, signal: abort.signal, mock: () => mockDecision(visit, prev) });
       messages.push({ role: "assistant", content: msg.content ?? "", tool_calls: msg.tool_calls });
       const calls = (msg.tool_calls ?? []).filter((c) => c.type === "function");
-      if (!calls.length) return done({ reason: "no tool call" });
+      const said = (msg.content ?? "").slice(0, 2000);
+      const log = (verdict: string, call?: { name: string; args: unknown }) =>
+        transcript.rounds.push({ said, call, verdict, ms: Date.now() - roundStart });
+      if (!calls.length) { log("no tool call → hold"); return done({ reason: "no tool call" }); }
 
       const [call, ...extra] = calls;
+      const shown = { name: call.function.name, args: safeJson(call.function.arguments) ?? call.function.arguments };
       for (const c of extra) messages.push({ role: "tool", tool_call_id: c.id, content: "ignored: one call per turn" });
       if (call.function.name === "hold") {
+        log("hold", shown);
         return done({ reason: String(safeJson(call.function.arguments)?.reason ?? "hold") });
       }
 
@@ -82,13 +98,16 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
         ? validateSlide({ slide: applyProposal(prev, parsed.data, kind), prev, registry, brand, returning: visit.returning })
         : { ok: false as const, clamps: [], errors: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`) };
       out.clamps.push(...result.clamps);
+      log(result.ok ? `accepted${result.clamps.length ? ` (clamped: ${result.clamps.join("; ")})` : ""}` : `rejected: ${result.errors.join("; ")}`, shown);
       if (result.ok) return done({ decision: "slide", slide: result.slide });
       out.errors.push(result.errors);
       messages.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify({ ok: false, errors: result.errors }) });
     }
     return done({ reason: "no valid slide after repairs" });
   } catch (e) {
-    return done({ reason: abort.signal.aborted ? "timeout" : `llm error: ${e instanceof Error ? e.message : e}` });
+    const reason = abort.signal.aborted ? "timeout" : `llm error: ${e instanceof Error ? e.message : e}`;
+    transcript.rounds.push({ said: "", verdict: `${reason} → hold`, ms: Date.now() - started });
+    return done({ reason });
   } finally {
     clearTimeout(timer);
   }
