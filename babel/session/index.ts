@@ -1,7 +1,6 @@
-// Visit state shared by the API routes (demo scope: one Node process, no database), plus the per-visitor
-// memory that survives restarts.
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import path from "node:path";
+// Visit state shared by the API routes, plus the per-visitor memory. Both live in memory for speed and are
+// written through to the database (./db.ts), so a restart loses neither.
+import { loadAll, put, remove } from "./db";
 import type {
   Hypothesis, InteractionEvent, MarkerId, Markers, PartnerContext, Persona, Slide, Template,
 } from "@/babel/schema";
@@ -81,30 +80,31 @@ const CHECKIN_MIN_EVENTS = HIGH ? 2 : 3;
 const RETURN_AFTER_MS = Number(process.env.BABEL_RETURN_AFTER_MS ?? 30 * 60_000);
 
 // Cross-visit memory, consented visitors only: per random visitor id, what the signal model learned, the
-// last view the agent chose for each page type, and when we last saw them. Kept in .babel/memory.json so a
-// server restart does not wipe it (BABEL_MEMORY_FILE overrides; off under vitest).
-// shortcut: one JSON file, one process, no locking; swap for a database when there is more than one server.
+// last view the agent chose for each page type, and when we last saw them. Kept in the database (collection
+// "memory"), so a server restart does not wipe it.
 type Remembered = { groups?: Groups; slides: Partial<Record<Template, Slide>>; visits: number; lastSeenAt: number };
-const memoryFile = () => process.env.BABEL_MEMORY_FILE ?? (process.env.VITEST ? "" : path.join(process.cwd(), ".babel", "memory.json"));
 
-function readMemory(): Map<string, Remembered> {
-  try {
-    const all = JSON.parse(readFileSync(memoryFile(), "utf8")) as Record<string, Remembered>;
-    return new Map(Object.entries(all).filter(([, r]) => r && typeof r.slides === "object" && typeof r.lastSeenAt === "number"));
-  } catch { return new Map(); } // no file yet, or unreadable: start empty
-}
+const readMemory = () => new Map(loadAll<Remembered>("memory").filter(([, r]) => r && typeof r.slides === "object" && typeof r.lastSeenAt === "number"));
+// A visit that was mid-decision when the server stopped is not busy any more.
+const readVisits = () => new Map(loadAll<Visit>("visits").map(([id, v]) => [id, { ...v, directorBusy: false }]));
 
-const g = globalThis as unknown as { __babelVisits?: Map<string, Visit>; __babelRemembered?: Map<string, Remembered>; __babelSave?: ReturnType<typeof setTimeout> };
-const visits: Map<string, Visit> = (g.__babelVisits ??= new Map());
+const g = globalThis as unknown as {
+  __babelVisits?: Map<string, Visit>; __babelRemembered?: Map<string, Remembered>;
+  __babelSave?: ReturnType<typeof setTimeout>; __babelDirty?: Set<string>;
+};
+const visits: Map<string, Visit> = (g.__babelVisits ??= readVisits());
 const memory: Map<string, Remembered> = (g.__babelRemembered ??= readMemory());
+const dirty: Set<string> = (g.__babelDirty ??= new Set()); // visits changed since the last write
 
 export function writeMemory() {
-  const f = memoryFile();
-  if (!f) return;
-  try { mkdirSync(path.dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(Object.fromEntries(memory))); } catch { /* best effort */ }
+  put("memory", [...memory]);
+  put("visits", [...dirty].flatMap((id) => { const v = visits.get(id); return v ? [[id, v] as [string, Visit]] : []; }));
+  dirty.clear();
 }
 export function reloadMemory() { memory.clear(); for (const [k, v] of readMemory()) memory.set(k, v); }
+// Writes are batched: everything changed in the next half second goes to the database in one go.
 const save = () => { g.__babelSave ??= setTimeout(() => { g.__babelSave = undefined; writeMemory(); }, 500); };
+const saveVisit = (v: Visit) => { dirty.add(v.id); save(); };
 
 function remember(id: string, patch: Partial<Remembered>) {
   memory.set(id, { slides: {}, visits: 1, lastSeenAt: Date.now(), ...memory.get(id), ...patch });
@@ -118,7 +118,7 @@ export const memoryOf = (visitorId?: string) => {
 };
 export const recall = (visitorId?: string) => (visitorId ? memory.get(visitorId)?.groups : undefined);
 export const recallSlide = (visitorId: string | undefined, template: Template) => (visitorId ? memory.get(visitorId)?.slides[template] : undefined);
-export const forget = (visitorId: string) => { const had = memory.delete(visitorId); save(); return had; };
+export const forget = (visitorId: string) => { const had = memory.delete(visitorId); remove("memory", visitorId); return had; };
 
 // Called when a page opens. Coming back after a long gap makes this a return visit.
 export function startSession(visitorId: string, now = Date.now()): { returning: boolean; visits: number } {
@@ -169,6 +169,7 @@ export function createVisit(init: {
     explicitPinned: false,
   };
   visits.set(v.id, v);
+  saveVisit(v);
   return v;
 }
 
@@ -177,6 +178,7 @@ const values = (m: Markers) =>
 
 // Append events, recompute markers, score due hypotheses, and decide whether a slide is due.
 export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: boolean; restyle?: boolean } {
+  saveVisit(v); // written half a second later, with everything this call changes
   v.events.push(...events);
   // A zoom is interest in the element zoomed on (markers read it via `target`), never a request for bigger text.
   for (const e of events) if (e.type === "page_zoom" && typeof e.value === "number") v.zoom = e.value;
@@ -253,6 +255,7 @@ function scoreHypotheses(v: Visit, now: number) {
 }
 
 export function addSlide(v: Visit, slide: Slide) {
+  saveVisit(v);
   const now = elapsed(v);
   v.slides.push(slide);
   v.slideAt[slide.id] = { t: now, markers: structuredClone(v.markers) };

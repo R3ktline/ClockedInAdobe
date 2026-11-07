@@ -1,6 +1,7 @@
 // The only module that calls DeepSeek (AGENTS.md rule 5). Records usage for the cost meter.
 // With no DEEPSEEK_API_KEY (or BABEL_LLM=mock) every call is answered by the caller's mock.
 import OpenAI from "openai";
+import { loadAll, put } from "@/babel/session/db";
 import type { ChatCompletionMessage, ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions";
 
 export type { ChatCompletionMessage, ChatCompletionMessageParam, ChatCompletionTool };
@@ -19,7 +20,8 @@ export type UsageEntry = {
 
 type LlmState = { client?: OpenAI; usage: UsageEntry[] };
 const g = globalThis as unknown as { __babelLlm?: LlmState };
-const state: LlmState = (g.__babelLlm ??= { usage: [] });
+// The usage log is the cost meter's source, so it is kept in the database and survives a restart.
+const state: LlmState = (g.__babelLlm ??= { usage: loadAll<UsageEntry>("llm_usage").map(([, u]) => u) });
 
 export const isMocked = () => !process.env.DEEPSEEK_API_KEY || process.env.BABEL_LLM === "mock";
 
@@ -65,6 +67,7 @@ export async function chat(args: ChatArgs): Promise<ChatCompletionMessage> {
   } finally {
     entry.ms = Date.now() - started;
     state.usage.push(entry);
+    put("llm_usage", [[`${entry.at}-${state.usage.length}`, entry]]);
   }
 }
 

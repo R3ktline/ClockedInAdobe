@@ -1,6 +1,3 @@
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { BrandKit, Registry, type InteractionEvent, type Slide } from "@/babel/schema";
 import { buildSlide, NEUTRAL_PERSONA } from "@/babel/persona";
@@ -59,20 +56,20 @@ describe("cross-page memory", () => {
 });
 
 describe("persistence and return visits", () => {
-  const file = path.join(mkdtempSync(path.join(tmpdir(), "babel-")), "memory.json");
   const director = (): Slide => ({ ...buildSlide({ persona: NEUTRAL_PERSONA, template: "product", registry, brand }), index: 1, kind: "minor", source: "director" });
 
   it("survives a restart, and a director view is kept per page type", () => {
-    process.env.BABEL_MEMORY_FILE = file;
     startSession("p-a");
     const v = createVisit({ store: "taraba", template: "product", partner: anonymousPartner, persona: NEUTRAL_PERSONA, reasons: [], visitorId: "p-a", slide: director() });
     addSlide(v, director());
     writeMemory();
-    reloadMemory(); // what a restart does: the in-memory copy is gone, the file is read back
+    reloadMemory(); // what a restart does: the in-memory copy is gone, the database is read back
     expect(recallSlide("p-a", "product")?.source).toBe("director");
     expect(recallSlide("p-a", "home")).toBeUndefined();
     expect(forget("p-a")).toBe(true);
-    delete process.env.BABEL_MEMORY_FILE;
+    writeMemory();
+    reloadMemory(); // forgotten means gone from the database too, not only from memory
+    expect(recallSlide("p-a", "product")).toBeUndefined();
   });
 
   it("going back from a view stops it from being remembered", () => {

@@ -1,9 +1,6 @@
 // Store defaults the Insights agent learned from many shoppers: a few block changes that every new visit to a
-// page type now starts with. Kept in .babel/defaults.json so a restart does not undo them
-// (BABEL_DEFAULTS_FILE overrides; off under vitest).
-// shortcut: one JSON file, one process, no locking; swap for a database when there is more than one server.
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import path from "node:path";
+// page type now starts with. Kept in the database (collection "defaults") so a restart does not undo them.
+import { loadAll, put } from "./db";
 import { moveBlock } from "@/babel/persona";
 import type { BlockId, Slide, Template } from "@/babel/schema";
 
@@ -24,22 +21,12 @@ export type StoreDefault = {
   pending?: boolean;  // suggested by the AI, waiting for the merchant; only becomes active when approved
 };
 
-const file = () => process.env.BABEL_DEFAULTS_FILE ?? (process.env.VITEST ? "" : path.join(process.cwd(), ".babel", "defaults.json"));
-
-function read(): StoreDefault[] {
-  try {
-    // An entry without a changes list would crash every page open, so drop it.
-    return (JSON.parse(readFileSync(file(), "utf8")) as StoreDefault[]).filter((d) => d && Array.isArray(d.changes) && typeof d.store === "string");
-  } catch { return []; } // no file yet, or unreadable
-}
+// An entry without a changes list would crash every page open, so drop it.
+const read = () => loadAll<StoreDefault>("defaults").map(([, d]) => d).filter((d) => d && Array.isArray(d.changes) && typeof d.store === "string");
 const g = globalThis as unknown as { __babelDefaults?: StoreDefault[] };
 const all: StoreDefault[] = (g.__babelDefaults ??= read());
 
-function save() {
-  const f = file();
-  if (!f) return;
-  try { mkdirSync(path.dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(all)); } catch { /* best effort */ }
-}
+const save = () => put("defaults", all.map((d) => [d.id, d]));
 
 export const listDefaults = () => [...all].sort((a, b) => b.at - a.at);
 export const activeDefaults = (store: string, template: Template) => all.filter((d) => d.active && d.store === store && d.template === template);
