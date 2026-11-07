@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberStation X-1 OS - Interactive Store</title>
+  <style>
+    /* =========================================================
+       1. XP SYSTEM VARIABLES & RESET
+       ========================================================= */
+    :root {
+      --xp-blue: #0058e6;
+      --xp-blue-grad: linear-gradient(180deg, #0058e6 0%, #3a93ff 8%, #288eff 40%, #127dff 88%, #0364df 100%);
+      --xp-silver: #ece9d8;
+      --xp-green-grad: linear-gradient(180deg, #3c812d 0%, #4ea839 12%, #449532 50%, #367628 100%);
+      --font-xp: 'Tahoma', 'Trebuchet MS', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+    body {
+      margin: 0;
+      overflow: hidden; 
+      font-family: var(--font-xp);
+      /* Bliss Wallpaper */
+      background: url('https://upload.wikimedia.org/wikipedia/en/7/7d/Bliss.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    /* =========================================================
+       2. BUBBLE SCREENSAVER CANVAS
+       ========================================================= */
+    #bubble-canvas {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 1; pointer-events: none;
+    }
+
+    /* =========================================================
+       3. DESKTOP & DRAGGABLE WINDOWS (NO GRIDS)
+       ========================================================= */
+    #desktop {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 30px;
+      z-index: 10;
+    }
+
+    .xp-window {
+      position: absolute;
+      background: var(--xp-blue);
+      border-radius: 8px 8px 0 0;
+      box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.5);
+      display: flex; flex-direction: column;
+      padding: 3px;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .xp-window.minimized {
+      transform: scale(0.8) translateY(100vh);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .xp-titlebar {
+      background: var(--xp-blue-grad);
+      padding: 4px 6px;
+      border-radius: 6px 6px 0 0;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: grab;
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+      font-weight: bold; font-size: 13px;
+    }
+    .xp-titlebar:active { cursor: grabbing; }
+
+    .xp-controls { display: flex; gap: 2px; }
+    .xp-btn {
+      width: 21px; height: 21px;
+      border: 1px solid #fff; border-radius: 3px;
+      background: linear-gradient(180deg, #e4ebf1 0%, #b8c6d4 100%);
+      box-shadow: inset 0 -1px 2px rgba(0,0,0,0.2);
+      display: flex; align-items: center; justify-content: center;
+      color: black; font-weight: bold; font-size: 10px; cursor: pointer;
+    }
+    .xp-btn:active { background: #b8c6d4; box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5); }
+    .xp-btn.close { background: linear-gradient(180deg, #e07264 0%, #e44234 100%); color: white; }
+    .xp-btn.close:active { background: #e44234; }
+
+    .xp-content {
+      background: var(--xp-silver);
+      flex-grow: 1;
+      border: 1px solid #ffffff; border-right-color: #848284; border-bottom-color: #848284;
+      padding: 12px; font-size: 12px;
+      overflow: auto;
+    }
+
+    /* Standard Buttons */
+    .xp-action-btn {
+      background: linear-gradient(180deg, #f3f3f3 0%, #d5d5d5 100%);
+      border: 1px solid #003c74; border-radius: 3px;
+      padding: 6px 15px; font-family: var(--font-xp); font-weight: bold; font-size: 12px;
+      cursor: pointer; box-shadow: inset 1px 1px 0 #fff;
+    }
+    .xp-action-btn:active { background: #d5d5d5; box-shadow: inset 1px 1px 2px #000; }
+    .xp-action-btn.buy { background: linear-gradient(180deg, #e6f0a3 0%, #d2e638 50%, #c3d825 51%, #dbf043 100%); border-color: #6b7a00; }
+
+    /* =========================================================
+       4. FUNCTIONAL E-COMMERCE COMPONENTS
+       ========================================================= */
+    .product-stage { background: #fff; border: 2px inset #dfdfdf; text-align: center; padding: 15px; margin-bottom: 10px; }
+    .product-img { max-width: 100%; height: 160px; filter: drop-shadow(5px 15px 15px rgba(0,0,0,0.4)); transition: opacity 0.2s; }
+    
+    .cart-item { display: flex; justify-content: space-between; padding: 8px; background: #fff; border: 1px solid #848284; margin-bottom: 5px; }
+    .cart-total { text-align: right; font-size: 14px; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 1px solid #848284; }
+
+    /* =========================================================
+       5. TASKBAR & START MENU
+       ========================================================= */
+    .xp-taskbar {
+      position: absolute; bottom: 0; left: 0; width: 100%; height: 30px;
+      background: var(--xp-blue-grad); border-top: 1px solid #5c9bf9;
+      display: flex; justify-content: space-between; z-index: 9999;
+    }
+
+    .xp-start-btn {
+      background: var(--xp-green-grad); color: white; font-style: italic; font-weight: bold; font-size: 16px;
+      border: none; padding: 0 15px; border-radius: 0 10px 10px 0;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.3), inset 1px 1px 1px rgba(255,255,255,0.6);
+      cursor: pointer; display: flex; align-items: center; gap: 5px;
+    }
+    .xp-start-btn:active { box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5); }
+
+    .taskbar-items { display: flex; flex-grow: 1; padding: 0 10px; align-items: center; gap: 5px; }
+    
+    .task-item {
+      background: rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;
+      color: white; font-size: 11px; padding: 4px 10px; cursor: pointer;
+      box-shadow: inset 1px 1px 0 rgba(255,255,255,0.1);
+      width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .task-item:hover { background: rgba(255,255,255,0.2); }
+    .task-item.active { background: rgba(0,0,0,0.3); box-shadow: inset 1px 1px 3px rgba(0,0,0,0.5); }
+
+    .xp-tray {
+      background: linear-gradient(180deg, #0d83df 0%, #03a0e6 100%);
+      border-left: 1px solid #003c74; color: white; font-size: 11px;
+      display: flex; align-items: center; padding: 0 15px;
+      box-shadow: inset 1px 0 1px rgba(255,255,255,0.3);
+    }
+
+    /* Start Menu Popup */
+    #start-menu {
+      position: absolute; bottom: 30px; left: 0; width: 380px; height: 400px;
+      background: #fff; border: 1px solid #0058e6; border-radius: 5px 5px 0 0;
+      box-shadow: 2px -2px 10px rgba(0,0,0,0.5);
+      display: none; z-index: 10000; flex-direction: column;
+    }
+    .sm-header { background: var(--xp-blue-grad); padding: 10px; color: white; font-weight: bold; font-size: 14px; border-radius: 4px 4px 0 0; display: flex; align-items: center; gap: 10px; }
+    .sm-header img { width: 32px; height: 32px; border: 2px solid #fff; border-radius: 3px; }
+    .sm-body { display: flex; flex-grow: 1; }
+    .sm-left { width: 50%; background: #fff; padding: 5px; }
+    .sm-right { width: 50%; background: #d3e5fa; padding: 5px; border-left: 1px solid #95bcee; }
+    .sm-item { padding: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .sm-item:hover { background: #316ac5; color: white; }
+    .sm-right .sm-item:hover { background: #2f71cd; }
+    .sm-footer { background: var(--xp-blue-grad); padding: 5px 10px; display: flex; justify-content: flex-end; }
+
+  </style>
+</head>
+<body>
+
+  <!-- BUBBLE SCREENSAVER -->
+  <canvas id="bubble-canvas"></canvas>
+
+  <!-- DESKTOP AREA -->
+  <div id="desktop">
+
+    <!-- WINDOW 1: STORE FRONT -->
+    <div class="xp-window" id="win-store" style="top: 40px; left: 40px; width: 450px; z-index: 50;">
+      <div class="xp-titlebar">
+        <span>CyberStore 2000 - Product Viewer</span>
+        <div class="xp-controls">
+          <div class="xp-btn min" onclick="toggleWindow('win-store')">_</div>
+          <div class="xp-btn close" onclick="closeWindow('win-store')">X</div>
+        </div>
+      </div>
+      <div class="xp-content">
+        <div class="product-stage">
+          <img id="laptop-img" src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mbp14-spacegray-select-202301?wid=904&hei=843&fmt=jpeg&qlt=90&.v=1671304673229" alt="Laptop" class="product-img">
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <h3 style="margin-bottom: 5px;">CyberStation X-1</h3>
+            <p style="color: #666; margin-bottom: 10px;">The ultimate Y2K powerhouse.</p>
+            <strong>Color:</strong>
+            <div style="display: flex; gap: 10px; margin-top: 5px;">
+              <label><input type="radio" name="color" value="Space Gray" checked onclick="document.getElementById('laptop-img').style.opacity=0.5; setTimeout(()=>document.getElementById('laptop-img').style.opacity=1, 200)"> Space Gray</label>
+              <label><input type="radio" name="color" value="Silver" onclick="document.getElementById('laptop-img').style.opacity=0.5; setTimeout(()=>document.getElementById('laptop-img').style.opacity=1, 200)"> Silver</label>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 18px; font-weight: bold; color: #3c812d; margin-bottom: 5px;">$1,899</div>
+            <button class="xp-action-btn buy" onclick="addToCart('CyberStation X-1', 1899)">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WINDOW 2: SYSTEM CONFIG -->
+    <div class="xp-window" id="win-sys" style="top: 100px; left: 520px; width: 350px; z-index: 51;">
+      <div class="xp-titlebar">
+        <span>System Properties.exe</span>
+        <div class="xp-controls">
+          <div class="xp-btn min" onclick="toggleWindow('win-sys')">_</div>
+          <div class="xp-btn close" onclick="closeWindow('win-sys')">X</div>
+        </div>
+      </div>
+      <div class="xp-content">
+        <div style="display: flex; gap: 15px; align-items: flex-start;">
+          <div style="font-size: 32px;">🖥️</div>
+          <div>
+            <strong>OS Details:</strong>
+            <p>HotPixel OS v2.4</p>
+            <p>Older Gen Z Edition</p>
+            <br>
+            <strong>Features:</strong>
+            <ul style="padding-left: 15px; margin-top: 5px; color: #444;">
+              <li>100% Grid-Free Interface</li>
+              <li>Aero Bubble Background</li>
+              <li>Interactive DOM Manipulation</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WINDOW 3: SHOPPING CART (Hidden initially or empty) -->
+    <div class="xp-window" id="win-cart" style="top: 250px; left: 150px; width: 350px; z-index: 52;">
+      <div class="xp-titlebar">
+        <span>🛒 My Shopping Cart</span>
+        <div class="xp-controls">
+          <div class="xp-btn min" onclick="toggleWindow('win-cart')">_</div>
+          <div class="xp-btn close" onclick="closeWindow('win-cart')">X</div>
+        </div>
+      </div>
+      <div class="xp-content">
+        <div id="cart-items-container">
+          <p style="color: #666; text-align: center; margin-top: 20px;">Your cart is empty.</p>
+        </div>
+        <div class="cart-total" id="cart-total-display" style="display: none;">
+          Total: $<span id="total-price">0</span>
+        </div>
+        <div style="text-align: right; margin-top: 15px; display: none;" id="checkout-btn-container">
+          <button class="xp-action-btn" onclick="alert('Checkout Process Initialized! Thanks for testing the hackathon build.')">Checkout Now</button>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- End Desktop -->
+
+  <!-- START MENU -->
+  <div id="start-menu">
+    <div class="sm-header">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Windows_logo_-_2001.svg" alt="User">
+      <span>GenZ User</span>
+    </div>
+    <div class="sm-body">
+      <div class="sm-left">
+        <div class="sm-item" onclick="openWindow('win-store')">🛍️ CyberStore</div>
+        <div class="sm-item" onclick="openWindow('win-sys')">⚙️ System Config</div>
+        <div class="sm-item" onclick="openWindow('win-cart')">🛒 Shopping Cart</div>
+        <hr style="margin: 5px 0; border: 0; border-top: 1px solid #d3e5fa;">
+        <div class="sm-item" onclick="alert('Easter Egg: Frutiger Aero is forever.')">🫧 Bubble Settings</div>
+      </div>
+      <div class="sm-right">
+        <div class="sm-item">📁 My Documents</div>
+        <div class="sm-item">🖼️ My Pictures</div>
+        <div class="sm-item">🎵 My Music</div>
+        <hr style="margin: 5px 0; border: 0; border-top: 1px solid #95bcee;">
+        <div class="sm-item">🖨️ Control Panel</div>
+      </div>
+    </div>
+    <div class="sm-footer">
+      <button class="xp-action-btn" style="padding: 2px 10px;" onclick="window.location.reload()">Turn Off Computer</button>
+    </div>
+  </div>
+
+  <!-- TASKBAR -->
+  <div class="xp-taskbar">
+    <button class="xp-start-btn" onclick="toggleStartMenu()">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Windows_logo_-_2001.svg" alt="Win" style="height: 18px; filter: grayscale(100%) brightness(200%);">
+      start
+    </button>
+    
+    <div class="taskbar-items">
+      <div class="task-item active" id="task-win-store" onclick="toggleWindow('win-store')">CyberStore 2000</div>
+      <div class="task-item active" id="task-win-sys" onclick="toggleWindow('win-sys')">System Properties</div>
+      <div class="task-item active" id="task-win-cart" onclick="toggleWindow('win-cart')">My Shopping Cart</div>
+    </div>
+
+    <div class="xp-tray" id="clock">12:00 PM</div>
+  </div>
+
+  <!-- JAVASCRIPT: E-COMMERCE LOGIC, WINDOW MANAGEMENT & BUBBLES -->
+  <script>
+    // --- 1. CLOCK ---
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours(), minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      document.getElementById('clock').innerText = hours + ':' + minutes + ' ' + ampm;
+    }
+    setInterval(updateClock, 1000); updateClock();
+
+    // --- 2. START MENU LOGIC ---
+    function toggleStartMenu() {
+      const sm = document.getElementById('start-menu');
+      sm.style.display = (sm.style.display === 'flex') ? 'none' : 'flex';
+    }
+    // Close start menu if clicked outside
+    document.addEventListener('mousedown', (e) => {
+      if (!e.target.closest('#start-menu') && !e.target.closest('.xp-start-btn')) {
+        document.getElementById('start-menu').style.display = 'none';
+      }
+    });
+
+    // --- 3. E-COMMERCE / CART LOGIC ---
+    let cart = [];
+    
+    function addToCart(name, basePrice) {
+      // Get selected color
+      const color = document.querySelector('input[name="color"]:checked').value;
+      const productTitle = `${name} (${color})`;
+      
+      cart.push({ name: productTitle, price: basePrice });
+      updateCartUI();
+      
+      // Automatically pop the cart window to the front
+      openWindow('win-cart');
+    }
+
+    function updateCartUI() {
+      const container = document.getElementById('cart-items-container');
+      const totalDisplay = document.getElementById('cart-total-display');
+      const checkoutBtn = document.getElementById('checkout-btn-container');
+      
+      if (cart.length === 0) {
+        container.innerHTML = '<p style="color: #666; text-align: center; margin-top: 20px;">Your cart is empty.</p>';
+        totalDisplay.style.display = 'none';
+        checkoutBtn.style.display = 'none';
+        return;
+      }
+
+      container.innerHTML = '';
+      let total = 0;
+      
+      cart.forEach((item, index) => {
+        total += item.price;
+        container.innerHTML += `
+          <div class="cart-item">
+            <span>${item.name}</span>
+            <span>$${item.price.toLocaleString()}</span>
+          </div>
+        `;
+      });
+      
+      document.getElementById('total-price').innerText = total.toLocaleString();
+      totalDisplay.style.display = 'block';
+      checkoutBtn.style.display = 'block';
+    }
+
+    // --- 4. WINDOW MANAGEMENT (DRAG, MINIMIZE, CLOSE) ---
+    let highestZ = 100;
+    
+    function bringToFront(id) {
+      highestZ++;
+      const win = document.getElementById(id);
+      if(win) win.style.zIndex = highestZ;
+      
+      // Update taskbar active state
+      document.querySelectorAll('.task-item').forEach(t => t.classList.remove('active'));
+      const taskBtn = document.getElementById('task-' + id);
+      if(taskBtn && !win.classList.contains('minimized')) taskBtn.classList.add('active');
+    }
+
+    function toggleWindow(id) {
+      const win = document.getElementById(id);
+      const taskBtn = document.getElementById('task-' + id);
+      
+      if (win.style.display === 'none') {
+        win.style.display = 'flex'; // Un-close it
+        win.classList.remove('minimized');
+        bringToFront(id);
+      } else if (win.classList.contains('minimized')) {
+        win.classList.remove('minimized');
+        bringToFront(id);
+      } else {
+        // If it's the active window, minimize it. Otherwise, bring to front.
+        if (win.style.zIndex == highestZ) {
+          win.classList.add('minimized');
+          if(taskBtn) taskBtn.classList.remove('active');
+        } else {
+          bringToFront(id);
+        }
+      }
+      document.getElementById('start-menu').style.display = 'none';
+    }
+
+    function closeWindow(id) {
+      document.getElementById(id).style.display = 'none';
+      const taskBtn = document.getElementById('task-' + id);
+      if(taskBtn) taskBtn.classList.remove('active');
+    }
+
+    function openWindow(id) {
+      const win = document.getElementById(id);
+      win.style.display = 'flex';
+      win.classList.remove('minimized');
+      bringToFront(id);
+      document.getElementById('start-menu').style.display = 'none';
+    }
+
+    // Draggable Logic
+    document.querySelectorAll('.xp-window').forEach(win => {
+      const titlebar = win.querySelector('.xp-titlebar');
+      
+      win.addEventListener('mousedown', () => bringToFront(win.id));
+
+      if(titlebar) {
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+
+        titlebar.addEventListener('mousedown', (e) => {
+          // Don't drag if clicking buttons
+          if(e.target.classList.contains('xp-btn')) return;
+          
+          isDragging = true;
+          startX = e.clientX; startY = e.clientY;
+          initialLeft = win.offsetLeft; initialTop = win.offsetTop;
+          bringToFront(win.id);
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          
+          // Simple bounds checking to prevent losing windows
+          let newLeft = initialLeft + dx;
+          let newTop = initialTop + dy;
+          if (newTop < 0) newTop = 0; // Prevent going above screen
+          
+          win.style.left = `${newLeft}px`;
+          win.style.top = `${newTop}px`;
+        });
+
+        document.addEventListener('mouseup', () => { isDragging = false; });
+      }
+    });
+
+    // --- 5. FRUTIGER BUBBLE SCREENSAVER (BACKGROUND) ---
+    const canvas = document.getElementById('bubble-canvas');
+    const ctx = canvas.getContext('2d');
+    let bubbles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Bubble {
+      constructor() { this.reset(); this.y = Math.random() * canvas.height; }
+      reset() {
+        this.radius = Math.random() * 25 + 10;
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height + this.radius;
+        this.vy = -(Math.random() * 1 + 0.3);
+        this.vx = Math.sin(Math.random() * Math.PI * 2) * 0.5;
+        this.opacity = Math.random() * 0.3 + 0.1;
+      }
+      update() {
+        this.y += this.vy;
+        this.x += this.vx;
+        if (this.y < -this.radius) this.reset();
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        let grad = ctx.createRadialGradient(
+          this.x - this.radius*0.3, this.y - this.radius*0.3, this.radius*0.1,
+          this.x, this.y, this.radius
+        );
+        grad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+        grad.addColorStop(0.5, 'rgba(173, 216, 230, 0.4)'); // Aqua tint
+        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    for (let i = 0; i < 40; i++) bubbles.push(new Bubble());
+
+    function animateBubbles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      bubbles.forEach(b => { b.update(); b.draw(); });
+      requestAnimationFrame(animateBubbles);
+    }
+    animateBubbles();
+    
+  </script>
+</body>
+</html>
