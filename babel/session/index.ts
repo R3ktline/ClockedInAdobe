@@ -65,7 +65,7 @@ const MIN_GAP_MS = Number(process.env.BABEL_MIN_SLIDE_GAP_MS ?? (HIGH ? 8_000 : 
 const MAX_MINOR_SLIDES = HIGH ? 12 : 5;
 // The agent also takes a look on its own after this long with new activity, so changes are not only
 // threshold-driven. 0 turns check-ins off.
-const CHECKIN_MS = Number(process.env.BABEL_CHECKIN_MS ?? (HIGH ? 8_000 : 15_000));
+const CHECKIN_MS = Number(process.env.BABEL_CHECKIN_MS ?? (HIGH ? 5_000 : 15_000));
 const CHECKIN_MIN_EVENTS = HIGH ? 2 : 3;
 
 // A visitor who comes back after this long is a return visit (the only time a major slide is allowed).

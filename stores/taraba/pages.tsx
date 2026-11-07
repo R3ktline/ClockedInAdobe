@@ -8,6 +8,7 @@ import {
   type BrandKit, type Category, type InteractionEvent, type PartnerContext, type Product,
 } from "@/babel/sdk";
 import brandKit from "./brand-kit.json";
+import { ProductArt } from "./art";
 import { registry } from "./registry";
 
 const brand = brandKit as BrandKit;
@@ -51,16 +52,12 @@ function Header({ cart = 0 }: { cart?: number }) {
   );
 }
 
-function Picture({ p, size = "md" }: { p: Product; size?: "sm" | "md" }) {
-  const h = size === "md" ? "aspect-square" : "h-20 w-20 shrink-0";
+// Product pictures are original illustrations (./art.tsx). Cards that print the name beside the picture mark it decorative.
+function Picture({ p, size = "md" }: { p: Product; size?: "sm" | "md" | "lg" }) {
+  const h = size === "md" ? "aspect-square" : size === "lg" ? "h-32 w-32 shrink-0 sm:h-40 sm:w-40" : "h-14 w-14 shrink-0";
   return (
-    <div
-      className={`${h} flex items-end rounded-[var(--babel-radius)] p-3`}
-      style={{ background: CATEGORY_TINT[p.category] }}
-      role="img"
-      aria-label={`Photo placeholder: ${p.name}`}
-    >
-      {size !== "sm" && <span className="text-xs font-semibold tracking-wide text-black/45">{p.brand}</span>}
+    <div className={`${h} overflow-hidden rounded-[var(--babel-radius)]`}>
+      <ProductArt p={p} decorative />
     </div>
   );
 }
@@ -72,18 +69,26 @@ const Stars = ({ p }: { p: Product }) => (
 // ---------- Product page ----------
 
 function Gallery({ p, thumbs }: { p: Product; thumbs: boolean }) {
-  const photo = (h: string) => (
-    <div className={`${h} flex items-end rounded-[var(--babel-radius)] p-3`} style={{ background: CATEGORY_TINT[p.category] }} role="img" aria-label={`Photo placeholder: ${p.name}`}>
-      <span className="text-xs font-semibold tracking-wide text-black/45">{p.brand}</span>
-    </div>
-  );
-  if (!thumbs) return photo("h-80");
+  const [view, setView] = useState<0 | 1 | 2>(0);
+  const frame = "overflow-hidden rounded-[var(--babel-radius)]";
+  if (!thumbs) return <div className={`${frame} aspect-[4/3] w-full sm:aspect-[16/10]`}><ProductArt p={p} /></div>;
   return (
-    <div className="flex gap-2">
-      <div className="flex flex-col gap-2">
-        {[0, 1, 2].map((i) => <div key={i} className="h-14 w-14 rounded-[var(--babel-radius)]" style={{ background: CATEGORY_TINT[p.category] }} />)}
+    <div className="flex gap-3">
+      <div className="flex flex-col gap-2" role="group" aria-label="Choose a picture">
+        {([0, 1, 2] as const).map((i) => (
+          <button
+            key={i}
+            type="button"
+            aria-label={`Picture ${i + 1} of 3`}
+            aria-pressed={view === i}
+            onClick={() => setView(i)}
+            className={`${frame} h-16 w-16 border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--c-primary)] ${view === i ? "border-[var(--c-primary)]" : "border-transparent"}`}
+          >
+            <ProductArt p={p} view={i} decorative />
+          </button>
+        ))}
       </div>
-      <div className="flex-1">{photo("h-48")}</div>
+      <div className={`${frame} aspect-square flex-1 sm:aspect-[4/3]`}><ProductArt p={p} view={view} /></div>
     </div>
   );
 }
@@ -229,13 +234,15 @@ function Trust({ p, policiesFirst }: { p: Product; policiesFirst: boolean }) {
       </div>
       <div className="mt-3">
         <button type="button" onClick={picks.ask} disabled={picks.status === "loading"} className="font-semibold text-[var(--c-primary)] underline disabled:opacity-50">
-          {picks.status === "loading" ? "Choosing…" : "Show the reviews that sum it up"}
+          {picks.status === "loading" ? "Summarising…" : "Summarise the reviews"}
         </button>
         {picks.status === "error" && <p className="mt-1 text-sm text-[var(--c-muted)]">Could not choose right now. All reviews are below.</p>}
         {picks.status === "done" && (
           <div className="mt-2 rounded-[var(--babel-radius)] bg-[#f3f5fb] p-3">
-            <p className="text-sm text-[var(--c-muted)]">
-              Chosen by the Babel agent to cover the range of opinions. The words are the buyers&apos;, not Babel&apos;s.{" "}
+            {picks.summary && <p className="font-semibold">{picks.summary}</p>}
+            <p className="mt-1 text-sm text-[var(--c-muted)]">
+              {picks.summary ? "Summary written by the Babel agent from these reviews. " : ""}
+              The reviews below were chosen by the agent to cover the range of opinions; their words are the buyers&apos;.{" "}
               <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold">simulated</span>
             </p>
             <ul className="mt-2 flex flex-col gap-3">{picks.indexes.map((i) => reviewItem(p.reviews[i]))}</ul>
@@ -296,17 +303,21 @@ export function ProductPage({ product: p, partner, ghost }: Common & { product: 
 
 // ---------- Lists (home, category) ----------
 
-function ProductList({ products, variant }: { products: Product[]; variant: "grid_standard" | "grid_dense" | "list_guided" }) {
+type ListVariant = "grid_standard" | "grid_dense" | "list_guided" | "bento_visual";
+
+function ProductList({ products, variant }: { products: Product[]; variant: ListVariant }) {
   if (variant === "grid_dense") {
     return (
       <table className="w-full text-left text-sm">
         <thead className="text-[var(--c-muted)]">
-          <tr><th className="py-2">Product</th><th>Key spec</th><th>Rating</th><th className="text-right">Price</th></tr>
+          <tr><th className="py-2" colSpan={2}>Product</th><th>Brand</th><th>Key spec</th><th>Rating</th><th className="text-right">Price</th></tr>
         </thead>
         <tbody>
           {products.map((p) => (
             <tr key={p.id} className="border-t border-black/10">
+              <td className="w-12 py-1.5 pr-2"><Picture p={p} size="sm" /></td>
               <td className="py-2"><Link href={`/taraba/p/${p.id}`} className="font-semibold hover:underline">{p.name}</Link></td>
+              <td className="text-[var(--c-muted)]">{p.brand}</td>
               <td>{p.specs[0] ? `${p.specs[0].label}: ${p.specs[0].value}` : ""}</td>
               <td>★ {p.rating.toFixed(1)}</td>
               <td className="text-right font-bold">{lei.format(p.price)}</td>
@@ -321,7 +332,7 @@ function ProductList({ products, variant }: { products: Product[]; variant: "gri
       <ul className="flex flex-col gap-4">
         {products.map((p) => (
           <li key={p.id} className={`${card} flex gap-4 p-4`}>
-            <Picture p={p} size="sm" />
+            <Picture p={p} size="lg" />
             <div className="flex-1">
               <p className="text-xl font-bold">{p.name}</p>
               <p className="mt-1">{p.benefits.slice(0, 2).join(" · ")}</p>
@@ -330,6 +341,24 @@ function ProductList({ products, variant }: { products: Product[]; variant: "gri
                 See this product
               </Link>
             </div>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  if (variant === "bento_visual") {
+    // Image-first: the first product is a big tile; name and price sit on the picture.
+    return (
+      <ul className="grid grid-flow-dense auto-rows-[9rem] grid-cols-2 gap-3 md:auto-rows-[11rem] md:grid-cols-4">
+        {products.map((p, i) => (
+          <li key={p.id} className={i === 0 ? "col-span-2 row-span-2" : i % 7 === 3 ? "col-span-2" : ""}>
+            <Link href={`/taraba/p/${p.id}`} aria-label={`${p.name}, ${lei.format(p.price)}`} className="group relative block h-full overflow-hidden rounded-[var(--babel-radius)]">
+              <div className="h-full w-full transition-transform duration-500 group-hover:scale-105"><ProductArt p={p} decorative /></div>
+              <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/60 to-transparent p-3 text-white">
+                <span className={`${i === 0 ? "text-xl" : "text-sm"} font-bold leading-tight`}>{p.name}</span>
+                <span className="shrink-0 rounded-full bg-white px-2.5 py-0.5 text-sm font-extrabold text-[#14171f]">{lei.format(p.price)}</span>
+              </span>
+            </Link>
           </li>
         ))}
       </ul>
@@ -355,7 +384,15 @@ const listVariants = (products: Product[]) => ({
   grid_standard: <ProductList products={products} variant="grid_standard" />,
   grid_dense: <ProductList products={products} variant="grid_dense" />,
   list_guided: <ProductList products={products} variant="list_guided" />,
+  bento_visual: <ProductList products={products} variant="bento_visual" />,
 });
+
+// The best-rated product of each category: what the hero pictures show.
+const featured = (products: Product[]) =>
+  (Object.keys(CATEGORY_LABEL) as Category[]).flatMap((c) => {
+    const top = products.filter((p) => p.category === c).sort((a, b) => b.rating - a.rating)[0];
+    return top ? [top] : [];
+  });
 
 export function HomePage({ products, partner, ghost }: Common & { products: Product[] }) {
   return (
@@ -367,18 +404,39 @@ export function HomePage({ products, partner, ghost }: Common & { products: Prod
             id="hero"
             variants={{
               banner_promo: (
-                <Link href="/taraba/c/home" className="block rounded-[var(--babel-radius)] bg-[var(--c-accent)] p-8 text-[#14171f]">
-                  <p className="text-sm font-bold uppercase">Autumn deals</p>
-                  <p className="mt-1 text-3xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>Washing machines and headphones for less</p>
-                  <p className="mt-2">The same prices for everyone, until the end of the month.</p>
+                <Link href="/taraba/c/home" className="grid items-center gap-4 overflow-hidden rounded-[var(--babel-radius)] bg-[var(--c-accent)] text-[#14171f] md:grid-cols-[1fr_16rem]">
+                  <span className="block p-8">
+                    <span className="block text-sm font-bold uppercase">Autumn deals</span>
+                    <span className="mt-1 block text-3xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>Washing machines and headphones for less</span>
+                    <span className="mt-2 block">The same prices for everyone, until the end of the month.</span>
+                  </span>
+                  <span className="grid h-40 grid-cols-2 gap-1 md:h-full">
+                    {["home-wm-01", "elec-hp-01"].map((id) => {
+                      const p = products.find((x) => x.id === id);
+                      return p ? <ProductArt key={id} p={p} decorative /> : null;
+                    })}
+                  </span>
                 </Link>
               ),
               category_tiles: (
                 <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                  {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
-                    <li key={c}>
-                      <Link href={`/taraba/c/${c}`} className="block rounded-[var(--babel-radius)] p-6 text-lg font-bold" style={{ background: CATEGORY_TINT[c] }}>
-                        {CATEGORY_LABEL[c]}
+                  {featured(products).map((p) => (
+                    <li key={p.category}>
+                      <Link href={`/taraba/c/${p.category}`} className="flex items-center gap-3 rounded-[var(--babel-radius)] p-3 text-lg font-bold" style={{ background: CATEGORY_TINT[p.category] }}>
+                        <Picture p={p} size="lg" />
+                        {CATEGORY_LABEL[p.category]}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ),
+              collage: (
+                <ul className="grid auto-rows-[7rem] grid-cols-3 gap-3 md:auto-rows-[10rem]">
+                  {featured(products).map((p, i) => (
+                    <li key={p.category} className={i === 0 ? "col-span-2 row-span-2" : ""}>
+                      <Link href={`/taraba/c/${p.category}`} className="relative block h-full overflow-hidden rounded-[var(--babel-radius)]">
+                        <ProductArt p={p} decorative />
+                        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-sm font-bold text-[#14171f]">{CATEGORY_LABEL[p.category]}</span>
                       </Link>
                     </li>
                   ))}
