@@ -75,3 +75,17 @@ The offline stand-in passes the 17 cases marked `mock: true` and fails the 11 th
 reads "the picture is tiny" as a request for smaller photos). A live model is expected to beat it; that is the point of the set.
 
 The cases and what counts as right are `[ASSUMPTION]`s written before any live run. `Understood.sets` allows up to 12 entries.
+
+## Transition lab (local prototype, branch `d/transition-lab`, not pushed)
+
+Try it: `http://localhost:3100/taraba/p/elec-mon-01?curtain=1&txlab=1` (`&optin=reset` asks the opt-in again).
+
+- **Opt-in at the start** (`babel/sdk/Adapt.tsx`, `Invite`): asked once in curtain mode, and the visit waits for the answer. "No" starts a
+  standard visit with nothing collected. The answer is kept in `localStorage` (`babel.optin`). [ASSUMPTION] this is a product prompt, not a
+  legal consent flow.
+- **Three transition styles** (`?tx=glass|fade|morph`, sticky per tab): `glass` is the curtain; `fade` does the work quietly and crossfades the
+  whole page with the View Transitions API; `morph` swaps at once and lets CSS animate what it can. Measured on a real page: padding, corner
+  roundness (via a registered `--babel-radius`) and page colour ease over about 0.7 s; the font and layout swaps jump, which is what `fade` covers.
+- **After a change** (`ViewNotice`): "Laid out for you: Visual. Same store, same prices. Keep / Back", then a small "Your view" chip.
+  Keep is tracked as a `view_switch` event with value `keep`.
+- **Look switcher** (`TransitionLab`, `?txlab=1`): switch between the four looks with any transition, no server involved.

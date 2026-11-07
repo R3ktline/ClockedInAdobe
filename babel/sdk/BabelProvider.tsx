@@ -13,6 +13,8 @@ import { LabPanel, memoryKey, type SavedMemory } from "./LabPanel";
 import { SlideControl } from "./SlideControl";
 import { ChatBox } from "./ChatBox";
 import { Curtain, CURTAIN_OFF, type CurtainState } from "./Curtain";
+import { flushSync } from "react-dom";
+import { Invite, TransitionLab, ViewNotice, type Transition } from "./Adapt";
 
 type TrackExtra = Omit<InteractionEvent, "t" | "type">;
 
@@ -132,6 +134,13 @@ export function BabelProvider(p: BabelProviderProps) {
   const curtainMode = useRef(false);
   const restyleWanted = useRef(false); // the server said the profile is clear; waiting for a safe moment
   const curtainBusy = useRef(false);
+  // Transition style for a big change (?tx=glass|fade|morph, sticky for the tab) and the first-visit opt-in.
+  const txMode = useRef<Transition>("glass");
+  const optinRef = useRef<string | null>(null); // "yes" | "no" | null (not asked)
+  const [ready, setReady] = useState(false);     // the visit starts once the opt-in is settled
+  const [ask, setAsk] = useState(false);
+  const [txlab, setTxlab] = useState(false);
+  const [notice, setNotice] = useState<{ id: string; dialect: Slide["persona"]["dialect"] } | null>(null);
   const profiledKey = `babel.profiled.${p.store}`;
   const markProfiled = useCallback(() => { try { localStorage.setItem(profiledKey, "1"); } catch { /* ignore */ } }, [profiledKey]);
   // Lifts the quiet first-paint glass of a remembered shopper.
@@ -223,18 +232,33 @@ export function BabelProvider(p: BabelProviderProps) {
 
   // 1. Start the visit. Until slide 0 arrives the store renders its neutral page.
   const started = useRef(false);
+  // Before the visit starts: curtain mode, transition style, and on a first visit the opt-in question.
   useEffect(() => {
-    if (started.current) return; // React dev mode mounts twice; one visit per page
+    const q = new URLSearchParams(location.search);
+    const cq = q.get("curtain");
+    const stored = (() => { try { return sessionStorage.getItem("babel.curtain") === "1"; } catch { return false; } })();
+    curtainMode.current = !lab && (cq === "1" || (cq !== "0" && stored));
+    try { if (cq === "1") sessionStorage.setItem("babel.curtain", "1"); else if (cq === "0") sessionStorage.removeItem("babel.curtain"); } catch { /* ignore */ }
+    const tq = q.get("tx");
+    let tx: string | null = null;
+    try { tx = sessionStorage.getItem("babel.tx"); if (tq) { sessionStorage.setItem("babel.tx", tq); tx = tq; } } catch { /* ignore */ }
+    txMode.current = tx === "fade" || tx === "morph" ? tx : "glass";
+    setTxlab(q.get("txlab") === "1");
+    let answered: string | null = null;
+    try { if (q.get("optin") === "reset") localStorage.removeItem("babel.optin"); answered = localStorage.getItem("babel.optin"); } catch { /* ignore */ } // ?optin=reset asks again
+    if (curtainMode.current && !p.ghost && answered === null) setAsk(true); // asked once, at the start
+    else { optinRef.current = answered; setReady(true); }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!ready || started.current) return; // React dev mode mounts twice; one visit per page
     started.current = true;
+    // Declined: nothing is profiled and the standard page stays.
+    const partner = optinRef.current === "no" ? { ...p.partner, consent: { personalization: false, partnerData: false } } : p.partner;
     const mode = new URLSearchParams(location.search).get("apply");
     // The lab is for watching, so changes land at once unless asked otherwise.
     applyRef.current = mode === "live" || mode === "next" || mode === "quiet" ? mode : lab ? "live" : "quiet";
     setApply(applyRef.current);
-    // Curtain mode: ?curtain=1 turns it on for this tab, ?curtain=0 off. Never in the lab, which is for watching changes.
-    const cq = new URLSearchParams(location.search).get("curtain");
-    const stored = (() => { try { return sessionStorage.getItem("babel.curtain") === "1"; } catch { return false; } })();
-    curtainMode.current = !lab && (cq === "1" || (cq !== "0" && stored));
-    try { if (cq === "1") sessionStorage.setItem("babel.curtain", "1"); else if (cq === "0") sessionStorage.removeItem("babel.curtain"); } catch { /* ignore */ }
     if (curtainMode.current) { applyRef.current = "next"; setApply("next"); } // nothing moves live
     const profiled = (() => { try { return localStorage.getItem(profiledKey) === "1"; } catch { return false; } })();
     if (curtainMode.current && profiled) { // a remembered shopper: keep the glass up until their own page is ready
@@ -243,14 +267,14 @@ export function BabelProvider(p: BabelProviderProps) {
     }
     const visitorId = (() => {
       if (p.ghost) return `ghost:${p.ghost.label.toLowerCase()}`;
-      if (!p.partner.consent.personalization) return undefined;
+      if (!partner.consent.personalization) return undefined;
       try { // consented, per-browser random id; no personal data
         const k = "babel.visitor";
         return localStorage.getItem(k) ?? (localStorage.setItem(k, crypto.randomUUID()), localStorage.getItem(k) ?? undefined);
       } catch { return undefined; }
     })();
     visitorIdRef.current = visitorId;
-    const device = p.partner.device ?? {
+    const device = partner.device ?? {
       pointer: matchMedia("(pointer: coarse)").matches ? "coarse" as const : "fine" as const,
       viewportWidth: innerWidth,
       zoom: devicePixelRatio,
@@ -270,7 +294,7 @@ export function BabelProvider(p: BabelProviderProps) {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        store: p.store, template: p.template, productId: p.productId, partner: { ...p.partner, device },
+        store: p.store, template: p.template, productId: p.productId, partner: { ...partner, device },
         visitorId, fresh: p.ghost ? p.ghost.step === 0 : undefined, // step 0 = a new run; later pages and click-throughs keep the memory
         memory, variant: p.ghost?.variant, curtain: curtainMode.current || undefined,
       }),
@@ -299,7 +323,7 @@ export function BabelProvider(p: BabelProviderProps) {
         }
       })
       .catch(() => { liftBoot(); /* Babel unreachable: the store keeps its neutral page */ });
-  }, []); // once per page: the props describe the page, not live state
+  }, [ready]); // once per page: the props describe the page, not live state
 
   // 2. Ask for a slide once the shopper pauses.
   // `message` = something the shopper typed: skips the scroll pause and returns the agent's answer in words.
@@ -353,6 +377,28 @@ export function BabelProvider(p: BabelProviderProps) {
     }
   }, []);
 
+  // One entry for every big change, in the chosen transition style:
+  //   glass  the curtain (blur, message, swap behind it, lift)
+  //   fade   do the work quietly, then crossfade the whole page from the old look to the new (View Transitions)
+  //   morph  swap at once and let CSS animate what it can (colours, spacing, corners); fonts and layouts jump
+  const changeWith = useCallback(async <T,>(text: string, work: () => Promise<T>, apply: (result: T) => boolean, minMs = 1700) => {
+    if (txMode.current === "glass") return behindCurtain(text, work, apply, minMs);
+    if (curtainBusy.current) return;
+    curtainBusy.current = true;
+    try {
+      const result = await work();
+      let changed = false;
+      const doApply = () => { changed = apply(result); };
+      const vt = (document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } }).startViewTransition?.bind(document);
+      if (txMode.current === "fade" && vt && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.documentElement.classList.add("babel-vt");
+        await vt(() => { flushSync(doApply); }).finished.catch(() => undefined);
+        document.documentElement.classList.remove("babel-vt");
+      } else doApply();
+      if (changed) { setPopping(true); setTimeout(() => setPopping(false), 900); }
+    } finally { curtainBusy.current = false; }
+  }, [behindCurtain]);
+
   // Puts a slide on screen while the glass is up. No highlight and no "unnoticed" bookkeeping: the shopper is told.
   const applyBehind = useCallback((next: Slide) => {
     const list = slidesRef.current;
@@ -363,6 +409,7 @@ export function BabelProvider(p: BabelProviderProps) {
     show(slidesRef.current, slidesRef.current.length - 1);
     track("slide_shown", { value: next.index });
     log({ view: next.index + 1, status: "requested", text: "applied behind the curtain" });
+    setNotice({ id: next.id, dialect: next.persona.dialect });
   }, [log, show, showSlide, track]);
 
   // Is it a good moment to take the page away? Not while typing, scrolling, or on the buy box.
@@ -378,7 +425,7 @@ export function BabelProvider(p: BabelProviderProps) {
     if (!curtainMode.current || !restyleWanted.current || curtainBusy.current || !visitId.current || !safeMoment()) return;
     restyleWanted.current = false;
     setAgent({ state: "thinking", text: "your profile is clear: setting the page up…" });
-    await behindCurtain(
+    await changeWith(
       "Setting the page up for how you browse…",
       () => fetch("/api/restyle", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current }) })
         .then((x) => x.json()).catch(() => null) as Promise<{ decision?: string; slide?: Slide; reason?: string } | null>,
@@ -388,7 +435,7 @@ export function BabelProvider(p: BabelProviderProps) {
         return false;
       },
     );
-  }, [applyBehind, behindCurtain, markProfiled]);
+  }, [applyBehind, changeWith, markProfiled]);
   useEffect(() => { const id = setInterval(() => { void tryRestyle(); }, 500); return () => clearInterval(id); }, [tryRestyle]);
 
   // A typed request in curtain mode: glass down at once (it covers the model's thinking time), whole page rebuilt.
@@ -396,7 +443,7 @@ export function BabelProvider(p: BabelProviderProps) {
     if (curtainBusy.current) return "One moment, I am still changing the page.";
     let reply = "Babel could not be reached.";
     setAgent({ state: "thinking", text: "reading your request…" });
-    await behindCurtain(
+    await changeWith(
       "Rebuilding the page the way you asked…",
       () => fetch("/api/slide", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current, message }) })
         .then((x) => x.json()).catch(() => null) as Promise<{ decision?: string; slide?: Slide; reason?: string; reply?: string; llm?: LlmTranscript } | null>,
@@ -409,7 +456,28 @@ export function BabelProvider(p: BabelProviderProps) {
       1300,
     );
     return reply;
-  }, [applyBehind, behindCurtain]);
+  }, [applyBehind, changeWith]);
+
+  // The opt-in answer: yes starts a profiled visit, no starts a standard one with nothing collected.
+  const answerInvite = useCallback((yes: boolean) => {
+    try { localStorage.setItem("babel.optin", yes ? "yes" : "no"); } catch { /* ignore */ }
+    optinRef.current = yes ? "yes" : "no";
+    setAsk(false);
+    setReady(true);
+  }, []);
+
+  // Local comparison: switch to a look from the switcher panel, in the chosen transition, with no server involved.
+  const previewLook = useCallback((dialect: Slide["persona"]["dialect"], tx: Transition) => {
+    const prevTx = txMode.current;
+    txMode.current = tx;
+    setStandardState(false);
+    const next = buildSlide({
+      persona: { dialect, need: "balanced", confidence: 1 }, template: p.template, registry: p.registry, brand: p.brand, ctx: p.partner,
+      index: slidesRef.current.length, kind: "explicit", trigger: "view_switch", source: "explicit", parentId: slidesRef.current.at(-1)?.id,
+    });
+    void changeWith("Setting the page up in the new look…", async () => next, (s) => { applyBehind(s); return true; }, 1100)
+      .finally(() => { txMode.current = prevTx; });
+  }, [applyBehind, changeWith, p.brand, p.partner, p.registry, p.template]);
 
   const chat = useCallback(async (message: string) => {
     track("chat_message", { value: message.length }); // the text itself is not kept as a signal
@@ -581,6 +649,12 @@ export function BabelProvider(p: BabelProviderProps) {
           {lab && <LabPanel />}
           {p.ghost && <GhostCursorView c={ghostCursor} name={p.ghost.label} />}
           <Curtain state={curtain} />
+          <Invite open={ask} onAnswer={answerInvite} />
+          <ViewNotice
+            notice={notice} dialect={slide.persona.dialect} standard={standard} optedIn={optinRef.current !== "no"}
+            onKeep={() => track("view_switch", { value: "keep" })} onBack={() => go(-1)}
+          />
+          {txlab && <TransitionLab current={standard ? "standard" : slide.persona.dialect} onPreview={previewLook} />}
         </div>
       </MotionConfig>
     </Ctx.Provider>
