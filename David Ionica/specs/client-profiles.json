@@ -1,0 +1,233 @@
+{
+  "_about": "10 canonical client profiles. Human-readable version: specs/client-profiles.md. Each entry = fixture (labels for humans, NEVER read by the engine) + profile (a UserProfile per specs/profile-schema.md) + proposed (fields not yet in the schema, see open question 20) + bogdanPersonaWeights (mapping to bogdan/SPEC.md section 3 personas, unratified). All signal numbers are illustrative [ASSUMPTION]. Created 2026-11-07.",
+  "clients": [
+    {
+      "fixture": { "id": "c01", "name": "Tudor", "ageLabel": 16, "homeVertical": "fashion", "shoppingFor": "sneakers" },
+      "profile": {
+        "userId": "fx_c01_tudor",
+        "createdAt": "2026-11-07T10:00:00Z",
+        "updatedAt": "2026-11-07T10:00:00Z",
+        "axes": {
+          "domainExpertise": { "fashion": 0.6, "electronics": 0.4 },
+          "informationAppetite": 0.15,
+          "jargonTolerance": 0.2,
+          "priceSensitivity": 0.5,
+          "intentStage": "browsing"
+        },
+        "explicitPreferences": [],
+        "signalsSummary": { "productViews": 9, "specTableOpens": 0, "sortByPriceCount": 0, "comparisonUses": 0, "avgDwellSeconds": 4 },
+        "consent": { "granted": true, "scope": "personalization", "grantedAt": "2026-11-07T10:00:00Z" }
+      },
+      "proposed": { "trust": 0.7, "buyingFor": "self" },
+      "bogdanPersonaWeights": { "simple": 0.1, "specs": 0.0, "deals": 0.1, "explorer": 0.7, "balanced": 0.1 },
+      "confidence": 0.82
+    },
+    {
+      "fixture": { "id": "c02", "name": "Ana", "ageLabel": 23, "homeVertical": "travel", "shoppingFor": "a trip to Spain" },
+      "profile": {
+        "userId": "fx_c02_ana",
+        "createdAt": "2026-11-07T10:00:00Z",
+        "updatedAt": "2026-11-07T10:00:00Z",
+        "axes": {
+          "domainExpertise": { "travel": 0.7, "electronics": 0.5 },
+          "informationAppetite": 0.6,
+          "jargonTolerance": 0.5,
+          "priceSensitivity": 0.95,
+          "intentStage": "comparing"
+        },
+        "explicitPreferences": [],
+        "signalsSummary": { "productViews": 14, "specTableOpens": 2, "sortByPriceCount": 3, "comparisonUses": 1, "avgDwellSeconds": 40 },
+        "consent": { "granted": true, "scope": "personalization", "grantedAt": "2026-11-07T10:00:00Z" }
+      },
+      "proposed": { "trust": 0.5, "buyingFor": "self" },
+      "bogdanPersonaWeights": { "simple": 0.0, "specs": 0.1, "deals": 0.8, "explorer": 0.0, "balanced": 0.1 },
+      "confidence": 0.9
+    },
+    {
+      "fixture": { "id": "c03", "name": "Mihai", "ageLabel": 29, "homeVertical": "electronics", "shoppingFor": "a laptop" },
+      "profile": {
+        "userId": "fx_c03_mihai",
+        "createdAt": "2026-11-07T10:00:00Z",
+        "updatedAt": "2026-11-07T10:00:00Z",
+        "axes": {
+          "domainExpertise": { "electronics": 0.9 },
+          "informationAppetite": 0.9,
+          "jargonTolerance": 0.9,
+          "priceSensitivity": 0.4,
+          "intentStage": "comparing"
+        },
+        "explicitPreferences": [],
+        "signalsSummary": { "productViews": 5, "specTableOpens": 5, "sortByPriceCount": 0, "comparisonUses": 3, "avgDwellSeconds": 140 },
+        "consent": { "granted": true, "scope": "personalization", "grantedAt": "2026-11-07T10:00:00Z" }
+      },
+      "proposed": { "trust": 0.6, "buyingFor": "self" },
+      "bogdanPersonaWeights": { "simple": 0.0, "specs": 0.85, "deals": 0.05, "explorer": 0.0, "balanced": 0.1 },
+      "confidence": 0.91
+    },
+    {
+      "fixture": { "id": "c04", "name": "Elena", "ageLabel": 34, "homeVertical": "groceries", "shoppingFor": "the weekly shop" },
+      "profile": {
+        "userId": "fx_c04_elena",
+        "createdAt": "2026-11-07T10:00:00Z",
+        "updatedAt": "2026-11-07T10:00:00Z",
+        "axes": {
+          "domainExpertise": { "groceries": 0.8, "electronics": 0.3 },
+          "informationAppetite": 0.1,
+          "jargonTolerance": 0.5,
+          "priceSensitivity": 0.4,
+          "intentStage": "deciding"
+        },
+        "explicitPreferences": [],
+        "signalsSummary": { "productViews": 40, "specTableOpens": 0, "sortByPriceCount": 0, "comparisonUses": 0, "avgDwellSeconds": 3 },
+        "consent": { "granted": true, "scope": "personalization", "grantedAt": "2026-11-07T10:00:00Z" }
+      },
+      "proposed": { "trust": 0.8, "buyingFor": "self" },
+      "bogdanPersonaWeights": { "simple": 0.5, "specs": 0.0, "deals": 0.0, "explorer": 0.0, "balanced": 0.5 },
+      "confidence": 0.95
+    },
+    {
+      "fixture": { "id": "c05", "name": "Cristina", "ageLabel": 38, "homeVertical": "furniture", "shoppingFor": "a sofa" },
+      "profile": {
+        "userId": "fx_c05_cristina",
+        "createdAt": "2026-11-07T10:00:00Z",
+        "updatedAt": "2026-11-07T10:00:00Z",
+        "axes": {
+          "domainExpertise": { "furniture": 0.5, "electronics": 0.4 },
+          "informationAppetite": 0.7,
+          "jargonTolerance": 0.4,
+          "priceSensitivity": 0.5,
+          "intentStage": "comparing"
+        },
+        "explicitPreferences": [],
+        "signalsSummary": { "productViews": 3, "specTableOpens": 2, "sortByPriceCount": 0, "comparisonUses": 0, "avgDwellSeconds": 660 },
+        "consent": { "granted": true, "scope": "personalization", "grantedAt": "2026-11-07T10:00:00Z" }
+      },
+      "proposed": { "trust": 0.5, "buyingFor": "self" },
+      "bogdanPersonaWeights": { "simple": 0.0, "specs": 0.2, "deals": 0.0, "explorer": 0.5, "balanced": 0.3 },
+      "confidence": 0.85
+    },
+    {
+      "fixture": { "id": "c06", "name": "Radu", "ageLabel": 41, "homeVertical": "insurance", "shoppingFor": "home insurance" },
+      "profile": {
+        "userId": "fx_c06_radu",
+        "createdAt": "2026-11-07T10:00:00Z",
+        "updatedAt": "2026-11-07T10:00:00Z",
+        "axes": {
+          "domainExpertise": { "insurance": 0.2, "electronics": 0.4 },
+          "informationAppetite": 0.6,
+          "jargonTolerance": 0.05,
+          "priceSensitivity": 0.5,
+          "intentStage": "researching"
+        },
+        "explicitPreferences": [],
+        "signalsSummary": { "productViews": 2, "specTableOpens": 3, "sortByPriceCount": 0, "comparisonUses": 0, "avgDwellSeconds": 240 },
+        "consent": { "granted": true, "scope": "personalization", "grantedAt": "2026-11-07T10:00:00Z" }
+      },
+      "proposed": { "trust": 0.25, "buyingFor": "self" },
+      "bogdanPersonaWeights": { "simple": 0.6, "specs": 0.0, "deals": 0.0, "explorer": 0.0, "balanced": 0.4 },
+      "confidence": 0.86
+    },
+    {
+      "fixture": { "id": "c07", "name": "Ioana", "ageLabel": 45, "homeVertical": "b2b_saas", "shoppingFor": "project software for her team of 30" },
+      "profile": {
+        "userId": "fx_c07_ioana",
+        "createdAt": "2026-11-07T10:00:00Z",
+        "updatedAt": "2026-11-07T10:00:00Z",
+        "axes": {
+          "domainExpertise": { "b2b_saas": 0.6, "electronics": 0.5 },
+          "informationAppetite": 0.8,
+          "jargonTolerance": 0.6,
+          "priceSensitivity": 0.6,
+          "intentStage": "researching"
+        },
+        "explicitPreferences": [],
+        "signalsSummary": { "productViews": 4, "specTableOpens": 3, "sortByPriceCount": 0, "comparisonUses": 1, "avgDwellSeconds": 300 },
+        "consent": { "granted": true, "scope": "personalization", "grantedAt": "2026-11-07T10:00:00Z" }
+      },
+      "proposed": { "trust": 0.5, "buyingFor": "other" },
+      "bogdanPersonaWeights": { "simple": 0.0, "specs": 0.5, "deals": 0.1, "explorer": 0.0, "balanced": 0.4 },
+      "confidence": 0.78
+    },
+    {
+      "fixture": { "id": "c08", "name": "Bogdan", "ageLabel": 52, "homeVertical": "automotive", "shoppingFor": "a used car" },
+      "profile": {
+        "userId": "fx_c08_bogdan",
+        "createdAt": "2026-11-07T10:00:00Z",
+        "updatedAt": "2026-11-07T10:00:00Z",
+        "axes": {
+          "domainExpertise": { "automotive": 0.6, "electronics": 0.5 },
+          "informationAppetite": 0.7,
+          "jargonTolerance": 0.6,
+          "priceSensitivity": 0.6,
+          "intentStage": "researching"
+        },
+        "explicitPreferences": [],
+        "signalsSummary": { "productViews": 14, "specTableOpens": 9, "sortByPriceCount": 0, "comparisonUses": 0, "avgDwellSeconds": 180 },
+        "consent": { "granted": true, "scope": "personalization", "grantedAt": "2026-11-07T10:00:00Z" }
+      },
+      "proposed": { "trust": 0.15, "buyingFor": "self" },
+      "bogdanPersonaWeights": { "simple": 0.0, "specs": 0.4, "deals": 0.0, "explorer": 0.0, "balanced": 0.6 },
+      "confidence": 0.8
+    },
+    {
+      "fixture": { "id": "c09", "name": "Maria", "ageLabel": 67, "homeVertical": "pharmacy", "shoppingFor": "a prescription refill" },
+      "profile": {
+        "userId": "fx_c09_maria",
+        "createdAt": "2026-11-07T10:00:00Z",
+        "updatedAt": "2026-11-07T10:12:00Z",
+        "axes": {
+          "domainExpertise": { "pharmacy": 0.3, "electronics": 0.1 },
+          "informationAppetite": 0.15,
+          "jargonTolerance": 0.05,
+          "priceSensitivity": 0.4,
+          "intentStage": "deciding"
+        },
+        "explicitPreferences": [
+          {
+            "id": "pref_c09_01",
+            "text": "Bigger text, please.",
+            "interpreted": { "fontScale": 1.3, "density": "airy", "verbosity": 1 },
+            "scope": "global",
+            "source": "accessibility_setting",
+            "setAt": "2026-11-07T10:12:00Z"
+          }
+        ],
+        "signalsSummary": { "productViews": 1, "specTableOpens": 0, "sortByPriceCount": 0, "comparisonUses": 0, "avgDwellSeconds": 720 },
+        "consent": { "granted": true, "scope": "personalization", "grantedAt": "2026-11-07T10:00:00Z" }
+      },
+      "proposed": { "trust": 0.4, "buyingFor": "self" },
+      "bogdanPersonaWeights": { "simple": 0.9, "specs": 0.0, "deals": 0.0, "explorer": 0.0, "balanced": 0.1 },
+      "confidence": 0.7
+    },
+    {
+      "fixture": { "id": "c10", "name": "Gheorghe", "ageLabel": 74, "homeVertical": "toys", "shoppingFor": "a present for his granddaughter" },
+      "profile": {
+        "userId": "fx_c10_gheorghe",
+        "createdAt": "2026-11-07T10:00:00Z",
+        "updatedAt": "2026-11-07T10:20:00Z",
+        "axes": {
+          "domainExpertise": { "toys": 0.1, "electronics": 0.2 },
+          "informationAppetite": 0.4,
+          "jargonTolerance": 0.1,
+          "priceSensitivity": 0.4,
+          "intentStage": "researching"
+        },
+        "explicitPreferences": [
+          {
+            "id": "pref_c10_01",
+            "text": "It's a gift for my granddaughter, she is 7.",
+            "interpreted": { "buyingFor": "other", "recipientAgeYears": 7, "promote": ["age_suitability", "gift_options", "returns"] },
+            "scope": "session",
+            "source": "chat",
+            "setAt": "2026-11-07T10:20:00Z"
+          }
+        ],
+        "signalsSummary": { "productViews": 3, "specTableOpens": 0, "sortByPriceCount": 0, "comparisonUses": 0, "avgDwellSeconds": 360 },
+        "consent": { "granted": true, "scope": "personalization", "grantedAt": "2026-11-07T10:00:00Z" }
+      },
+      "proposed": { "trust": 0.5, "buyingFor": "other" },
+      "bogdanPersonaWeights": { "simple": 0.5, "specs": 0.0, "deals": 0.0, "explorer": 0.0, "balanced": 0.5 },
+      "confidence": 0.6
+    }
+  ]
+}
