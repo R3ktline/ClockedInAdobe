@@ -3,6 +3,8 @@
 // the checked list, not from the model's free text, so it can never claim more than the page did.
 import { changedBlocks } from "@/babel/schema/diff";
 import type { Registry, Slide, SlideProposal, Understood } from "@/babel/schema";
+import { translate } from "@/lib/i18n/dictionaries";
+import { DEFAULT_LANG, type Lang } from "@/lib/i18n/locales";
 
 type Check = {
   understood?: Understood;
@@ -57,14 +59,14 @@ export function checkUnderstood({ understood, prev, registry, proposal, slide }:
 }
 
 // What the shopper reads. Built from the checked list.
-export function replyFrom(understood: Understood | undefined): string {
-  if (!understood?.length) return "I could not tell what to change. Try asking for one thing at a time.";
+export function replyFrom(understood: Understood | undefined, lang: Lang = DEFAULT_LANG): string {
+  if (!understood?.length) return translate(lang, "reply.none");
   const say = (p: Understood[number]) => (p.how ? `${p.wanted} (${p.how})` : p.wanted);
   const of = (s: Understood[number]["status"]) => understood.filter((p) => p.status === s).map(say);
   const [done, already, cannot] = [of("do"), of("already"), of("cannot")];
   return [
-    done.length ? `Done: ${done.join("; ")}.` : "",
-    already.length ? `Already so: ${already.join("; ")}.` : "",
-    cannot.length ? `Can't do: ${cannot.join("; ")}.` : "",
+    done.length ? translate(lang, "reply.done", { items: done.join("; ") }) : "",
+    already.length ? translate(lang, "reply.already", { items: already.join("; ") }) : "",
+    cannot.length ? translate(lang, "reply.cannot", { items: cannot.join("; ") }) : "",
   ].filter(Boolean).join(" ");
 }

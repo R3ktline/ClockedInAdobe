@@ -142,6 +142,61 @@ function generateGridCanvas(centerCanvas: HTMLCanvasElement | null, pool: HTMLCa
   return canvas;
 }
 
+// --- EVERY PAGE WORTH SHOWING ---
+const AI_QUERY = "/taraba/ai?q=" + encodeURIComponent("o mașină de spălat silențioasă pentru un apartament mic, sub 2500 lei");
+const LINKS: [group: string, links: [label: string, href: string, note: string][]][] = [
+  ["Magazinul", [
+    ["Taraba", "/taraba", "magazinul, adaptat de Babel"],
+    ["Pagină construită de AI", AI_QUERY, "bara de căutare e un prompt"],
+    ["Pagină de produs", "/taraba/p/home-wm-01", "pune o întrebare în chat, blocul se transformă"],
+  ]],
+  ["Cumpărători sintetici", [
+    ["Radu", "/taraba/p/home-wm-01?ghost=radu", "mașină de spălat, sceptic la promoții"],
+    ["Cristina", "/taraba/p/home-sofa-01?ghost=cristina", "canapea, livrare și retur"],
+    ["Gheorghe", "/taraba/p/home-dw-01?ghost=gheorghe", "vrea garanția explicată clar"],
+    ["Mihai", "/taraba/p/elec-lap-01?ghost=mihai", "caută după specificații"],
+    ["Tudor", "/taraba/p/fash-dress-01?ghost=tudor", "vine de pe social, se uită la poze"],
+    ["Cristina, a doua vizită", "/lab/cristina", "ce își amintește Babel"],
+  ]],
+  ["În culise", [
+    ["Panoul comerciantului", "/merchant", "markeri, decizii, cost vs valoare"],
+    ["Demo live", "/demo", "pas cu pas: comportament, markeri, schimbări"],
+    ["Simulator", "/sim", "construiește un cumpărător"],
+  ]],
+];
+
+// The demo switch writes the same key babel/sdk/demo.ts reads, so every store page opened after this is clean.
+function PageLinks() {
+  const [demo, setDemo] = useState(true);
+  useEffect(() => {
+    try { setDemo(localStorage.getItem("babel.demo") !== "0"); localStorage.setItem("babel.demo", localStorage.getItem("babel.demo") ?? "1"); } catch { /* private mode */ }
+  }, []);
+  const toggle = (on: boolean) => {
+    setDemo(on);
+    try { localStorage.setItem("babel.demo", on ? "1" : "0"); } catch { /* private mode */ }
+  };
+  return (
+    <nav className="page-links" aria-label="Toate paginile">
+      <label className="demo-switch">
+        <input type="checkbox" checked={demo} onChange={(e) => toggle(e.target.checked)} />
+        Mod demo curat <span>(fără debug, Babel vorbește doar când e întrebat)</span>
+      </label>
+      <div className="link-groups">
+        {LINKS.map(([group, links]) => (
+          <section key={group}>
+            <h2>{group}</h2>
+            <ul>
+              {links.map(([label, href, note]) => (
+                <li key={href}><a href={href}>{label}</a><span>{note}</span></li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 // --- MAIN COMPONENT ---
 export default function IntroPage() {
   const router = useRouter();
@@ -335,10 +390,12 @@ export default function IntroPage() {
         A cinematic zoom-out mosaic revealing the repetition of AI generated sites. Text reads: Aren't you tired of AI SLOP?
       </p>
 
-      {/* Skip button discret în colțul din dreapta sus */}
-      <button className="skip" type="button" onClick={enterShop}>
-        Skip intro
-      </button>
+      {/* Skip jumps to the end screen, where every page is one click away */}
+      {!ended && (
+        <button className="skip" type="button" onClick={() => { startedAtRef.current = performance.now() - TOTAL_TIME * 1000; }}>
+          Skip intro
+        </button>
+      )}
 
       {/* Ecranul final: Butoane centrate cinematic */}
       {ended && (
@@ -351,6 +408,7 @@ export default function IntroPage() {
               Enter Taraba →
             </button>
           </div>
+          <PageLinks />
         </div>
       )}
 
@@ -435,6 +493,21 @@ export default function IntroPage() {
           transform: translateY(-3px) scale(1.03);
           box-shadow: 0 15px 35px rgba(215, 244, 119, 0.3);
         }
+
+        .page-links {
+          margin-top: 28px; width: min(880px, calc(100vw - 32px)); max-height: 60dvh; overflow-y: auto;
+          padding: 20px; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
+          background: rgba(10,10,10,0.85); backdrop-filter: blur(10px); color: #fff; text-align: left;
+        }
+        .demo-switch { display: flex; gap: 8px; align-items: center; font-size: 14px; font-weight: 700; cursor: pointer; }
+        .demo-switch span { font-weight: 400; color: rgba(255,255,255,0.6); }
+        .demo-switch input { width: 16px; height: 16px; accent-color: #d7f477; }
+        .link-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-top: 16px; }
+        .link-groups h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.04em; color: #d7f477; }
+        .link-groups ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+        .link-groups a { display: block; color: #fff; font-weight: 700; font-size: 15px; text-decoration: none; }
+        .link-groups a:hover, .link-groups a:focus-visible { color: #d7f477; text-decoration: underline; }
+        .link-groups li span { display: block; font-size: 12px; color: rgba(255,255,255,0.6); }
 
         .visually-hidden {
           position: absolute; width: 1px; height: 1px; overflow: hidden;

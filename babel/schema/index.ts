@@ -253,6 +253,35 @@ export const SlideProposal = z.object({
   hypothesis: Hypothesis,
 });
 
+// ---------- Composed pages (the agent builds a whole new page from a shopper's request) ----------
+// The page is a list of elements from this fixed vocabulary; the store renders each one from the catalog by id.
+// The model writes only short headings and notes that describe the view; every price, spec value, review and
+// policy comes from the catalog (rules 1 and 2). Two `half` elements in a row sit side by side.
+const ids = (min: number, max: number) => z.array(z.string().max(64)).min(min).max(max);
+const Width = z.enum(["full", "half"]).optional();
+export const ComposedElement = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("heading"), text: z.string().min(1).max(90), width: Width }),
+  z.object({ type: z.literal("note"), text: z.string().min(1).max(220), width: Width }),
+  z.object({
+    type: z.literal("products"), ids: ids(1, 8), layout: z.enum(["grid", "list", "feature"]),
+    specKeys: z.array(z.string().max(40)).max(4).optional(), // catalog spec keys printed on each card
+    width: Width,
+  }),
+  z.object({ type: z.literal("compare"), ids: ids(2, 4), specKeys: z.array(z.string().max(40)).min(1).max(8), width: Width }),
+  z.object({ type: z.literal("reviews"), productId: z.string().max(64), picks: z.array(z.number().int().min(0)).min(1).max(3), width: Width }),
+  z.object({ type: z.literal("prosCons"), productId: z.string().max(64), width: Width }),
+  z.object({ type: z.literal("policies"), ids: ids(1, 4), width: Width }),
+  z.object({ type: z.literal("buy"), productId: z.string().max(64), width: Width }),
+]);
+export const ComposedPage = z.object({
+  title: z.string().min(1).max(90),
+  elements: z.array(ComposedElement).min(1).max(12),
+  rationale: z.string().max(240), // shown to the shopper: why the page looks like this
+  source: z.enum(["agent", "fallback"]),
+});
+
+export type ComposedElement = z.infer<typeof ComposedElement>;
+export type ComposedPage = z.infer<typeof ComposedPage>;
 export type Skin = z.infer<typeof Skin>;
 export type Dialect = z.infer<typeof Dialect>;
 export type Need = z.infer<typeof Need>;

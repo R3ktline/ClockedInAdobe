@@ -32,6 +32,19 @@ describe("Director", () => {
     expect(o.slide!.hypothesis?.marker).toBe("hesitation");
   });
 
+  it("a question brings the block that answers it under the photos, even in curtain mode (mock LLM)", async () => {
+    delete process.env.DEEPSEEK_API_KEY;
+    const { partner } = shoppers.radu;
+    const { persona, reasons } = initialPersona(partner);
+    const slide = buildSlide({ persona, template: "product", registry, brand, ctx: partner });
+    const visit = createVisit({ store: "taraba", template: "product", partner, persona, slide, reasons, curtain: true });
+    const o = await runDirector(visit, registry, brand, ["chat"], "how loud is it?", { question: true });
+    expect(o.decision).toBe("slide");
+    expect(o.slide!.kind).toBe("minor");
+    expect(o.slide!.blocks.find((b) => b.id === "specs")).toMatchObject({ order: 2, variant: "table_full" });
+    expect(o.reply).toMatch(/specifications easy to see/);
+  });
+
   it("holds on a request no variant serves and files it as a gap (mock LLM)", async () => {
     delete process.env.DEEPSEEK_API_KEY;
     const o = await runDirector(raduVisit(), registry, brand, ["chat"], "show me a side by side comparison");

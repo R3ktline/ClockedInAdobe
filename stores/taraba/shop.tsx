@@ -24,10 +24,10 @@ const brandVars = {
   fontFamily: fonts.body, background: colors.surface, color: colors.text,
 } as React.CSSProperties;
 
-function Shell({ children, title }: { children: React.ReactNode; title: string }) {
+export function Shell({ children, title, query }: { children: React.ReactNode; title: string; query?: string }) {
   return (
     <div style={brandVars} className="min-h-screen">
-      <Header />
+      <Header query={query} />
       <main className="mx-auto max-w-5xl px-4 py-6 pb-16">
         <h1 className="mb-4 text-3xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>{title}</h1>
         {children}

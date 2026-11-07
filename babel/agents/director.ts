@@ -12,6 +12,7 @@ import { buildSlide, moveBlock } from "@/babel/persona";
 import { Gap, SlideProposal, Understood, type BlockId, type BrandKit, type Registry, type Skin, type Slide } from "@/babel/schema";
 import { checkUnderstood, replyFrom } from "@/babel/agents/understanding";
 import { elapsed, shopperSummary, type Trigger, type Visit } from "@/babel/session";
+import { LANGS, type Lang } from "@/lib/i18n/locales";
 
 // What the shopper reads when the agent could not produce a checked answer. Never a guess.
 const NOT_UNDERSTOOD = "I could not work out how to change the page for that, so it stays as it is. Try asking for one change at a time.";
@@ -73,7 +74,8 @@ export type LlmTranscript = {
 
 // `message` is what the shopper typed in the chatbox (untrusted text, passed in <user_message>).
 // `opts.big`: curtain mode, the shopper asked in chat, so the slide may change the whole page (kind "explicit").
-export async function runDirector(visit: Visit, registry: Registry, brand: BrandKit, triggers: Trigger[] = [], message?: string, opts: { big?: boolean } = {}): Promise<DirectorOutcome> {
+// `opts.question`: the message is a question about the product, so the part of the page holding the answer was hard to read.
+export async function runDirector(visit: Visit, registry: Registry, brand: BrandKit, triggers: Trigger[] = [], message?: string, opts: { big?: boolean; question?: boolean; lang?: Lang } = {}): Promise<DirectorOutcome> {
   const started = Date.now();
   const prev = visit.slides.at(-1)!;
   const kind: Slide["kind"] = opts.big && message ? "explicit" : visit.returning && prev.index === 0 ? "major" : "minor";
@@ -90,7 +92,7 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
   // Static parts first so DeepSeek's prefix cache can reuse them (GUARDRAILS §5).
   const messages: ChatCompletionMessageParam[] = [
     ...staticContext(registry, brand, prev.template).map((content) => ({ role: "system" as const, content })),
-    { role: "user", content: `<data>\n${input}\n</data>${message ? `\n<user_message>\n${message.replace(/<\/?user_message>/gi, "")}\n</user_message>` : ""}` },
+    { role: "user", content: `<data>\n${input}\n</data>${opts.lang && opts.lang !== "en" ? `\nWrite the rationale and every \`wanted\` and \`how\` in ${LANGS.find((l) => l.code === opts.lang)!.name}.` : ""}${opts.question ?"\nThe shopper asked a QUESTION (see WHEN THE SHOPPER ASKS A QUESTION)." : ""}${message ? `\n<user_message>\n${message.replace(/<\/?user_message>/gi, "")}\n</user_message>` : ""}` },
   ];
 
   const abort = new AbortController();
@@ -99,7 +101,7 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
     for (let round = 1; round <= MAX_ROUNDS; round++) {
       out.rounds = round;
       const roundStart = Date.now();
-      const msg = await chat({ agent: "director", messages, tools: TOOLS, signal: abort.signal, mock: () => mockDecision(visit, prev, triggers, brand, message, lastChanged, kind === "explicit" ? registry : undefined) });
+      const msg = await chat({ agent: "director", messages, tools: TOOLS, signal: abort.signal, mock: () => mockDecision(visit, prev, triggers, brand, message, lastChanged, kind === "explicit" ? registry : undefined, opts.question) });
       messages.push({ role: "assistant", content: msg.content ?? "", tool_calls: msg.tool_calls });
       const calls = (msg.tool_calls ?? []).filter((c) => c.type === "function");
       const said = (msg.content ?? "").slice(0, 2000);
@@ -124,7 +126,7 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
           }
         }
         log("hold", shown);
-        return done({ reason: String(args?.reason ?? "hold"), ...(message ? { understood, reply: replyFrom(understood) } : {}) });
+        return done({ reason: String(args?.reason ?? "hold"), ...(message ? { understood, reply: replyFrom(understood, opts.lang) } : {}) });
       }
 
       const parsed = SlideProposal.safeParse(safeJson(call.function.arguments));
@@ -140,7 +142,7 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
       if (parsed.success) out.gaps = parsed.data.gaps ?? [];
       out.clamps.push(...result.clamps);
       log(result.ok ? `accepted${result.clamps.length ? ` (clamped: ${result.clamps.join("; ")})` : ""}` : `rejected: ${result.errors.join("; ")}`, shown);
-      if (result.ok) return done({ decision: "slide", slide: result.slide, ...(message && parsed.success ? { understood: parsed.data.understood, reply: replyFrom(parsed.data.understood) } : {}) });
+      if (result.ok) return done({ decision: "slide", slide: result.slide, ...(message && parsed.success ? { understood: parsed.data.understood, reply: replyFrom(parsed.data.understood, opts.lang) } : {}) });
       out.errors.push(result.errors);
       messages.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify({ ok: false, errors: result.errors }) });
     }
@@ -232,7 +234,7 @@ function skinWishOf(message: string, prev: Slide) {
 }
 
 // Deterministic stand-in used without an API key: answers trust or hesitation spikes on a product page.
-function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: BrandKit, message = "", coolingDown: BlockId[] = [], bigRegistry?: Registry): ChatCompletionMessage {
+function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: BrandKit, message = "", coolingDown: BlockId[] = [], bigRegistry?: Registry, question = false): ChatCompletionMessage {
   const cooling = (id: BlockId) => coolingDown.includes(id);
   const call = (name: string, args: unknown): ChatCompletionMessage => ({
     role: "assistant", content: null, refusal: null,
@@ -240,6 +242,22 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
   });
   const asked = (re: RegExp) => triggers.includes("chat") && re.test(message);
   if (bigRegistry && triggers.includes("chat")) return mockBig(call, prev, message, brand, bigRegistry);
+  // A question: the section that holds the answer was hard to read, so it comes up under the photos, opened.
+  if (question && prev.template === "product") {
+    const buy = prev.blocks.find((b) => b.id === "buyBox");
+    const [block, variant, what] = /return|retur|warrant|garan|refund|guarantee|review|recenz/i.test(message) ? ["trust", "returns_warranty_first", "returns and warranty"] as const
+      : /price|pre[tț]|cost|deliver|livr|stock|stoc|ship/i.test(message) && buy ? ["buyBox", buy.variant, "price and delivery"] as const
+      : ["specs", "table_full", "the specifications"] as const;
+    const b = prev.blocks.find((x) => x.id === block);
+    if (b && !(b.order === 2 && b.variant === variant && !b.collapsed)) {
+      return call("proposeSlide", {
+        changes: [{ id: block, order: 2, variant, collapsed: false }],
+        understood: [{ wanted: `${what} easy to see`, status: "do", how: "moved right under the photos and opened", sets: [{ block, variant }] }],
+        rationale: `You asked about ${what}, so that section now sits open right under the photos.`,
+        hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30, outcome: "cart" },
+      });
+    }
+  }
   if (asked(/bigger|larger|small text|hard to read|simpl|plain/i) && !cooling("summary")) {
     const plain = prev.blocks.find((b) => b.id === "summary") ? [{ id: "summary", variant: "benefits_plain" }] : [];
     return call("proposeSlide", {

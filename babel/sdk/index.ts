@@ -3,5 +3,5 @@ export { BabelProvider, useBabel, type BabelProviderProps } from "./BabelProvide
 export { BabelBlock, BabelStack } from "./BabelBlock";
 export { useReviewPicks } from "./useReviewPicks";
 export type {
-  BlockId, BrandKit, Category, CopyRegister, InteractionEvent, PartnerContext, Product, Registry, Template,
+  BlockId, BrandKit, Category, ComposedElement, ComposedPage, CopyRegister, InteractionEvent, PartnerContext, Product, Registry, Template,
 } from "@/babel/schema";

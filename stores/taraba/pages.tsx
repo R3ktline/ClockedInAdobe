@@ -49,15 +49,21 @@ export function Header({ query = "" }: { query?: string }) {
         <Link href="/taraba" className="text-2xl font-extrabold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
           taraba
         </Link>
-        <form action="/taraba/search" role="search" className="flex min-w-0 flex-1">
+        {/* The search box is a prompt: the agent builds a page for what was typed (/taraba/ai). */}
+        <form action="/taraba/ai" role="search" className="flex min-w-0 flex-1 rounded-full bg-white">
           <input
             type="search"
             name="q"
             defaultValue={query}
-            aria-label={t("header.searchLabel")}
-            placeholder={t("header.searchPlaceholder")}
-            className="min-w-0 flex-1 rounded-full bg-white px-4 py-2 text-[var(--c-text)] placeholder:text-[#5b6170]"
+            minLength={2}
+            maxLength={200}
+            aria-label={t("header.askLabel")}
+            placeholder={t("header.askPlaceholder")}
+            className="min-w-0 flex-1 rounded-full bg-transparent px-4 py-2 text-[var(--c-text)] placeholder:text-[#5b6170]"
           />
+          <button type="submit" aria-label={t("ai.submit")} className="m-1 rounded-full bg-[var(--c-primary)] px-3 text-sm font-bold text-white hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--c-primary)]">
+            ✦
+          </button>
         </form>
         <LanguageSwitch />
         <Link href="/taraba/cart" className="rounded-full bg-[var(--c-accent)] px-3 py-1.5 text-sm font-bold text-[#14171f]" aria-label={t("header.cartAria", { count })}>

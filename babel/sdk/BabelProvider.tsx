@@ -9,6 +9,7 @@ import { buildSlide, NEUTRAL_PERSONA } from "@/babel/persona";
 import type { BlockId, BrandKit, EventType, InteractionEvent, PartnerContext, Registry, Slide, Template } from "@/babel/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { DebugPanel } from "./DebugPanel";
+import { readDemo } from "./demo";
 import { GhostCursorView, runGhost, type GhostControl, type GhostCursor, type GhostPlayback } from "./Ghost";
 import { LabPanel, memoryKey, type SavedMemory } from "./LabPanel";
 import { SlideControl } from "./SlideControl";
@@ -43,6 +44,7 @@ type BabelContext = {
   forgetMe: () => Promise<void>;
   askNow: () => Promise<void>; // debug: ask the agent to look right now, whatever the pacing says
   chat: (message: string) => Promise<string>; // the shopper's typed request; resolves to the agent's answer in words
+  demo: boolean; // clean presenting view (./demo.ts): no debug overlay, no pop-up notices
 };
 
 // How a new slide reaches a page the shopper is looking at (?apply=…):
@@ -70,6 +72,8 @@ const IDLE_MS = 5000;
 const FLUSH_MS = 800;
 const NOISY = new Set<EventType>(["hover_price", "image_zoom", "gallery_swipe"]);
 const NOISY_GAP_MS = 10_000;
+// A typed question ("how loud is it?", "cât costă livrarea?"), as opposed to a request to change the page.
+const QUESTION = /\?$|^(how|what|which|does|do|is|are|can|will|why|when|where|cum|cât|cat|ce|care|are|este|e|de ce|când|cand|unde|merge|se poate)\b/i;
 // The store's label for what an element is, cleaned to what the schema accepts (a bad label must not drop the batch).
 const focusOf = (el: Element | null | undefined) =>
   el?.closest("[data-babel-focus]")?.getAttribute("data-babel-focus")?.toLowerCase().replace(/[^a-z0-9_:.-]/g, "-").slice(0, 60) || undefined;
@@ -101,7 +105,7 @@ export type LabInfo = {
 };
 
 export function BabelProvider(p: BabelProviderProps) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const neutral = useMemo(
     () => buildSlide({ persona: NEUTRAL_PERSONA, template: p.template, registry: p.registry, brand: p.brand }),
     [p.template, p.registry, p.brand],
@@ -150,6 +154,8 @@ export function BabelProvider(p: BabelProviderProps) {
   // A skin picked by hand (switcher, ?skin=...) wins over the one Babel chose on the slide.
   const [skin, setSkin] = useState<Skin | null>(null);
   const [notice, setNotice] = useState<{ id: string; dialect: Slide["persona"]["dialect"] } | null>(null);
+  const [demo, setDemo] = useState(false);
+  useEffect(() => setDemo(readDemo()), []);
   const profiledKey = `babel.profiled.${p.store}`;
   const markProfiled = useCallback(() => { try { localStorage.setItem(profiledKey, "1"); } catch { /* ignore */ } }, [profiledKey]);
   // Lifts the quiet first-paint glass of a remembered shopper.
@@ -340,7 +346,7 @@ export function BabelProvider(p: BabelProviderProps) {
 
   // 2. Ask for a slide once the shopper pauses.
   // `message` = something the shopper typed: skips the scroll pause and returns the agent's answer in words.
-  const requestSlide = useCallback(async (message?: string): Promise<string | undefined> => {
+  const requestSlide = useCallback(async (message?: string, question = false): Promise<string | undefined> => {
     if (!visitId.current) return;
     if (!message && performance.now() - lastScrollAt.current < PAUSE_MS) {
       setTimeout(() => requestSlide(), 300);
@@ -349,7 +355,7 @@ export function BabelProvider(p: BabelProviderProps) {
     setAgent({ state: "thinking", text: message ? "reading your request…" : "reading the signals and deciding…" });
     const asked = performance.now();
     const r = await fetch("/api/slide", {
-      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current, message }),
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current, message, question, lang }),
     }).then((x) => x.json()).catch(() => null) as { decision?: string; slide?: Slide; reason?: string; reply?: string; llm?: LlmTranscript; urgent?: boolean } | null;
     slideWanted.current = false; // held until the answer is in, so the ghost can wait for it
     const secs = ((performance.now() - asked) / 1000).toFixed(1);
@@ -361,14 +367,18 @@ export function BabelProvider(p: BabelProviderProps) {
       const list = slidesRef.current;
       slidesRef.current = [...list, next];
       setSlides(slidesRef.current); // in the history now, on screen when it is safe
-      if (applyRef.current === "live" || r.urgent) land(next, list[cursorRef.current], r.urgent);
+      const prev = list[cursorRef.current];
+      if (applyRef.current === "live" || r.urgent) land(next, prev, r.urgent);
       else { pending.current = next; tryLand(); }
+      // A question: bring the block that now answers it into view while it morphs.
+      const answer = question && prev && changedBlocks(prev.blocks, next.blocks)[0];
+      if (answer) setTimeout(() => document.querySelector(`[data-babel-block="${answer}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
     }
     if (!message) return;
     if (r?.decision === "slide" && r.slide) return r.reply ?? r.slide.rationale;
     if (r?.decision === "hold") return r.reply ?? `I kept the page as it is: ${r.reason}`;
     return r?.reason ?? "Babel could not be reached.";
-  }, [land, tryLand]);
+  }, [land, tryLand, lang]);
 
   // ---- Curtain mode ----
   // The glass comes down, the work runs (at least `minMs`, so it never flickers), the page is swapped while it is
@@ -458,7 +468,7 @@ export function BabelProvider(p: BabelProviderProps) {
     setAgent({ state: "thinking", text: "reading your request…" });
     await changeWith(
       "Rebuilding the page the way you asked…",
-      () => fetch("/api/slide", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current, message }) })
+      () => fetch("/api/slide", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current, message, lang }) })
         .then((x) => x.json()).catch(() => null) as Promise<{ decision?: string; slide?: Slide; reason?: string; reply?: string; llm?: LlmTranscript } | null>,
       (r) => {
         if (r?.decision === "slide" && r.slide) { applyBehind(r.slide); reply = r.reply ?? r.slide.rationale; setAgent({ state: "changed", text: `rebuilt the page as you asked (view ${r.slide.index + 1})`, llm: r.llm }); return true; }
@@ -469,7 +479,7 @@ export function BabelProvider(p: BabelProviderProps) {
       1300,
     );
     return reply;
-  }, [applyBehind, changeWith]);
+  }, [applyBehind, changeWith, lang]);
 
   // The opt-in answer: yes starts a profiled visit, no starts a standard one with nothing collected.
   const answerInvite = useCallback((yes: boolean) => {
@@ -504,8 +514,11 @@ export function BabelProvider(p: BabelProviderProps) {
 
   const chat = useCallback(async (message: string) => {
     track("chat_message", { value: message.length }); // the text itself is not kept as a signal
-    if (curtainMode.current) return chatBehindCurtain(message);
-    return (await requestSlide(message)) ?? "Babel could not be reached.";
+    // A question about the product means that part of the page is hard to read: it changes live, in place,
+    // with a morph, never behind the curtain. Anything else typed is a request to rebuild the page.
+    const question = QUESTION.test(message.trim());
+    if (curtainMode.current && !question) return chatBehindCurtain(message);
+    return (await requestSlide(message, question)) ?? "Babel could not be reached.";
   }, [chatBehindCurtain, requestSlide, track]);
 
   const askNow = useCallback(async () => {
@@ -665,7 +678,7 @@ export function BabelProvider(p: BabelProviderProps) {
 
   const ctx: BabelContext = {
     store: p.store, template: p.template, registry: p.registry, brand: p.brand,
-    slide, slides, cursor, standard, changed, track, go, setStandard, forgetMe, visitId: visitIdState, askNow, chat, agent, lastChange, apply, calm,
+    slide, slides, cursor, standard, changed, track, go, setStandard, forgetMe, visitId: visitIdState, askNow, chat, agent, lastChange, apply, calm, demo,
     player: lab ? {
       state: playback,
       pause: () => playerRef.current?.pause(),
@@ -692,7 +705,7 @@ export function BabelProvider(p: BabelProviderProps) {
           <Curtain state={curtain} />
           <Invite open={ask} onAnswer={answerInvite} />
           <ViewNotice
-            notice={notice} dialect={slide.persona.dialect} standard={standard} optedIn={optinRef.current !== "no"}
+            notice={demo ? null : notice} dialect={slide.persona.dialect} standard={standard} optedIn={optinRef.current !== "no"}
             onKeep={() => track("view_switch", { value: "keep" })} onBack={() => go(-1)}
           />
           {txlab && <TransitionLab current={standard ? "standard" : slide.persona.dialect} onPreview={previewLook} skin={activeSkin} onSkin={previewSkin} />}

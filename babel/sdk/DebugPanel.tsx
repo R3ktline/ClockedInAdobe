@@ -41,7 +41,7 @@ function Section({ title, open, children }: { title: ReactNode; open?: boolean; 
 }
 
 export function DebugPanel() {
-  const { visitId, askNow, agent } = useBabel();
+  const { visitId, askNow, agent, demo } = useBabel();
   const [mode, setMode] = useState<Mode>("off");
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [error, setError] = useState("");
@@ -52,7 +52,7 @@ export function DebugPanel() {
     const q = new URLSearchParams(location.search).get("debug");
     let stored: string | null = null;
     try { stored = localStorage.getItem(KEY); } catch { /* private mode */ }
-    const start: Mode = q === "1" ? "open" : q === "0" ? "off" : stored === "open" || stored === "pill" || stored === "off" ? stored : process.env.NODE_ENV !== "production" ? "pill" : "off";
+    const start: Mode = q === "1" ? "open" : q === "0" || demo ? "off" : stored === "open" || stored === "pill" || stored === "off" ? stored : process.env.NODE_ENV !== "production" ? "pill" : "off";
     change(start);
     const onKey = (e: KeyboardEvent) => {
       if (!(e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "d")) return;
@@ -61,7 +61,7 @@ export function DebugPanel() {
     };
     addEventListener("keydown", onKey);
     return () => removeEventListener("keydown", onKey);
-  }, []);
+  }, [demo]);
 
   // Poll while open. The agent's own status changes (thinking → changed/held) fetch once more straight away.
   useEffect(() => {

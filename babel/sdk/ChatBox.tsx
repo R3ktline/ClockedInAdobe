@@ -18,7 +18,7 @@ function BabelIcon({ size = 20 }: { size?: number }) {
 // re-composing it from the store's own blocks. Babel also speaks first: when it changes the page on its own,
 // it says so here. It never writes page content.
 export function ChatBox() {
-  const { chat, visitId, slides, ghost } = useBabel();
+  const { chat, visitId, slides, demo } = useBabel();
   const { t } = useI18n();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -37,10 +37,10 @@ export function ChatBox() {
     if (seen.current && n > seen.current && !busyRef.current) {
       const said = slides[n - 1].rationale;
       setMsgs((m) => [...m, { from: "babel", text: said }]);
-      if (!openRef.current) setUnread(said);
+      if (!openRef.current && !demo) setUnread(said); // demo: Babel stays quiet until asked
     }
     seen.current = n;
-  }, [slides]);
+  }, [slides, demo]);
 
   useEffect(() => { end.current?.scrollIntoView?.({ block: "end" }); }, [msgs, open]);
 
@@ -58,25 +58,17 @@ export function ChatBox() {
   };
 
   const show = () => { setOpen(true); setUnread(null); };
-  // In the lab the left side is the indicators panel, so the chat moves next to it.
-  const pos = ghost?.lab ? "left-[386px]" : "left-4";
 
+  // Discreet: closed, it is a small tab on the right edge with a dot when Babel has said something; it never pops
+  // a message over the page. Open, the panel sits on the right, clear of the view controls at the bottom.
   return (
-    <div className={`fixed bottom-4 ${pos} z-50 max-w-[calc(100vw-2rem)]`} style={{ fontSize: 15 }}>
+    <div className={`fixed right-0 top-1/2 z-50 max-w-[calc(100vw-1rem)] -translate-y-1/2 ${open ? "pr-3" : ""}`} style={{ fontSize: 15 }}>
       {!open ? (
-        <div className="flex items-end gap-2">
-          <button onClick={show} disabled={!visitId} aria-label={unread ? t("chat.openUnread") : t("chat.open")}
-            className="relative flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--c-primary)] text-white shadow-lg disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--c-primary)]">
-            <BabelIcon size={24} />
-            {unread && <span className="absolute top-0 right-0 size-3 rounded-full border-2 border-white bg-amber-400" />}
-          </button>
-          {unread && (
-            <button onClick={show} className="max-w-64 rounded-2xl rounded-bl-sm border border-black/10 bg-white px-3 py-2 text-left text-[#14171f] shadow-lg">
-              <span className="block text-xs font-semibold text-[#5b6170]">Babel</span>
-              <span className="line-clamp-3">{unread}</span>
-            </button>
-          )}
-        </div>
+        <button onClick={show} disabled={!visitId} aria-label={unread ? t("chat.openUnread") : t("chat.open")}
+          className="relative flex h-14 w-9 items-center justify-center rounded-l-xl bg-[var(--c-primary)] text-white opacity-60 shadow transition-opacity hover:opacity-100 focus-visible:opacity-100 disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--c-primary)]">
+          <BabelIcon size={18} />
+          {unread && <span className="absolute top-1 left-1 size-2.5 rounded-full bg-amber-400" />}
+        </button>
       ) : (
         <section aria-label={t("chat.title")} className="flex max-h-[min(30rem,calc(100vh-2rem))] w-80 max-w-full flex-col overflow-hidden rounded-2xl border border-black/10 bg-white text-[#14171f] shadow-xl">
           <header className="flex items-center gap-2 bg-[var(--c-primary)] px-3 py-2 text-white">

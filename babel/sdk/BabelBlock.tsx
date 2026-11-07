@@ -46,13 +46,15 @@ export function BabelBlock({ id, variants }: { id: BlockId; variants: Record<str
       style={{ order }}
       className={`babel-block ${sideBlocks(slide.blocks).has(id) ? "" : "md:col-span-2"}`}
     >
-      <AnimatePresence mode="wait" initial={false}>
+      {/* Morph: the box reshapes to the new variant while the old one dissolves into it (no blank frame). */}
+      <AnimatePresence mode="popLayout" initial={false}>
         <motion.div
           key={`${variant}-${!!b?.collapsed}`}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
+          layout
+          initial={{ opacity: 0, scale: 0.97, filter: "blur(8px)" }}
+          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+          exit={{ opacity: 0, scale: 1.03, filter: "blur(8px)" }}
+          transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
         >
           {b?.collapsed ? (
             <details onToggle={(e) => e.currentTarget.open && track("block_open", { blockId: id })}>

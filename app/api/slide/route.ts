@@ -3,10 +3,13 @@ import { z } from "zod";
 import { runDirector } from "@/babel/agents/director";
 import { addSlide, describeDiff, elapsed, getVisit } from "@/babel/session";
 import { recordGaps } from "@/babel/session/gaps";
+import { LANG_CODES, type Lang } from "@/lib/i18n/locales";
 import { bad, storeConfig } from "../_store";
 
 // `message` is what the shopper typed in the chatbox: it is asked for now, whatever the pacing says.
-const Body = z.object({ visitId: z.string(), message: z.string().trim().min(1).max(200).optional() });
+const Body = z.object({ visitId: z.string(), message: z.string().trim().min(1).max(200).optional(),
+  question: z.boolean().optional(),
+  lang: z.enum(LANG_CODES as [Lang, ...Lang[]]).optional() }); // the shopper's language: the rationale and reply are written in it // a typed question: change the part that answers it, live, not the whole page
 
 export async function POST(req: Request) {
   const body = Body.safeParse(await req.json().catch(() => null));
@@ -15,6 +18,8 @@ export async function POST(req: Request) {
   if (!visit) return bad("unknown visit", 404);
   const message = body.data.message;
   if (message && visit.standardView) return Response.json({ decision: "none", reason: "The standard view is on. Switch to the personalized view to change the page." });
+  // A typed message waits (up to ~8 s) for an automatic decision already running, instead of being dropped.
+  for (let i = 0; message && visit.directorBusy && i < 32; i++) await new Promise((r) => setTimeout(r, 250));
   if (visit.directorBusy) return Response.json({ decision: "none", reason: message ? "Still working on the last change. Try again in a moment." : undefined });
   if (!message && (!visit.pendingTriggers.length || visit.standardView)) {
     return Response.json({ decision: "none" });
@@ -27,12 +32,13 @@ export async function POST(req: Request) {
   try {
     const prev = visit.slides.at(-1)!;
     // Curtain mode: a typed request may change the whole page in one step (kind "explicit"), behind the curtain.
-    const o = await runDirector(visit, cfg.registry, cfg.brand, triggers, message, { big: visit.curtain && !!message });
+    const big = visit.curtain && !!message && !body.data.question;
+    const o = await runDirector(visit, cfg.registry, cfg.brand, triggers, message, { big, question: body.data.question, lang: body.data.lang });
     recordGaps(visit.store, prev.template, o.gaps, o.mocked);
     const common = { at: elapsed(visit), triggers, errors: o.errors, clamps: o.clamps, rounds: o.rounds, ms: o.ms, mocked: o.mocked, llm: o.transcript };
     if (o.decision === "slide" && o.slide) {
       addSlide(visit, o.slide);
-      if (visit.curtain && message) visit.explicitPinned = true; // what the shopper asked for beats our own read
+      if (big) visit.explicitPinned = true; // what the shopper asked for beats our own read
       visit.trace.push({
         ...common, kind: "slide", hypothesis: o.slide.hypothesis, diff: describeDiff(prev, o.slide),
         text: `slide ${o.slide.index} (${o.slide.kind}${message ? ", asked in chat" : ""}): ${o.slide.rationale}`,
