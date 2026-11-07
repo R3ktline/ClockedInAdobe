@@ -1,0 +1,26 @@
+# Track ownership (see CLAUDE.md "Team and ownership").
+# Replace @R3ktline with each track owner's GitHub username once tracks are assigned.
+# Later rules win, so the catch-all comes first.
+
+*                       @R3ktline
+
+# Track A: schema & data
+/packages/schema/       @R3ktline
+/data/                  @R3ktline
+/lib/tools/             @R3ktline
+/lib/persona/           @R3ktline
+
+# Track B: renderer & UI
+/app/                   @R3ktline
+/components/            @R3ktline
+
+# Track C: agents
+/lib/llm/               @R3ktline
+/lib/agents/            @R3ktline
+/prompts/               @R3ktline
+/app/api/               @R3ktline
+
+# Track D: guardrails & pitch
+/lib/guardrails/        @R3ktline
+/scripts/               @R3ktline
+/docs/                  @R3ktline
