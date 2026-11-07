@@ -6,7 +6,7 @@ Rules for every coding agent (Claude Code, Codex, Cursor, …) and every person 
 
 **Babel**: an AI layer an online store plugs into. It decides what kind of shopper is on the page (persona = web dialect × need), scores marketing markers from their behaviour, and a DeepSeek agent re-composes the store's own page as a timeline of **slides**, inside the store's brand. The catalog is also served to shopping agents over A2A and MCP. 12-hour hackathon, synthetic data, two fictional demo stores (Taraba, Croiala).
 
-**Status: Phase 1 (foundation) built, one check left.** The base app and an end-to-end proof of concept run on the mock LLM. The checkpoint in [docs/TASKS.md](docs/TASKS.md#phase-1-foundation-bogdan-solo) still needs one run against real DeepSeek. When bogdan marks it `done`, the tracks take over their folders. Planning is finished and archived in `planning-phase/` (history, read-only, not a source of truth).
+**Status: Phase 1 (foundation) done.** The base app and an end-to-end proof of concept run, checked with the mock LLM and a live model ([checkpoint](docs/TASKS.md#phase-1-foundation-bogdan-solo)). Each track now takes over its folders.
 
 ## Read before you start
 
