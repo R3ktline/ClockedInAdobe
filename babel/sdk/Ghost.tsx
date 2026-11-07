@@ -40,10 +40,16 @@ function centre(el: HTMLElement) {
 
 export function runGhost(
   events: InteractionEvent[],
-  io: { push: (e: InteractionEvent) => void; note: (text: string) => void; cursor: (c: (prev: GhostCursor) => GhostCursor) => void; done?: () => void },
-): () => void {
-  const timers: ReturnType<typeof setTimeout>[] = [];
-  const at = (ms: number, fn: () => void) => timers.push(setTimeout(fn, Math.max(0, ms)));
+  io: {
+    push: (e: InteractionEvent) => void; note: (text: string) => void; cursor: (c: (prev: GhostCursor) => GhostCursor) => void; done?: () => void;
+    stepMode?: boolean;                          // lab: pause after every step
+    state?: (s: GhostPlayback) => void;          // lab: playback state for the controls
+  },
+): GhostRun {
+  // The script runs on its own clock, so it can be paused: a paused ghost stops acting, while the
+  // page, the markers and the agent keep reacting in real time to what it has done so far.
+  const actions: { at: number; fn: () => void; step?: string }[] = [];
+  const at = (ms: number, fn: () => void, step?: string) => actions.push({ at: ms, fn, step });
 
   for (const e of events) {
     at(e.t - LEAD_MS, () => targetFor(e)?.scrollIntoView({ behavior: "smooth", block: "center" }));
@@ -60,12 +66,46 @@ export function runGhost(
       const alreadyOpen = el?.tagName === "SUMMARY" && el.parentElement instanceof HTMLDetailsElement && el.parentElement.open;
       if (clickable && !alreadyOpen) el!.click();
       else io.push(e);
-    });
+    }, describeEvent(e));
   }
   // Walks on to the next page a little after the last event, so the agent has had time to answer.
-  if (io.done) at(Math.max(0, ...events.map((e) => e.t)) + WALK_ON_MS, () => { io.note("goes on to the next page"); io.done!(); });
-  return () => timers.forEach(clearTimeout);
+  if (io.done) at(Math.max(0, ...events.map((e) => e.t)) + WALK_ON_MS, () => { io.note("goes on to the next page"); io.done!(); }, "goes on to the next page");
+  actions.sort((a, b) => a.at - b.at);
+
+  const total = actions.filter((a) => a.step).length;
+  let clock = 0, i = 0, done = 0;
+  let paused = false, stepMode = !!io.stepMode, stopAfterNext = false;
+  const nextStep = () => actions.slice(i).find((a) => a.step)?.step;
+  const emit = () => io.state?.({ paused, stepMode, done, total, next: nextStep() });
+  const TICK = 100;
+  const timer = setInterval(() => {
+    if (paused || i >= actions.length) return;
+    clock += TICK;
+    while (i < actions.length && actions[i].at <= clock) {
+      const a = actions[i++];
+      a.fn();
+      if (!a.step) continue;
+      done++;
+      if (stepMode || stopAfterNext) { paused = true; stopAfterNext = false; break; } // pause right after the step
+    }
+    emit();
+  }, TICK);
+  emit();
+  return {
+    stop: () => clearInterval(timer),
+    control: {
+      pause: () => { paused = true; emit(); },
+      play: () => { paused = false; stopAfterNext = false; emit(); },
+      step: () => { paused = false; stopAfterNext = true; emit(); },
+      setStepMode: (on) => { stepMode = on; emit(); },
+    },
+  };
 }
+
+// Lab: playback state and controls for a ghost run.
+export type GhostPlayback = { paused: boolean; stepMode: boolean; done: number; total: number; next?: string };
+export type GhostControl = { pause: () => void; play: () => void; step: () => void; setStepMode: (on: boolean) => void };
+export type GhostRun = { stop: () => void; control: GhostControl };
 
 export function GhostCursorView({ c, name }: { c: GhostCursor; name: string }) {
   if (!c.visible) return null;

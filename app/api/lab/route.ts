@@ -1,6 +1,7 @@
 // Lab feed (testing only): everything the indicators panel shows about one live visit.
 // What the shopper did, which model signal each action became, every trait with its confidence,
 // the team markers the agent watches, the agent's trace, and the memory the browser should keep.
+import { isMocked } from "@/babel/llm";
 import { modelInputs } from "@/babel/persona/modelInputs";
 import { SIGNALS, THRESHOLD, TRAITS, TRAIT_NAMES } from "@/babel/persona/signalModel";
 import type { InteractionEvent } from "@/babel/schema";
@@ -30,6 +31,7 @@ export async function GET(req: Request) {
   const context = Object.keys(modelInputs([], v.partner).signals);
   return Response.json({
     ageMs: elapsed(v),
+    llm: { mocked: isMocked(), model: isMocked() ? "" : process.env.DEEPSEEK_MODEL ?? "" }, // which brain the agent uses
     returning: v.returning,
     usedMemory: !!v.prior,
     threshold: THRESHOLD,

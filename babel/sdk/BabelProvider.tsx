@@ -7,7 +7,7 @@ import type { LlmTranscript } from "@/babel/agents/director";
 import { changedBlocks, describeDiff } from "@/babel/schema/diff";
 import { buildSlide, NEUTRAL_PERSONA } from "@/babel/persona";
 import type { BlockId, BrandKit, EventType, InteractionEvent, PartnerContext, Registry, Slide, Template } from "@/babel/schema";
-import { GhostCursorView, runGhost, type GhostCursor } from "./Ghost";
+import { GhostCursorView, runGhost, type GhostControl, type GhostCursor, type GhostPlayback } from "./Ghost";
 import { LabPanel, memoryKey, type SavedMemory } from "./LabPanel";
 import { SlideControl } from "./SlideControl";
 
@@ -25,6 +25,8 @@ type BabelContext = {
   changed: ReadonlySet<BlockId>;
   ghost?: { label: string; note: string; step: number } & LabInfo;
   visitId: string | null;
+  // Lab: the ghost's playback, and controls to pause it or go one step at a time.
+  player?: { state: GhostPlayback | null; pause: () => void; play: () => void; step: () => void; setStepMode: (on: boolean) => void };
   apply: Apply;
   calm: CalmEntry[];
   agent: AgentStatus;
@@ -73,6 +75,11 @@ export type BabelProviderProps = {
   children: ReactNode;
 };
 
+// Lab: "pause after each step" is kept for the browser tab, so it carries over from page to page.
+const STEP_KEY = "babel.lab.stepMode";
+const readStepMode = () => { try { return sessionStorage.getItem(STEP_KEY) === "1"; } catch { return false; } };
+const writeStepMode = (on: boolean) => { try { sessionStorage.setItem(STEP_KEY, on ? "1" : "0"); } catch { /* ignore */ } };
+
 // Lab (testing) extras on a ghost run: the indicators panel, the return visit, a forced format.
 export type LabInfo = {
   lab?: boolean;
@@ -98,6 +105,8 @@ export function BabelProvider(p: BabelProviderProps) {
   const [calm, setCalm] = useState<CalmEntry[]>([]);
   const [visitIdState, setVisitIdState] = useState<string | null>(null); // for the lab panel
   const lab = !!p.ghost?.lab;
+  const [playback, setPlayback] = useState<GhostPlayback | null>(null);  // lab: pause / step through
+  const playerRef = useRef<GhostControl | null>(null);
 
   const applyRef = useRef<Apply>("quiet");
   const pending = useRef<Slide | null>(null);  // arrived, not yet on screen (quiet mode)
@@ -243,7 +252,11 @@ export function BabelProvider(p: BabelProviderProps) {
           const next = p.ghost.next;
           // Walk on only once the agent has answered, so the page's last change is not cut off.
           const walk = (until: number) => (slideWanted.current && Date.now() < until ? setTimeout(() => walk(until), 500) : location.assign(next!));
-          runGhost(p.ghost.events, { push, note: setGhostNote, cursor: setGhostCursor, done: next ? () => walk(Date.now() + 20_000) : undefined });
+          const run = runGhost(p.ghost.events, {
+            push, note: setGhostNote, cursor: setGhostCursor, done: next ? () => walk(Date.now() + 20_000) : undefined,
+            stepMode: lab && readStepMode(), state: lab ? setPlayback : undefined,
+          });
+          playerRef.current = run.control;
         } else {
           push({ t: 0, type: "page_view", productId: p.productId });
         }
@@ -399,6 +412,14 @@ export function BabelProvider(p: BabelProviderProps) {
     store: p.store, template: p.template, registry: p.registry, brand: p.brand,
     slide, slides, cursor, standard, changed, track, go, setStandard, agent, lastChange, apply, calm,
     visitId: visitIdState,
+    player: lab ? {
+      state: playback,
+      pause: () => playerRef.current?.pause(),
+      // Play means play on: it also switches "pause after each step" off (Next step is for one action).
+      play: () => { writeStepMode(false); playerRef.current?.setStepMode(false); playerRef.current?.play(); },
+      step: () => playerRef.current?.step(),
+      setStepMode: (on: boolean) => { writeStepMode(on); playerRef.current?.setStepMode(on); },
+    } : undefined,
     ghost: p.ghost
       ? { label: p.ghost.label, note: ghostNote, step: p.ghost.step ?? 0, lab: p.ghost.lab, visit: p.ghost.visit, variant: p.ghost.variant, last: p.ghost.last }
       : undefined,

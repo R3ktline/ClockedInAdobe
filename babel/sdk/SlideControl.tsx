@@ -34,7 +34,8 @@ export function SlideControl() {
 
   return (
     <div className="fixed right-4 bottom-4 z-50 flex max-w-[calc(100vw-2rem)] flex-col items-end gap-2" style={{ fontSize: 15 }}>
-      {ghost && (
+      {/* In the lab the left panel shows all of this, so nothing covers the store. */}
+      {ghost && !ghost.lab && (
         <div className={`${box} bg-[#14171f] text-white`} role="status" aria-live="polite">
           <p><span className="font-semibold">Synthetic shopper · {ghost.label}</span> <span className="text-white/75">{ghost.note}</span></p>
           <p className="mt-1">
@@ -78,7 +79,7 @@ export function SlideControl() {
           )}
         </div>
       )}
-      {changeVisible && !whyOpen && lastChange && <div className={card} role="status">{changes}</div>}
+      {changeVisible && !whyOpen && lastChange && !ghost?.lab && <div className={card} role="status">{changes}</div>}
       {whyOpen && (
         <div className={card} role="dialog" aria-label="Why this view">
           <p className="font-semibold">{standard ? "Standard view" : "Why this view?"}</p>

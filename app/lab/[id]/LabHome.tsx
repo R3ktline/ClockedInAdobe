@@ -22,7 +22,11 @@ const LABEL: Record<string, string> = {
 export function LabHome({ id, label, start, revisitStart, partner }: { id: string; label: string; start: string; revisitStart: string; partner: PartnerContext }) {
   const [mem, setMem] = useState<SavedMemory | null>(null);
   const [closed, setClosed] = useState(false);
+  const [stepMode, setStepMode] = useState(false);
+  // Same key the store pages read (babel/sdk/BabelProvider), kept for this browser tab.
+  const setStep = (on: boolean) => { setStepMode(on); try { sessionStorage.setItem("babel.lab.stepMode", on ? "1" : "0"); } catch { /* ignore */ } };
   useEffect(() => {
+    try { setStepMode(sessionStorage.getItem("babel.lab.stepMode") === "1"); } catch { /* ignore */ }
     setClosed(new URLSearchParams(location.search).get("closed") === "1");
     try { const raw = localStorage.getItem(memoryKey(id)); setMem(raw ? JSON.parse(raw) : null); } catch { setMem(null); }
   }, [id]);
@@ -52,10 +56,27 @@ export function LabHome({ id, label, start, revisitStart, partner }: { id: strin
       <p className="mt-2 text-lg text-[#3c4250]">{label}</p>
       <p className="mt-1 text-sm text-[#5b6170]">Synthetic shopper and data. The panel on the left of the store shows every indicator live. The format changes; the theme does not (later).</p>
 
-      <section className={`${step} mt-6`}>
+      <details className={`${step} mt-6`}>
+        <summary className="cursor-pointer text-lg font-bold">Run it with the real AI agent (DeepSeek)</summary>
+        <p className="mt-2 text-[#3c4250]">Without a key, the agent is a stand-in that follows fixed rules. The panel says which one is running (&quot;Agent brain&quot;).</p>
+        <ol className="mt-2 list-decimal pl-5 text-[#3c4250]">
+          <li>Copy <code>.env.example</code> to <code>.env.local</code> in the repo root (it is git-ignored, never commit it).</li>
+          <li>Set <code>DEEPSEEK_API_KEY=</code> your key and <code>DEEPSEEK_MODEL=deepseek-flash</code> (the model the team verified).</li>
+          <li>Optional: <code>BABEL_DIRECTOR_BUDGET_MS=12000</code>. DeepSeek took 4.5–6.5 s per decision and the default budget is 6 s; past it the agent keeps the page.</li>
+          <li>Restart <code>npm run dev</code>, come back here, run visit 1. The panel should say <b>Agent brain: DeepSeek</b>, and &quot;The agent&apos;s own answer&quot; shows what it said.</li>
+        </ol>
+      </details>
+
+      <section className={`${step} mt-4`}>
         <h2 className="text-xl font-bold">1 · First visit</h2>
         <p className="mt-1 text-[#3c4250]">She arrives from Pinterest, looks at the sofa&apos;s photos and dimensions, checks delivery and returns, browses the category, comes back to the sofa and leaves without buying.</p>
-        <button onClick={startVisit1} className="mt-3 rounded-lg bg-[#2346d8] px-5 py-3 font-bold text-white">Start visit 1 (clears her memory)</button>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button onClick={startVisit1} className="rounded-lg bg-[#2346d8] px-5 py-3 font-bold text-white">Start visit 1 (clears her memory)</button>
+          <label className="flex items-center gap-2 text-[#3c4250]">
+            <input type="checkbox" checked={stepMode} onChange={(e) => setStep(e.target.checked)} /> pause after each step
+          </label>
+        </div>
+        <p className="mt-1 text-sm text-[#5b6170]">With pausing on, she stops after every action so you can read what changed; press &quot;Next step&quot; in the panel. You can switch it on or off there too.</p>
       </section>
 
       <section className={`${step} mt-4 ${closed ? "ring-2 ring-[#f5b301]" : ""}`}>
