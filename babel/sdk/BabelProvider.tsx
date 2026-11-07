@@ -8,6 +8,7 @@ import { changedBlocks, describeDiff } from "@/babel/schema/diff";
 import { buildSlide, NEUTRAL_PERSONA } from "@/babel/persona";
 import type { BlockId, BrandKit, EventType, InteractionEvent, PartnerContext, Registry, Slide, Template } from "@/babel/schema";
 import { GhostCursorView, runGhost, type GhostCursor } from "./Ghost";
+import { LabPanel, memoryKey, type SavedMemory } from "./LabPanel";
 import { SlideControl } from "./SlideControl";
 
 type TrackExtra = Omit<InteractionEvent, "t" | "type">;
@@ -22,7 +23,8 @@ type BabelContext = {
   cursor: number;
   standard: boolean;
   changed: ReadonlySet<BlockId>;
-  ghost?: { label: string; note: string; step: number };
+  ghost?: { label: string; note: string; step: number } & LabInfo;
+  visitId: string | null;
   apply: Apply;
   calm: CalmEntry[];
   agent: AgentStatus;
@@ -67,8 +69,16 @@ export type BabelProviderProps = {
   brand: BrandKit;
   partner: PartnerContext;                                    // what the store chooses to share, with consent
   // demo: replay a synthetic shopper; `next` is the page it walks on to (step 0 starts from a clean memory)
-  ghost?: { label: string; events: InteractionEvent[]; step?: number; next?: string };
+  ghost?: { label: string; events: InteractionEvent[]; step?: number; next?: string } & LabInfo;
   children: ReactNode;
+};
+
+// Lab (testing) extras on a ghost run: the indicators panel, the return visit, a forced format.
+export type LabInfo = {
+  lab?: boolean;
+  visit?: number;                                   // 2 = return visit, starts from the browser's memory
+  variant?: { dialect: Slide["persona"]["dialect"]; need: Slide["persona"]["need"] };
+  last?: boolean;                                   // last scripted page of this visit
 };
 
 export function BabelProvider(p: BabelProviderProps) {
@@ -86,6 +96,8 @@ export function BabelProvider(p: BabelProviderProps) {
   const [lastChange, setLastChange] = useState<LastChange | null>(null);
   const [apply, setApply] = useState<Apply>("quiet");
   const [calm, setCalm] = useState<CalmEntry[]>([]);
+  const [visitIdState, setVisitIdState] = useState<string | null>(null); // for the lab panel
+  const lab = !!p.ghost?.lab;
 
   const applyRef = useRef<Apply>("quiet");
   const pending = useRef<Slide | null>(null);  // arrived, not yet on screen (quiet mode)
@@ -133,11 +145,11 @@ export function BabelProvider(p: BabelProviderProps) {
     if (!prev || prev.id === next.id) return;
     if (applyRef.current === "live") { // a flash on the changed blocks is the opposite of unnoticed
       setChanged(new Set(changedBlocks(prev.blocks, next.blocks)));
-      setTimeout(() => setChanged(new Set()), 2500);
+      setTimeout(() => setChanged(new Set()), lab ? 7000 : 2500); // lab: long enough to watch
     }
     const lines = describeDiff(prev, next, labels);
     if (lines.length) setLastChange({ from: prev.index + 1, to: next.index + 1, lines, rationale: next.rationale, at: Date.now() });
-  }, [labels]);
+  }, [labels, lab]);
 
   // Would the shopper see this slide arrive? Yes if a changed block is on screen or the whole look changes.
   const log = useCallback((e: CalmEntry) => setCalm((l) => {
@@ -183,7 +195,8 @@ export function BabelProvider(p: BabelProviderProps) {
     if (started.current) return; // React dev mode mounts twice; one visit per page
     started.current = true;
     const mode = new URLSearchParams(location.search).get("apply");
-    applyRef.current = mode === "live" || mode === "next" ? mode : "quiet";
+    // The lab is for watching, so changes land at once unless asked otherwise.
+    applyRef.current = mode === "live" || mode === "next" || mode === "quiet" ? mode : lab ? "live" : "quiet";
     setApply(applyRef.current);
     const visitorId = (() => {
       if (p.ghost) return `ghost:${p.ghost.label.toLowerCase()}`;
@@ -200,18 +213,29 @@ export function BabelProvider(p: BabelProviderProps) {
       prefersReducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
       prefersContrast: matchMedia("(prefers-contrast: more)").matches,
     };
+    // Lab return visit: the server forgot everything when the site closed; the browser kept the
+    // shopper's capped group sums (consented localStorage) and hands them back on the first page.
+    const memory = (() => {
+      if (!p.ghost?.lab || p.ghost.visit !== 2 || p.ghost.step !== 0) return undefined;
+      try {
+        const raw = localStorage.getItem(memoryKey(p.ghost.label.toLowerCase()));
+        return raw ? (JSON.parse(raw) as SavedMemory).groups : undefined;
+      } catch { return undefined; }
+    })();
     fetch("/api/visit", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         store: p.store, template: p.template, productId: p.productId, partner: { ...p.partner, device },
         visitorId, fresh: p.ghost ? p.ghost.step === 0 : undefined, // step 0 = a new run; later pages and click-throughs keep the memory
+        memory, variant: p.ghost?.variant,
       }),
     })
       .then((r) => r.json())
       .then((r: { visitId?: string; slide?: Slide }) => {
         if (!r.visitId || !r.slide) return;
         visitId.current = r.visitId;
+        setVisitIdState(r.visitId);
         t0.current = performance.now();
         show([r.slide], 0);
         showSlide(r.slide, neutral);
@@ -374,15 +398,19 @@ export function BabelProvider(p: BabelProviderProps) {
   const ctx: BabelContext = {
     store: p.store, template: p.template, registry: p.registry, brand: p.brand,
     slide, slides, cursor, standard, changed, track, go, setStandard, agent, lastChange, apply, calm,
-    ghost: p.ghost ? { label: p.ghost.label, note: ghostNote, step: p.ghost.step ?? 0 } : undefined,
+    visitId: visitIdState,
+    ghost: p.ghost
+      ? { label: p.ghost.label, note: ghostNote, step: p.ghost.step ?? 0, lab: p.ghost.lab, visit: p.ghost.visit, variant: p.ghost.variant, last: p.ghost.last }
+      : undefined,
   };
 
   return (
     <Ctx.Provider value={ctx}>
       <MotionConfig reducedMotion={slide.theme.motion === "reduced" ? "always" : "never"}>
-        <div style={style} data-contrast={slide.theme.contrast} className="min-h-screen">
+        <div style={style} data-contrast={slide.theme.contrast} className={`min-h-screen ${lab ? "babel-lab pl-[370px]" : ""}`}>
           {p.children}
           <SlideControl />
+          {lab && <LabPanel />}
           {p.ghost && <GhostCursorView c={ghostCursor} name={p.ghost.label} />}
         </div>
       </MotionConfig>
