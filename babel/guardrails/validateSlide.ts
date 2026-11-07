@@ -99,6 +99,8 @@ function checkBudget(slide: Slide, prev: Slide | undefined, returning: boolean):
     case "initial":
       return samePage ? ["an initial slide is only allowed on page load"] : [];
     case "major": {
+      // A calibration slide is the one big change that lands, behind a curtain, once the shopper's profile is clear.
+      if (slide.trigger === "calibration") return samePage ? keptUnchanged(slide, prev) : [];
       if (!returning) return ["major slides are only allowed on a return visit"];
       if (samePage && prev.index > 0) return ["a major slide must be the first change of a return visit"];
       return samePage ? keptUnchanged(slide, prev) : [];

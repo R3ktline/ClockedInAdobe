@@ -23,12 +23,14 @@ const Body = z.object({
   memory: z.record(z.string(), z.record(z.string(), z.number())).optional(),
   // Lab only: force a page format to compare variants side by side. Logged as such, never a guess.
   variant: z.object({ dialect: Dialect, need: Need }).optional(),
+  // Curtain mode: no live reorders while the profile forms; one big change behind a curtain when it is clear.
+  curtain: z.boolean().optional(),
 });
 
 export async function POST(req: Request) {
   const body = Body.safeParse(await req.json().catch(() => null));
   if (!body.success) return bad(body.error.message);
-  const { store, template, productId, visitorId, fresh, memory, variant } = body.data;
+  const { store, template, productId, visitorId, fresh, memory, variant, curtain } = body.data;
   const cfg = storeConfig(store);
   if (!cfg) return bad(`unknown store ${store}`, 404);
 
@@ -76,7 +78,7 @@ export async function POST(req: Request) {
     : buildSlide({ persona: NEUTRAL_PERSONA, template, registry: cfg.registry, brand: cfg.brand });
   if (restored && restored.ok && checked === restored) reasons.unshift("restored the last view the agent chose for this page type");
 
-  const visit = createVisit({ store, template, productId, partner, persona: slide.persona, slide, reasons, visitorId });
+  const visit = createVisit({ store, template, productId, partner, persona: slide.persona, slide, reasons, visitorId, curtain: !!curtain && !variant });
   // A forced variant is locked like an explicit choice (SPEC §3.5): indicators keep updating, but the
   // agent is not called, so variants are compared on the format alone.
   if (variant) {

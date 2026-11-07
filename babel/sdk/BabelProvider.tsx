@@ -12,6 +12,7 @@ import { GhostCursorView, runGhost, type GhostControl, type GhostCursor, type Gh
 import { LabPanel, memoryKey, type SavedMemory } from "./LabPanel";
 import { SlideControl } from "./SlideControl";
 import { ChatBox } from "./ChatBox";
+import { Curtain, CURTAIN_OFF, type CurtainState } from "./Curtain";
 
 type TrackExtra = Omit<InteractionEvent, "t" | "type">;
 
@@ -108,6 +109,8 @@ export function BabelProvider(p: BabelProviderProps) {
   const [lastChange, setLastChange] = useState<LastChange | null>(null);
   const [apply, setApply] = useState<Apply>("quiet");
   const [calm, setCalm] = useState<CalmEntry[]>([]);
+  const [curtain, setCurtain] = useState<CurtainState>(CURTAIN_OFF); // curtain mode: the glass over the page
+  const [popping, setPopping] = useState(false);                     // the new page settles in after the glass lifts
   const [visitIdState, setVisitIdState] = useState<string | null>(null); // for the lab panel
   const lab = !!p.ghost?.lab;
   const [playback, setPlayback] = useState<GhostPlayback | null>(null);  // lab: pause / step through
@@ -124,6 +127,20 @@ export function BabelProvider(p: BabelProviderProps) {
   const idleSent = useRef(false);
   const hoveredBlock = useRef<BlockId | undefined>(undefined);
   const slideWanted = useRef(false);
+  // Curtain mode (?curtain=1, sticky for the tab): no live reorders while the profile forms; one big change behind a
+  // glass curtain when it is clear, or when the shopper asks in chat. Off by default.
+  const curtainMode = useRef(false);
+  const restyleWanted = useRef(false); // the server said the profile is clear; waiting for a safe moment
+  const curtainBusy = useRef(false);
+  const profiledKey = `babel.profiled.${p.store}`;
+  const markProfiled = useCallback(() => { try { localStorage.setItem(profiledKey, "1"); } catch { /* ignore */ } }, [profiledKey]);
+  // Lifts the quiet first-paint glass of a remembered shopper.
+  const liftBoot = useCallback(() => {
+    setTimeout(() => {
+      setCurtain((c) => (c.phase === "hold" && c.quiet ? { ...c, phase: "out" } : c));
+      setTimeout(() => setCurtain((c) => (c.phase === "out" ? CURTAIN_OFF : c)), 650);
+    }, 250);
+  }, []);
 
   // Refs mirror state so callbacks never run side effects inside state updaters.
   const slidesRef = useRef<Slide[]>([]);
@@ -213,6 +230,17 @@ export function BabelProvider(p: BabelProviderProps) {
     // The lab is for watching, so changes land at once unless asked otherwise.
     applyRef.current = mode === "live" || mode === "next" || mode === "quiet" ? mode : lab ? "live" : "quiet";
     setApply(applyRef.current);
+    // Curtain mode: ?curtain=1 turns it on for this tab, ?curtain=0 off. Never in the lab, which is for watching changes.
+    const cq = new URLSearchParams(location.search).get("curtain");
+    const stored = (() => { try { return sessionStorage.getItem("babel.curtain") === "1"; } catch { return false; } })();
+    curtainMode.current = !lab && (cq === "1" || (cq !== "0" && stored));
+    try { if (cq === "1") sessionStorage.setItem("babel.curtain", "1"); else if (cq === "0") sessionStorage.removeItem("babel.curtain"); } catch { /* ignore */ }
+    if (curtainMode.current) { applyRef.current = "next"; setApply("next"); } // nothing moves live
+    const profiled = (() => { try { return localStorage.getItem(profiledKey) === "1"; } catch { return false; } })();
+    if (curtainMode.current && profiled) { // a remembered shopper: keep the glass up until their own page is ready
+      setCurtain({ phase: "hold", text: "", sub: "", quiet: true });
+      setTimeout(liftBoot, 2500); // never leave the glass up if Babel is slow
+    }
     const visitorId = (() => {
       if (p.ghost) return `ghost:${p.ghost.label.toLowerCase()}`;
       if (!p.partner.consent.personalization) return undefined;
@@ -244,17 +272,19 @@ export function BabelProvider(p: BabelProviderProps) {
       body: JSON.stringify({
         store: p.store, template: p.template, productId: p.productId, partner: { ...p.partner, device },
         visitorId, fresh: p.ghost ? p.ghost.step === 0 : undefined, // step 0 = a new run; later pages and click-throughs keep the memory
-        memory, variant: p.ghost?.variant,
+        memory, variant: p.ghost?.variant, curtain: curtainMode.current || undefined,
       }),
     })
       .then((r) => r.json())
-      .then((r: { visitId?: string; slide?: Slide }) => {
-        if (!r.visitId || !r.slide) return;
+      .then((r: { visitId?: string; slide?: Slide; fromMemory?: boolean }) => {
+        if (!r.visitId || !r.slide) { liftBoot(); return; }
         visitId.current = r.visitId;
         setVisitIdState(r.visitId);
         t0.current = performance.now();
         show([r.slide], 0);
         showSlide(r.slide, neutral);
+        if (r.fromMemory) markProfiled();
+        liftBoot();
         if (p.ghost) {
           const next = p.ghost.next;
           // Walk on only once the agent has answered, so the page's last change is not cut off.
@@ -268,7 +298,7 @@ export function BabelProvider(p: BabelProviderProps) {
           push({ t: 0, type: "page_view", productId: p.productId });
         }
       })
-      .catch(() => { /* Babel unreachable: the store keeps its neutral page */ });
+      .catch(() => { liftBoot(); /* Babel unreachable: the store keeps its neutral page */ });
   }, []); // once per page: the props describe the page, not live state
 
   // 2. Ask for a slide once the shopper pauses.
@@ -283,7 +313,7 @@ export function BabelProvider(p: BabelProviderProps) {
     const asked = performance.now();
     const r = await fetch("/api/slide", {
       method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current, message }),
-    }).then((x) => x.json()).catch(() => null) as { decision?: string; slide?: Slide; reason?: string; llm?: LlmTranscript; urgent?: boolean } | null;
+    }).then((x) => x.json()).catch(() => null) as { decision?: string; slide?: Slide; reason?: string; reply?: string; llm?: LlmTranscript; urgent?: boolean } | null;
     slideWanted.current = false; // held until the answer is in, so the ghost can wait for it
     const secs = ((performance.now() - asked) / 1000).toFixed(1);
     if (r?.decision === "slide" && r.slide) setAgent({ state: "changed", text: `made view ${r.slide.index + 1} in ${secs}s`, llm: r.llm });
@@ -298,15 +328,94 @@ export function BabelProvider(p: BabelProviderProps) {
       else { pending.current = next; tryLand(); }
     }
     if (!message) return;
-    if (r?.decision === "slide" && r.slide) return r.slide.rationale;
-    if (r?.decision === "hold") return `I kept the page as it is: ${r.reason}`;
+    if (r?.decision === "slide" && r.slide) return r.reply ?? r.slide.rationale;
+    if (r?.decision === "hold") return r.reply ?? `I kept the page as it is: ${r.reason}`;
     return r?.reason ?? "Babel could not be reached.";
   }, [land, tryLand]);
 
+  // ---- Curtain mode ----
+  // The glass comes down, the work runs (at least `minMs`, so it never flickers), the page is swapped while it is
+  // blurred, a short "done" line says what happened, then the glass lifts.
+  const behindCurtain = useCallback(async <T,>(text: string, work: () => Promise<T>, apply: (result: T) => boolean, minMs = 1700) => {
+    if (curtainBusy.current) return;
+    curtainBusy.current = true;
+    setCurtain({ phase: "in", text, sub: "One moment.", quiet: false });
+    let changed = false;
+    try {
+      const [result] = await Promise.all([work(), new Promise<void>((done) => setTimeout(done, minMs))]);
+      changed = apply(result);
+      if (changed) { setPopping(true); setTimeout(() => setPopping(false), 900); }
+      setCurtain({ phase: "done", text: changed ? "Done." : "Nothing to change.", sub: changed ? "Standard view puts the page back." : "", quiet: false });
+      await new Promise<void>((done) => setTimeout(done, changed ? 1200 : 500));
+    } finally {
+      setCurtain((c) => ({ ...c, phase: "out" }));
+      setTimeout(() => { setCurtain((c) => (c.phase === "out" ? CURTAIN_OFF : c)); curtainBusy.current = false; }, 650);
+    }
+  }, []);
+
+  // Puts a slide on screen while the glass is up. No highlight and no "unnoticed" bookkeeping: the shopper is told.
+  const applyBehind = useCallback((next: Slide) => {
+    const list = slidesRef.current;
+    const prev = list[cursorRef.current];
+    slidesRef.current = [...list, next];
+    setSlides(slidesRef.current);
+    showSlide(next, prev);
+    show(slidesRef.current, slidesRef.current.length - 1);
+    track("slide_shown", { value: next.index });
+    log({ view: next.index + 1, status: "requested", text: "applied behind the curtain" });
+  }, [log, show, showSlide, track]);
+
+  // Is it a good moment to take the page away? Not while typing, scrolling, or on the buy box.
+  const safeMoment = () => {
+    if (document.visibilityState !== "visible") return false;
+    const a = document.activeElement as HTMLElement | null;
+    if (a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return false;
+    if (performance.now() - lastScrollAt.current < 1500) return false;
+    return hoveredBlock.current !== "buyBox";
+  };
+
+  const tryRestyle = useCallback(async () => {
+    if (!curtainMode.current || !restyleWanted.current || curtainBusy.current || !visitId.current || !safeMoment()) return;
+    restyleWanted.current = false;
+    setAgent({ state: "thinking", text: "your profile is clear: setting the page up…" });
+    await behindCurtain(
+      "Setting the page up for how you browse…",
+      () => fetch("/api/restyle", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current }) })
+        .then((x) => x.json()).catch(() => null) as Promise<{ decision?: string; slide?: Slide; reason?: string } | null>,
+      (r) => {
+        if (r?.decision === "slide" && r.slide) { applyBehind(r.slide); markProfiled(); setAgent({ state: "changed", text: `set up view ${r.slide.index + 1} from the profile` }); return true; }
+        setAgent({ state: "held", text: `kept this view (${r?.reason ?? "no answer"})` });
+        return false;
+      },
+    );
+  }, [applyBehind, behindCurtain, markProfiled]);
+  useEffect(() => { const id = setInterval(() => { void tryRestyle(); }, 500); return () => clearInterval(id); }, [tryRestyle]);
+
+  // A typed request in curtain mode: glass down at once (it covers the model's thinking time), whole page rebuilt.
+  const chatBehindCurtain = useCallback(async (message: string) => {
+    if (curtainBusy.current) return "One moment, I am still changing the page.";
+    let reply = "Babel could not be reached.";
+    setAgent({ state: "thinking", text: "reading your request…" });
+    await behindCurtain(
+      "Rebuilding the page the way you asked…",
+      () => fetch("/api/slide", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current, message }) })
+        .then((x) => x.json()).catch(() => null) as Promise<{ decision?: string; slide?: Slide; reason?: string; reply?: string; llm?: LlmTranscript } | null>,
+      (r) => {
+        if (r?.decision === "slide" && r.slide) { applyBehind(r.slide); reply = r.reply ?? r.slide.rationale; setAgent({ state: "changed", text: `rebuilt the page as you asked (view ${r.slide.index + 1})`, llm: r.llm }); return true; }
+        reply = r?.decision === "hold" ? r.reply ?? `I kept the page as it is: ${r.reason}` : r?.reason ?? reply;
+        setAgent({ state: "held", text: `kept this view (${r?.reason ?? "no answer"})`, llm: r?.llm });
+        return false;
+      },
+      1300,
+    );
+    return reply;
+  }, [applyBehind, behindCurtain]);
+
   const chat = useCallback(async (message: string) => {
     track("chat_message", { value: message.length }); // the text itself is not kept as a signal
+    if (curtainMode.current) return chatBehindCurtain(message);
     return (await requestSlide(message)) ?? "Babel could not be reached.";
-  }, [requestSlide, track]);
+  }, [chatBehindCurtain, requestSlide, track]);
 
   const askNow = useCallback(async () => {
     if (!visitId.current || slideWanted.current) return;
@@ -330,7 +439,8 @@ export function BabelProvider(p: BabelProviderProps) {
       const events = buffer.current.splice(0);
       const r = await fetch("/api/events", {
         method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current, events }),
-      }).then((x) => x.json()).catch(() => null) as { trigger?: boolean } | null;
+      }).then((x) => x.json()).catch(() => null) as { trigger?: boolean; restyle?: boolean } | null;
+      if (r?.restyle) restyleWanted.current = true; // curtain mode: the profile is clear, change when it is safe
       if (r?.trigger && !slideWanted.current && applyRef.current !== "next") { slideWanted.current = true; requestSlide(); }
     }, FLUSH_MS);
     const active = () => { lastActiveAt.current = performance.now(); idleSent.current = false; };
@@ -463,13 +573,14 @@ export function BabelProvider(p: BabelProviderProps) {
   return (
     <Ctx.Provider value={ctx}>
       <MotionConfig reducedMotion={slide.theme.motion === "reduced" ? "always" : "never"}>
-        <div style={style} data-contrast={slide.theme.contrast} data-dialect={standard ? undefined : slide.persona.dialect} className={`min-h-screen ${lab ? "babel-lab pl-[370px]" : ""}`}>
-          {p.children}
+        <div style={style} data-contrast={slide.theme.contrast} data-dialect={standard ? undefined : slide.persona.dialect} data-popping={popping || undefined} className={`min-h-screen ${lab ? "babel-lab pl-[370px]" : ""}`}>
+          <div className="babel-stage" inert={curtain.phase === "in" || curtain.phase === "hold" || curtain.phase === "done"}>{p.children}</div>
           <SlideControl />
           <ChatBox />
           <DebugPanel />
           {lab && <LabPanel />}
           {p.ghost && <GhostCursorView c={ghostCursor} name={p.ghost.label} />}
+          <Curtain state={curtain} />
         </div>
       </MotionConfig>
     </Ctx.Provider>

@@ -5,12 +5,16 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 import { chat, isMocked, type ChatCompletionMessage, type ChatCompletionMessageParam, type ChatCompletionTool } from "@/babel/llm";
-import { validateSlide } from "@/babel/guardrails/validateSlide";
+import { validateSlide, type ValidateResult } from "@/babel/guardrails/validateSlide";
 import { markerKinds } from "@/babel/markers";
-import { moveBlock } from "@/babel/persona";
-import { Gap, SlideProposal, type BrandKit, type Registry, type Slide } from "@/babel/schema";
+import { buildSlide, moveBlock } from "@/babel/persona";
+import { Gap, SlideProposal, Understood, type BrandKit, type Registry, type Slide } from "@/babel/schema";
+import { checkUnderstood, replyFrom } from "@/babel/agents/understanding";
 import { elapsed, shopperSummary, type Trigger, type Visit } from "@/babel/session";
 
+// What the shopper reads when the agent could not produce a checked answer. Never a guess.
+const NOT_UNDERSTOOD = "I could not work out how to change the page for that, so it stays as it is. Try asking for one change at a time.";
+const UNREACHABLE = "I could not reach my assistant just now, so the page stays as it is. Please try again in a moment.";
 const MAX_ROUNDS = 3;
 const BUDGET_MS = Number(process.env.BABEL_DIRECTOR_BUDGET_MS ?? 6_000); // raise for slow free models
 
@@ -18,6 +22,7 @@ const SYSTEM_PROMPT = readFileSync(path.join(process.cwd(), "prompts", "director
 
 const { $schema: _drop, ...proposalSchema } = z.toJSONSchema(SlideProposal) as Record<string, unknown>;
 const { $schema: _d, ...gapsSchema } = z.toJSONSchema(z.array(Gap).max(2)) as Record<string, unknown>;
+const { $schema: _u, ...understoodSchema } = z.toJSONSchema(Understood) as Record<string, unknown>;
 const TOOLS: ChatCompletionTool[] = [
   {
     type: "function",
@@ -32,7 +37,7 @@ const TOOLS: ChatCompletionTool[] = [
     function: {
       name: "hold",
       description: "Keep the current slide.",
-      parameters: { type: "object", properties: { reason: { type: "string" }, gaps: gapsSchema }, required: ["reason"] },
+      parameters: { type: "object", properties: { reason: { type: "string" }, gaps: gapsSchema, understood: understoodSchema }, required: ["reason"] },
     },
   },
 ];
@@ -45,6 +50,8 @@ export const staticContext = (registry: Registry, brand: BrandKit, template: Sli
 
 export type DirectorOutcome = {
   decision: "slide" | "hold";
+  understood?: Understood; // a typed request, split into wishes and checked against the slide
+  reply?: string;          // what the shopper reads, built from `understood`
   gaps: Gap[]; // variants the registry lacks that the model asked for (saved for a human to build)
   slide?: Slide;
   reason?: string;
@@ -64,10 +71,11 @@ export type LlmTranscript = {
 };
 
 // `message` is what the shopper typed in the chatbox (untrusted text, passed in <user_message>).
-export async function runDirector(visit: Visit, registry: Registry, brand: BrandKit, triggers: Trigger[] = [], message?: string): Promise<DirectorOutcome> {
+// `opts.big`: curtain mode, the shopper asked in chat, so the slide may change the whole page (kind "explicit").
+export async function runDirector(visit: Visit, registry: Registry, brand: BrandKit, triggers: Trigger[] = [], message?: string, opts: { big?: boolean } = {}): Promise<DirectorOutcome> {
   const started = Date.now();
   const prev = visit.slides.at(-1)!;
-  const kind: Slide["kind"] = visit.returning && prev.index === 0 ? "major" : "minor";
+  const kind: Slide["kind"] = opts.big && message ? "explicit" : visit.returning && prev.index === 0 ? "major" : "minor";
   const input = JSON.stringify(observation(visit, prev, kind, triggers), null, 1);
   const transcript: LlmTranscript = { model: isMocked() ? "mock" : process.env.DEEPSEEK_MODEL ?? "", input, rounds: [] };
   const out: DirectorOutcome = { decision: "hold", gaps: [], clamps: [], errors: [], rounds: 0, ms: 0, mocked: isMocked(), transcript };
@@ -85,39 +93,55 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
     for (let round = 1; round <= MAX_ROUNDS; round++) {
       out.rounds = round;
       const roundStart = Date.now();
-      const msg = await chat({ agent: "director", messages, tools: TOOLS, signal: abort.signal, mock: () => mockDecision(visit, prev, triggers, brand, message) });
+      const msg = await chat({ agent: "director", messages, tools: TOOLS, signal: abort.signal, mock: () => mockDecision(visit, prev, triggers, brand, message, kind === "explicit" ? registry : undefined) });
       messages.push({ role: "assistant", content: msg.content ?? "", tool_calls: msg.tool_calls });
       const calls = (msg.tool_calls ?? []).filter((c) => c.type === "function");
       const said = (msg.content ?? "").slice(0, 2000);
       const log = (verdict: string, call?: { name: string; args: unknown }) =>
         transcript.rounds.push({ said, call, verdict, ms: Date.now() - roundStart });
-      if (!calls.length) { log("no tool call → hold"); return done({ reason: "no tool call" }); }
+      if (!calls.length) { log("no tool call → hold"); return done({ reason: "no tool call", ...(message ? { reply: NOT_UNDERSTOOD } : {}) }); }
 
       const [call, ...extra] = calls;
       const shown = { name: call.function.name, args: safeJson(call.function.arguments) ?? call.function.arguments };
       for (const c of extra) messages.push({ role: "tool", tool_call_id: c.id, content: "ignored: one call per turn" });
       if (call.function.name === "hold") {
-        out.gaps = z.array(Gap).max(2).catch([]).parse(safeJson(call.function.arguments)?.gaps ?? []);
+        const args = safeJson(call.function.arguments);
+        out.gaps = z.array(Gap).max(2).catch([]).parse(args?.gaps ?? []);
+        const understood = Understood.safeParse(args?.understood).data;
+        if (message) { // a typed request: the wishes must be listed and consistent with holding
+          const errs = checkUnderstood({ understood, prev, registry });
+          if (errs.length) {
+            log(`rejected: ${errs.join("; ")}`, shown);
+            out.errors.push(errs);
+            messages.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify({ ok: false, errors: errs }) });
+            continue;
+          }
+        }
         log("hold", shown);
-        return done({ reason: String(safeJson(call.function.arguments)?.reason ?? "hold") });
+        return done({ reason: String(args?.reason ?? "hold"), ...(message ? { understood, reply: replyFrom(understood) } : {}) });
       }
 
       const parsed = SlideProposal.safeParse(safeJson(call.function.arguments));
-      const result = parsed.success
+      let result: ValidateResult = parsed.success
         ? validateSlide({ slide: applyProposal(prev, parsed.data, kind), prev, registry, brand, returning: visit.returning })
         : { ok: false as const, clamps: [], errors: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`) };
+      // Interpret first, then check: what the model says it understood must be what the slide does.
+      if (parsed.success && result.ok && message) {
+        const errs = checkUnderstood({ understood: parsed.data.understood, prev, registry, proposal: parsed.data, slide: result.slide });
+        if (errs.length) result = { ok: false, clamps: result.clamps, errors: errs };
+      }
       if (parsed.success) out.gaps = parsed.data.gaps ?? [];
       out.clamps.push(...result.clamps);
       log(result.ok ? `accepted${result.clamps.length ? ` (clamped: ${result.clamps.join("; ")})` : ""}` : `rejected: ${result.errors.join("; ")}`, shown);
-      if (result.ok) return done({ decision: "slide", slide: result.slide });
+      if (result.ok) return done({ decision: "slide", slide: result.slide, ...(message && parsed.success ? { understood: parsed.data.understood, reply: replyFrom(parsed.data.understood) } : {}) });
       out.errors.push(result.errors);
       messages.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify({ ok: false, errors: result.errors }) });
     }
-    return done({ reason: "no valid slide after repairs" });
+    return done({ reason: "no valid slide after repairs", ...(message ? { reply: NOT_UNDERSTOOD } : {}) });
   } catch (e) {
     const reason = abort.signal.aborted ? "timeout" : `llm error: ${e instanceof Error ? e.message : e}`;
     transcript.rounds.push({ said: "", verdict: `${reason} → hold`, ms: Date.now() - started });
-    return done({ reason });
+    return done({ reason, ...(message ? { reply: UNREACHABLE } : {}) });
   } finally {
     clearTimeout(timer);
   }
@@ -161,9 +185,9 @@ export function applyProposal(prev: Slide, p: SlideProposal, kind: Slide["kind"]
     index: prev.index + 1,
     parentId: prev.id,
     kind,
-    trigger: kind === "major" ? "revisit" : "markers",
+    trigger: kind === "major" ? "revisit" : kind === "explicit" ? "chat" : "markers",
     persona: {
-      dialect: kind === "major" ? (p.dialect ?? prev.persona.dialect) : prev.persona.dialect,
+      dialect: kind !== "minor" ? (p.dialect ?? prev.persona.dialect) : prev.persona.dialect,
       need: p.need ?? prev.persona.need,
       confidence: Math.max(prev.persona.confidence, 0.7),
     },
@@ -182,18 +206,20 @@ function safeJson(s: string): Record<string, unknown> | undefined {
 }
 
 // Deterministic stand-in used without an API key: answers trust or hesitation spikes on a product page.
-function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: BrandKit, message = ""): ChatCompletionMessage {
+function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: BrandKit, message = "", bigRegistry?: Registry): ChatCompletionMessage {
   const call = (name: string, args: unknown): ChatCompletionMessage => ({
     role: "assistant", content: null, refusal: null,
     tool_calls: [{ id: `mock-${visit.slides.length}`, type: "function", function: { name, arguments: JSON.stringify(args) } }],
   });
   const asked = (re: RegExp) => triggers.includes("chat") && re.test(message);
+  if (bigRegistry && triggers.includes("chat")) return mockBig(call, prev, message, brand, bigRegistry);
   if (triggers.includes("zoom") || asked(/bigger|larger|small text|hard to read|simpl|plain/i)) {
     const plain = prev.blocks.find((b) => b.id === "summary") ? [{ id: "summary", variant: "benefits_plain" }] : [];
     return call("proposeSlide", {
       changes: plain,
       theme: { typeScale: Math.min(brand.ranges.typeScale[1], Math.round((prev.theme.typeScale + 0.1) * 100) / 100) },
       copyRegister: "plain",
+      ...(message ? { understood: [{ wanted: "larger, simpler text", status: "do", how: "a slightly larger type size and a plainer description", sets: plain.map((c) => ({ block: c.id, variant: c.variant })) }] } : {}),
       rationale: "You zoomed in, so the text is now larger and the description shorter and plainer.",
       hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30 },
     });
@@ -201,6 +227,7 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
   if (asked(/compare|side by side|video|360/i)) {
     return call("hold", {
       reason: "mock: no registered variant does that",
+      understood: [{ wanted: "a side-by-side comparison", status: "cannot", how: "no layout on this page does that" }],
       gaps: [{ block: "gallery", wanted: "A side-by-side comparison with similar products", why: `The shopper asked: "${message.slice(0, 100)}"` }],
     });
   }
@@ -215,6 +242,7 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
   if (prev.template === "product" && !trustUp && (wantsTrust || markersSayTrust || modelSays("reassurance"))) {
     return call("proposeSlide", {
       need: "reassurance",
+      ...(message ? { understood: [{ wanted: "returns and reviews up front", status: "do", sets: [{ block: "trust", variant: "returns_warranty_first" }, { block: "buyBox", variant: "calm" }] }] } : {}),
       changes: [{ id: "trust", order: 2, variant: "returns_warranty_first" }, { id: "buyBox", variant: "calm" }],
       rationale: wantsTrust ? "You asked about returns and reviews, so returns, warranty and reviews now sit right under the photos."
         : "You checked returns and reviews, so returns, warranty and reviews now sit right under the photos.",
@@ -225,10 +253,88 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
   if (prev.template === "product" && specsUp && specsUp.variant !== "table_full" && modelSays("specs")) {
     return call("proposeSlide", {
       need: "specs",
+      ...(message ? { understood: [{ wanted: "the full specifications up front", status: "do", sets: [{ block: "specs", variant: "table_full" }] }] } : {}),
       changes: [{ id: "specs", order: 2, variant: "table_full" }],
       rationale: "You opened the details and read them, so all the specifications are now open, right under the photos.",
       hypothesis: { marker: "infoAppetite", expect: "up", withinSeconds: 30 },
     });
   }
-  return call("hold", { reason: "mock: nothing to change" });
+  return call("hold", {
+    reason: "mock: nothing to change",
+    ...(message ? { understood: [{ wanted: message.slice(0, 80), status: "cannot", how: "the offline stand-in did not recognise that request" }] } : {}),
+  });
+}
+
+// Offline stand-in for the big-change chat path. It reads the words, splits the request into wishes, decides each
+// one against the REGISTRY (do / already / cannot) and assembles one proposal. A live model does this properly;
+// this only keeps the pipeline testable without a key, and it must never do the opposite of what was asked.
+function mockBig(call: (name: string, args: unknown) => ChatCompletionMessage, prev: Slide, message: string, brand: BrandKit, registry: Registry): ChatCompletionMessage {
+  type Part = { wanted: string; status: "do" | "already" | "cannot"; how?: string; sets?: { block: string; variant: string }[] };
+  const parts: Part[] = [];
+  const spec = registry[prev.template] ?? {};
+  const has = (b: string) => !!(spec as Record<string, unknown>)[b];
+  const nowVariant = (b: string) => prev.blocks.find((x) => x.id === b)?.variant;
+  const forced: Record<string, string> = {}; // block -> variant a photo wish insists on
+  const lookForced: Record<string, string> = {}; // variants a look wish needs beyond what the dialect picks
+  let look: { dialect: Slide["persona"]["dialect"]; need: Slide["persona"]["need"] } | null = null;
+  let needOnly: Slide["persona"]["need"] | null = null; // a need without a new look: keep the page the shopper has
+
+  const smaller = /(smaller|less|fewer|tiny|reduce|shrink).{0,20}(photo|picture|image)|(photo|picture|image).{0,20}(smaller|less|fewer|tiny|shrink)/i.test(message);
+  const bigger = !smaller && /(bigger|larger|more|show).{0,15}(photo|picture|image)|(photo|picture|image).{0,15}(bigger|larger)/i.test(message);
+  const sort = /\b(sort|rank|order by|cheapest first|best rated)\b/i.test(message);
+  const simpler = /simpl|plain|easy|larger text|bigger text|read|clear/i.test(message);
+  const details = /spec|detail|technical|everything/i.test(message);
+  const trust = /return|warrant|refund|trust|review|safe/i.test(message) && !sort;
+
+  if (smaller) {
+    if (has("gallery")) {
+      if (nowVariant("gallery") === "grid_thumbs") parts.push({ wanted: "photos smaller", status: "already", sets: [{ block: "gallery", variant: "grid_thumbs" }] });
+      else { forced.gallery = "grid_thumbs"; parts.push({ wanted: "photos smaller", status: "do", how: "back to thumbnails beside one main picture", sets: [{ block: "gallery", variant: "grid_thumbs" }] }); }
+    } else parts.push({ wanted: "photos smaller", status: "cannot", how: "this page has no photo-size setting; product pages do" });
+  }
+  if (bigger) {
+    if (has("gallery")) {
+      if (nowVariant("gallery") === "single_large") parts.push({ wanted: "photos bigger", status: "already", sets: [{ block: "gallery", variant: "single_large" }] });
+      else { forced.gallery = "single_large"; parts.push({ wanted: "photos bigger", status: "do", how: "one large picture, no thumbnails", sets: [{ block: "gallery", variant: "single_large" }] }); }
+    } else if (has("productList")) {
+      if (nowVariant("productList") === "bento_visual") parts.push({ wanted: "photos bigger", status: "already", sets: [{ block: "productList", variant: "bento_visual" }] });
+      else { forced.productList = "bento_visual"; parts.push({ wanted: "photos bigger", status: "do", how: "an image-first mosaic, which has no star rating", sets: [{ block: "productList", variant: "bento_visual" }] }); }
+    }
+  }
+  if (sort) {
+    parts.push({ wanted: "products sorted by reviews", status: "cannot", how: "this page has no sorting" });
+  }
+  if (simpler) look = { dialect: "guided", need: "quick" }, parts.push({ wanted: "a simpler page with larger text", status: "do", how: "larger text, plainer words, one clear next step" });
+  else if (details) look = { dialect: "dense", need: "specs" }, parts.push({ wanted: "the full details up front", status: "do", how: "compact layout with every specification" });
+  else if (trust) {
+    needOnly = "reassurance";
+    lookForced.trust = "returns_warranty_first";
+    if (has("buyBox")) lookForced.buyBox = "calm";
+    parts.push({ wanted: "returns and reviews up front", status: "do", how: "returns, warranty and reviews right under the photos" });
+  }
+
+  if (!parts.length) {
+    return call("hold", { reason: "mock: not recognised", understood: [{ wanted: message.slice(0, 80), status: "cannot", how: "the offline stand-in did not recognise that request" }] });
+  }
+
+  const doing = parts.filter((x) => x.status === "do");
+  const gaps = parts.some((x) => x.status === "cannot" && /sort/i.test(x.wanted))
+    ? [{ block: "productList", wanted: "Sort products by reviews or rating", why: `The shopper asked: "${message.slice(0, 100)}"` }] : [];
+  if (!doing.length) return call("hold", { reason: `mock: ${parts.map((x) => `${x.wanted} ${x.status}`).join(", ")}`, understood: parts, gaps });
+
+  // Start from the look's slide when a look was asked for, otherwise from what is on screen; photo wishes win.
+  const base = look ? buildSlide({ persona: { ...look, confidence: 0.7 }, template: prev.template, registry, brand })
+    : needOnly && has("trust") ? { ...prev, blocks: moveBlock(prev.blocks, "trust", 2) } : prev;
+  const wanted = base.blocks.map((b) => ({ ...b, variant: forced[b.id] ?? lookForced[b.id] ?? b.variant }));
+  const changes = wanted
+    .filter((b) => { const o = prev.blocks.find((x) => x.id === b.id); return !o || o.variant !== b.variant || o.order !== b.order; })
+    .map((b) => ({ id: b.id, variant: b.variant, order: b.order }));
+  const lookSets = look || needOnly ? changes.filter((c) => !(c.id in forced)).map((c) => ({ block: c.id, variant: c.variant })) : [];
+  const withSets = parts.map((x) => (x.status === "do" && !x.sets ? { ...x, sets: lookSets } : x));
+  return call("proposeSlide", {
+    ...(look ? { dialect: look.dialect, need: look.need, theme: base.theme, copyRegister: base.copyRegister } : needOnly ? { need: needOnly } : {}),
+    changes, understood: withSets, gaps,
+    rationale: "Changed what you asked for and said what I could not do.",
+    hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30 },
+  });
 }

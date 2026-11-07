@@ -7,6 +7,7 @@ import type {
 } from "@/babel/schema";
 import { computeMarkers, findTriggers } from "@/babel/markers";
 import { readShopper } from "@/babel/persona";
+import { restyleDecision } from "./calibration";
 import { TRAIT_NAMES, TRAITS, type Groups } from "@/babel/persona/signalModel";
 import type { LlmTranscript } from "@/babel/agents/director";
 
@@ -56,6 +57,13 @@ export type Visit = {
   lastDirectorSlideAt?: number;
   minorCount: number;
   standardView: boolean;
+  // Curtain mode (calibration): no live reorders while the profile forms; one big change behind a curtain when it is clear.
+  curtain: boolean;
+  restyles: number;
+  lastRestyleAt?: number;
+  lastRestyleKey?: string; // dialect × need of the last calibration slide
+  declined: string[];      // dialect × need the shopper stepped back from; never proposed again this visit
+  explicitPinned: boolean; // the shopper asked for a view in chat: it wins over our own read (ADR-003)
 };
 
 // How much the agent is let loose (BABEL_INTERVENTION): "normal" is the original pacing, "high" (default) lets it
@@ -129,6 +137,7 @@ export const elapsed = (v: Visit) => Date.now() - v.startedAt;
 export function createVisit(init: {
   store: string; template: Template; productId?: string; partner: PartnerContext; persona: Persona; slide: Slide; reasons: string[];
   visitorId?: string;
+  curtain?: boolean;
 }): Visit {
   const v: Visit = {
     id: crypto.randomUUID(),
@@ -153,6 +162,10 @@ export function createVisit(init: {
     directorBusy: false,
     minorCount: 0,
     standardView: !init.partner.consent.personalization,
+    curtain: !!init.curtain && init.partner.consent.personalization,
+    restyles: 0,
+    declined: [],
+    explicitPinned: false,
   };
   visits.set(v.id, v);
   return v;
@@ -162,7 +175,7 @@ const values = (m: Markers) =>
   Object.fromEntries(Object.entries(m).map(([k, v]) => [k, v!.value])) as Partial<Record<MarkerId, number>>;
 
 // Append events, recompute markers, score due hypotheses, and decide whether a slide is due.
-export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: boolean } {
+export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: boolean; restyle?: boolean } {
   v.events.push(...events);
   // Zooming in is a direct sign the text is too small: act on it now, don't wait for a threshold.
   let zoomedTo = 0; // highest zoom-in in this batch, 0 if none
@@ -184,14 +197,23 @@ export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: b
   if (v.visitorId && events.some((e) => e.type === "slide_prev")) remember(v.visitorId, { slides: { ...memory.get(v.visitorId)?.slides, [v.template]: undefined } });
   scoreHypotheses(v, now);
 
-  const crossed: Trigger[] = [...findTriggers(prev, v.markers), ...(zoomedIn ? ["zoom" as const] : [])];
+  // Curtain mode: the page does not move while the profile forms. When it is clear, the client is told (restyle).
+  let restyle = false;
+  if (v.curtain) {
+    // Stepping back from a calibration slide is a "no": never propose that format again this visit.
+    if (v.lastRestyleKey && now - (v.lastRestyleAt ?? 0) < 30_000 && events.some((e) => e.type === "slide_prev")) v.declined.push(v.lastRestyleKey);
+    restyle = restyleDecision(v, now).ok;
+  }
+
+  // In curtain mode only a zoom (something the shopper asked for) moves the page live.
+  const crossed: Trigger[] = v.curtain ? (zoomedIn ? ["zoom"] : []) : [...findTriggers(prev, v.markers), ...(zoomedIn ? ["zoom" as const] : [])];
   const fresh = v.events.length - v.eventsAtLastLook;
-  const checkin = !crossed.length && CHECKIN_MS > 0 && now - v.lastLookAt >= CHECKIN_MS && fresh >= CHECKIN_MIN_EVENTS;
-  if ((!crossed.length && !checkin) || v.standardView) return { trigger: false };
+  const checkin = !v.curtain && !crossed.length && CHECKIN_MS > 0 && now - v.lastLookAt >= CHECKIN_MS && fresh >= CHECKIN_MIN_EVENTS;
+  if ((!crossed.length && !checkin) || v.standardView) return { trigger: false, restyle };
   const tooSoon = !zoomedIn && v.lastDirectorSlideAt !== undefined && now - v.lastDirectorSlideAt < MIN_GAP_MS;
   if (tooSoon || v.minorCount >= MAX_MINOR_SLIDES) {
     if (!checkin) v.trace.push({ at: now, kind: "skip", text: `${crossed.join(", ")} crossed, but ${tooSoon ? "the last slide was too recent" : "the slide limit is reached"}`, triggers: crossed });
-    return { trigger: false };
+    return { trigger: false, restyle };
   }
   const triggers: Trigger[] = checkin ? ["checkin"] : crossed;
   v.pendingTriggers = [...new Set([...v.pendingTriggers, ...triggers])];
@@ -202,7 +224,7 @@ export function recordEvents(v: Visit, events: InteractionEvent[]): { trigger: b
     text: checkin ? `check-in: ${fresh} new events, the agent takes a look`
       : crossed.map((t) => (t === "zoom" ? `zoomed in to ${Math.round(zoomedTo * 100)}%` : `${t} crossed 0.6`)).join(", "),
   });
-  return { trigger: true };
+  return { trigger: true, restyle };
 }
 
 function scoreHypotheses(v: Visit, now: number) {
