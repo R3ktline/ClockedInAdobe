@@ -1,0 +1,38 @@
+{
+  "brand": {
+    "store": "croiala",
+    "name": "Croiala",
+    "colors": { "primary": "#1f1d2b", "accent": "#c4553a", "surface": "#faf7f2", "text": "#1f1d2b", "muted": "#6b6676" },
+    "fonts": { "heading": "Didot, 'Bodoni MT', Georgia, serif", "body": "'Helvetica Neue', Arial, sans-serif" },
+    "ranges": { "typeScale": [0.95, 1.25], "radius": [0, 4], "density": ["airy", "comfortable", "compact"], "contrast": ["normal", "high"] },
+    "voice": { "do": ["calm", "short sentences", "describe the clothes, not the shopper"], "dont": ["pressure", "exclamation marks"] },
+    "bannedWords": ["hurry", "only today", "last chance", "don't miss out", "selling fast"]
+  },
+  "registry": {
+    "home": {
+      "hero": {
+        "label": "Featured",
+        "variants": ["banner_promo", "category_tiles"],
+        "neutral": "banner_promo",
+        "byDialect": { "guided": "category_tiles", "dense": "category_tiles", "visual": "banner_promo" },
+        "describe": {
+          "banner_promo": "A wide banner with the new-season edit, one picture and two lines of text.",
+          "category_tiles": "Plain tiles with the category names (dresses, knitwear, shoes, bags). No offer text."
+        },
+        "cannot": ["Change the pictures or the text in the banner"]
+      },
+      "productList": {
+        "label": "Products",
+        "variants": ["grid_standard", "grid_dense", "list_guided"],
+        "neutral": "grid_standard",
+        "byDialect": { "guided": "list_guided", "dense": "grid_dense", "visual": "grid_standard" },
+        "describe": {
+          "grid_standard": "Products as pictures in a 3-column grid with name, price and star rating.",
+          "grid_dense": "A compact table, one row per product: name, material, rating and price. Fits the most products on screen.",
+          "list_guided": "One product per row: large picture, large name, one sentence about it, big price and a 'See this product' button. No rating."
+        },
+        "cannot": ["Sort or filter the products", "Change which products are shown"]
+      }
+    }
+  }
+}
