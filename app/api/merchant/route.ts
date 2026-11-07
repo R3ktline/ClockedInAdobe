@@ -2,6 +2,7 @@
 import { usageLog, isMocked } from "@/babel/llm";
 import { elapsed, listVisits, shopperSummary } from "@/babel/session";
 import { listDefaults } from "@/babel/session/defaults";
+import { listGaps } from "@/babel/session/gaps";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ export async function GET() {
       outputTokens: usage.reduce((s, u) => s + u.outputTokens, 0),
     },
     defaults: listDefaults(),
+    gaps: listGaps(),
     visits: listVisits().slice(0, 20).map((v) => ({
       id: v.id,
       store: v.store,

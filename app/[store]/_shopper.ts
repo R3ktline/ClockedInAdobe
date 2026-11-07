@@ -4,11 +4,13 @@
 // days later, starting from what the browser remembered; ?variant=<dialect>.<need> forces a format.
 import type { Dialect, Need } from "@/babel/schema";
 import { anonymousPartner, shoppers } from "@/data/shoppers";
+import { simShoppers } from "../api/_sim";
 
 export async function shopperFrom(searchParams: Promise<Record<string, string | string[] | undefined>>) {
   const q = await searchParams;
-  const s = typeof q.ghost === "string" ? shoppers[q.ghost] : undefined;
+  const s = typeof q.ghost === "string" ? simShoppers.get(q.ghost) ?? shoppers[q.ghost] : undefined;
   if (!s) return { partner: anonymousPartner };
+  const simulated = simShoppers.has(s.id); // /sim setups already say whether the visitor is returning
   const lab = q.lab === "1";
   const visit = q.visit === "2" && s.revisit ? 2 : 1;
   const [vd, vn] = typeof q.variant === "string" ? q.variant.split(".") : [];
@@ -26,7 +28,7 @@ export async function shopperFrom(searchParams: Promise<Record<string, string | 
     visit === 2 ? "&visit=2" : "",
     typeof q.variant === "string" ? `&variant=${encodeURIComponent(q.variant)}` : "",
   ].join("");
-  const partner = visit === 2
+  const partner = visit === 2 && !simulated
     ? { ...s.partner, visitor: { returning: true, visits: s.partner.visitor.visits + 1 } }
     : s.partner;
   return {

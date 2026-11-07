@@ -14,6 +14,7 @@ export default function Index() {
             {s.revisit && <> · <Link className="font-semibold text-[#2346d8] hover:underline" href={`/lab/${s.id}`}>Lab: two visits with memory</Link></>}
           </li>
         ))}
+        <li><Link className="font-semibold text-[#2346d8] hover:underline" href="/sim">Simulator</Link> · change what Babel knows, see the page it builds</li>
         <li><Link className="font-semibold text-[#2346d8] hover:underline" href="/merchant">Merchant panel</Link> · markers and the agent&apos;s trace</li>
       </ul>
       <p className="mt-8 text-sm text-[#5b6170]">All shoppers and data are synthetic.</p>

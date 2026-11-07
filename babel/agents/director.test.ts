@@ -32,11 +32,33 @@ describe("Director", () => {
     expect(o.slide!.hypothesis?.marker).toBe("hesitation");
   });
 
+  it("holds on a request no variant serves and files it as a gap (mock LLM)", async () => {
+    delete process.env.DEEPSEEK_API_KEY;
+    const o = await runDirector(raduVisit(), registry, brand, ["chat"], "show me a side by side comparison");
+    expect(o.decision).toBe("hold");
+    expect(o.gaps).toEqual([expect.objectContaining({ block: "gallery" })]);
+  });
+
   it("holds when DeepSeek is unreachable, so the store keeps working", async () => {
     Object.assign(process.env, { DEEPSEEK_API_KEY: "test", DEEPSEEK_MODEL: "test", DEEPSEEK_BASE_URL: "http://127.0.0.1:9" });
     const o = await runDirector(raduVisit(), registry, brand);
     expect(o.decision).toBe("hold");
     expect(o.reason).toMatch(/llm error|timeout/);
+  });
+});
+
+describe("Director on a chat message", () => {
+  it("moves returns and reviews up when the shopper asks, with no marker spike (mock LLM)", async () => {
+    delete process.env.DEEPSEEK_API_KEY;
+    const { partner } = shoppers.radu;
+    const { persona, reasons } = initialPersona(partner);
+    const slide = buildSlide({ persona, template: "product", registry, brand, ctx: partner });
+    const visit = createVisit({ store: "taraba", template: "product", partner, persona, slide, reasons });
+    const o = await runDirector(visit, registry, brand, ["chat"], "show me the returns and reviews first");
+    expect(o.decision).toBe("slide");
+    expect(o.slide!.rationale).toMatch(/You asked/);
+    expect(o.slide!.blocks.find((b) => b.id === "trust")).toMatchObject({ order: 2 });
+    expect(o.transcript.input).not.toMatch(/returns and reviews first/); // the message travels in <user_message>, not the data
   });
 });
 

@@ -26,7 +26,10 @@ export type StoreDefault = {
 const file = () => process.env.BABEL_DEFAULTS_FILE ?? (process.env.VITEST ? "" : path.join(process.cwd(), ".babel", "defaults.json"));
 
 function read(): StoreDefault[] {
-  try { return JSON.parse(readFileSync(file(), "utf8")) as StoreDefault[]; } catch { return []; } // no file yet, or unreadable
+  try {
+    // An entry without a changes list would crash every page open, so drop it.
+    return (JSON.parse(readFileSync(file(), "utf8")) as StoreDefault[]).filter((d) => d && Array.isArray(d.changes) && typeof d.store === "string");
+  } catch { return []; } // no file yet, or unreadable
 }
 const g = globalThis as unknown as { __babelDefaults?: StoreDefault[] };
 const all: StoreDefault[] = (g.__babelDefaults ??= read());

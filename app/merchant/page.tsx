@@ -10,6 +10,7 @@ type Feed = {
     id: string; store: string; template: string; rationale: string; evidence: string[]; simulated: boolean; mocked: boolean; at: number; active: boolean;
     changes: { id: string; variant?: string; order?: number; collapsed?: boolean }[];
   }[];
+  gaps: { id: string; store: string; template: string; block: string; wanted: string; why: string; count: number; mocked: boolean; draft?: string }[];
   visits: {
     id: string; store: string; template: string; productId?: string; returning: boolean; standardView: boolean;
     ageMs: number; persona: Persona; markers: Markers; events: number; trace: TraceEntry[];
@@ -56,6 +57,11 @@ export default function Merchant() {
     catch { setLastRun([]); }
     setLooking(false);
   };
+  const [drafting, setDrafting] = useState<string | null>(null);
+  const draft = async (id: string) => {
+    setDrafting(id);
+    try { await fetch("/api/gaps/draft", { method: "POST", body: JSON.stringify({ id }) }); } finally { setDrafting(null); }
+  };
   const revert = (id: string) => fetch("/api/insights", { method: "POST", body: JSON.stringify({ action: "revert", id }) });
 
   return (
@@ -100,6 +106,23 @@ export default function Merchant() {
             </li>
           ))}
           {feed && !feed.defaults.length && <li className="text-sm text-[#5b6170]">No store defaults yet.</li>}
+        </ul>
+      </section>
+      <section className="mx-6 mt-6 rounded-xl border border-black/10 bg-white p-5" aria-labelledby="gaps-h">
+        <h2 id="gaps-h" className="font-bold">What the agent wished the store had</h2>
+        <p className="text-sm text-[#5b6170]">Nothing here changes a page. Each is a variant the agent could not find; a draft is written for a developer to review.</p>
+        <ul className="mt-3 flex flex-col gap-3">
+          {feed?.gaps.map((x) => (
+            <li key={x.id} className="rounded-lg border border-black/10 bg-slate-50 p-3 text-sm">
+              <p className="font-semibold">{x.store} · {x.template} · {x.block} <span className="font-normal text-[#5b6170]">· asked {x.count}×{x.mocked ? " · mock LLM" : ""}</span></p>
+              <p>{x.wanted}</p>
+              <p className="text-xs text-[#5b6170]">{x.why}</p>
+              {x.draft
+                ? <p className="mt-1 text-xs">Draft: <code>{x.draft}</code></p>
+                : <button onClick={() => draft(x.id)} disabled={drafting === x.id} className="mt-2 rounded border border-black/20 bg-white px-2 py-1 text-xs font-semibold disabled:opacity-60">{drafting === x.id ? "Drafting…" : "Draft the variant"}</button>}
+            </li>
+          ))}
+          {feed && !feed.gaps.length && <li className="text-sm text-[#5b6170]">No requests yet.</li>}
         </ul>
       </section>
       <div className="grid gap-6 p-6 md:grid-cols-[18rem_1fr]">

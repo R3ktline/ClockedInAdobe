@@ -8,7 +8,7 @@ import { chat, isMocked, type ChatCompletionMessage, type ChatCompletionMessageP
 import { validateSlide } from "@/babel/guardrails/validateSlide";
 import { markerKinds } from "@/babel/markers";
 import { moveBlock } from "@/babel/persona";
-import { SlideProposal, type BrandKit, type Registry, type Slide } from "@/babel/schema";
+import { Gap, SlideProposal, type BrandKit, type Registry, type Slide } from "@/babel/schema";
 import { elapsed, shopperSummary, type Trigger, type Visit } from "@/babel/session";
 
 const MAX_ROUNDS = 3;
@@ -17,6 +17,7 @@ const BUDGET_MS = Number(process.env.BABEL_DIRECTOR_BUDGET_MS ?? 6_000); // rais
 const SYSTEM_PROMPT = readFileSync(path.join(process.cwd(), "prompts", "director.md"), "utf8");
 
 const { $schema: _drop, ...proposalSchema } = z.toJSONSchema(SlideProposal) as Record<string, unknown>;
+const { $schema: _d, ...gapsSchema } = z.toJSONSchema(z.array(Gap).max(2)) as Record<string, unknown>;
 const TOOLS: ChatCompletionTool[] = [
   {
     type: "function",
@@ -31,7 +32,7 @@ const TOOLS: ChatCompletionTool[] = [
     function: {
       name: "hold",
       description: "Keep the current slide.",
-      parameters: { type: "object", properties: { reason: { type: "string" } }, required: ["reason"] },
+      parameters: { type: "object", properties: { reason: { type: "string" }, gaps: gapsSchema }, required: ["reason"] },
     },
   },
 ];
@@ -44,6 +45,7 @@ export const staticContext = (registry: Registry, brand: BrandKit, template: Sli
 
 export type DirectorOutcome = {
   decision: "slide" | "hold";
+  gaps: Gap[]; // variants the registry lacks that the model asked for (saved for a human to build)
   slide?: Slide;
   reason?: string;
   clamps: string[];
@@ -61,19 +63,20 @@ export type LlmTranscript = {
   rounds: { said: string; call?: { name: string; args: unknown }; verdict: string; ms: number }[];
 };
 
-export async function runDirector(visit: Visit, registry: Registry, brand: BrandKit, triggers: Trigger[] = []): Promise<DirectorOutcome> {
+// `message` is what the shopper typed in the chatbox (untrusted text, passed in <user_message>).
+export async function runDirector(visit: Visit, registry: Registry, brand: BrandKit, triggers: Trigger[] = [], message?: string): Promise<DirectorOutcome> {
   const started = Date.now();
   const prev = visit.slides.at(-1)!;
   const kind: Slide["kind"] = visit.returning && prev.index === 0 ? "major" : "minor";
   const input = JSON.stringify(observation(visit, prev, kind, triggers), null, 1);
   const transcript: LlmTranscript = { model: isMocked() ? "mock" : process.env.DEEPSEEK_MODEL ?? "", input, rounds: [] };
-  const out: DirectorOutcome = { decision: "hold", clamps: [], errors: [], rounds: 0, ms: 0, mocked: isMocked(), transcript };
+  const out: DirectorOutcome = { decision: "hold", gaps: [], clamps: [], errors: [], rounds: 0, ms: 0, mocked: isMocked(), transcript };
   const done = (o: Partial<DirectorOutcome>) => ({ ...out, ...o, ms: Date.now() - started });
 
   // Static parts first so DeepSeek's prefix cache can reuse them (GUARDRAILS §5).
   const messages: ChatCompletionMessageParam[] = [
     ...staticContext(registry, brand, prev.template).map((content) => ({ role: "system" as const, content })),
-    { role: "user", content: `<data>\n${input}\n</data>` },
+    { role: "user", content: `<data>\n${input}\n</data>${message ? `\n<user_message>\n${message.replace(/<\/?user_message>/gi, "")}\n</user_message>` : ""}` },
   ];
 
   const abort = new AbortController();
@@ -82,7 +85,7 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
     for (let round = 1; round <= MAX_ROUNDS; round++) {
       out.rounds = round;
       const roundStart = Date.now();
-      const msg = await chat({ agent: "director", messages, tools: TOOLS, signal: abort.signal, mock: () => mockDecision(visit, prev, triggers, brand) });
+      const msg = await chat({ agent: "director", messages, tools: TOOLS, signal: abort.signal, mock: () => mockDecision(visit, prev, triggers, brand, message) });
       messages.push({ role: "assistant", content: msg.content ?? "", tool_calls: msg.tool_calls });
       const calls = (msg.tool_calls ?? []).filter((c) => c.type === "function");
       const said = (msg.content ?? "").slice(0, 2000);
@@ -94,6 +97,7 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
       const shown = { name: call.function.name, args: safeJson(call.function.arguments) ?? call.function.arguments };
       for (const c of extra) messages.push({ role: "tool", tool_call_id: c.id, content: "ignored: one call per turn" });
       if (call.function.name === "hold") {
+        out.gaps = z.array(Gap).max(2).catch([]).parse(safeJson(call.function.arguments)?.gaps ?? []);
         log("hold", shown);
         return done({ reason: String(safeJson(call.function.arguments)?.reason ?? "hold") });
       }
@@ -102,6 +106,7 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
       const result = parsed.success
         ? validateSlide({ slide: applyProposal(prev, parsed.data, kind), prev, registry, brand, returning: visit.returning })
         : { ok: false as const, clamps: [], errors: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`) };
+      if (parsed.success) out.gaps = parsed.data.gaps ?? [];
       out.clamps.push(...result.clamps);
       log(result.ok ? `accepted${result.clamps.length ? ` (clamped: ${result.clamps.join("; ")})` : ""}` : `rejected: ${result.errors.join("; ")}`, shown);
       if (result.ok) return done({ decision: "slide", slide: result.slide });
@@ -177,12 +182,13 @@ function safeJson(s: string): Record<string, unknown> | undefined {
 }
 
 // Deterministic stand-in used without an API key: answers trust or hesitation spikes on a product page.
-function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: BrandKit): ChatCompletionMessage {
+function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: BrandKit, message = ""): ChatCompletionMessage {
   const call = (name: string, args: unknown): ChatCompletionMessage => ({
     role: "assistant", content: null, refusal: null,
     tool_calls: [{ id: `mock-${visit.slides.length}`, type: "function", function: { name, arguments: JSON.stringify(args) } }],
   });
-  if (triggers.includes("zoom")) {
+  const asked = (re: RegExp) => triggers.includes("chat") && re.test(message);
+  if (triggers.includes("zoom") || asked(/bigger|larger|small text|hard to read|simpl|plain/i)) {
     const plain = prev.blocks.find((b) => b.id === "summary") ? [{ id: "summary", variant: "benefits_plain" }] : [];
     return call("proposeSlide", {
       changes: plain,
@@ -192,6 +198,12 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
       hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30 },
     });
   }
+  if (asked(/compare|side by side|video|360/i)) {
+    return call("hold", {
+      reason: "mock: no registered variant does that",
+      gaps: [{ block: "gallery", wanted: "A side-by-side comparison with similar products", why: `The shopper asked: "${message.slice(0, 100)}"` }],
+    });
+  }
   const m = visit.markers;
   // Like the live Director, the mock also follows the signal model's read when it is confident and
   // differs from what is on screen (minor slide: ≤ 2 blocks, dialect unchanged).
@@ -199,11 +211,13 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
   const modelSays = (need: string) => !!model && model.need === need && model.confidence >= 0.55 && prev.persona.need !== need;
   const trustUp = prev.blocks.find((b) => b.id === "trust")?.order === 2;
   const markersSayTrust = (m.trustNeed?.value ?? 0) >= 0.6 || (m.hesitation?.value ?? 0) >= 0.6;
-  if (prev.template === "product" && !trustUp && (markersSayTrust || modelSays("reassurance"))) {
+  const wantsTrust = asked(/return|warrant|refund|guarantee|review/i);
+  if (prev.template === "product" && !trustUp && (wantsTrust || markersSayTrust || modelSays("reassurance"))) {
     return call("proposeSlide", {
       need: "reassurance",
       changes: [{ id: "trust", order: 2, variant: "returns_warranty_first" }, { id: "buyBox", variant: "calm" }],
-      rationale: "You checked returns and reviews, so returns, warranty and reviews now sit right under the photos.",
+      rationale: wantsTrust ? "You asked about returns and reviews, so returns, warranty and reviews now sit right under the photos."
+        : "You checked returns and reviews, so returns, warranty and reviews now sit right under the photos.",
       hypothesis: { marker: "hesitation", expect: "down", withinSeconds: 30 },
     });
   }
