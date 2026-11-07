@@ -150,7 +150,7 @@ type Timeline = { visitorId: string; visitId: string; slides: Slide[]; cursor: n
 | Kind | When it may happen | What it may change |
 |---|---|---|
 | `initial` | First page load of a visit | Anything, from cache or rules |
-| `minor` | During a visit, at a slide boundary | **At most 4 blocks** (variant, order or collapsed), theme moves at most one step, dialect may change on clear signals, `keep` blocks untouched |
+| `minor` | During a visit, at a slide boundary | **At most 4 blocks** (variant, order or collapsed), theme moves at most one step, dialect stays the same, `keep` blocks untouched |
 | `major` | **Only on a return visit**, as its first slide | Dialect, theme, order and variants, **but** carries over the anchors plus the shopper's **two most-used blocks from last visit** (same variant, same above/below-the-fold position) and the recently-viewed strip |
 | `explicit` | The shopper asked (chat or view switcher) | Whatever they asked for, inside brand bounds |
 

@@ -100,8 +100,7 @@ EACH TURN
 4. Call proposeSlide. If it returns errors, fix them and try again.
 
 HARD RULES
-- Minor slides change at most 4 blocks; the dialect may change on clear
-  signals. A block the previous slide changed sits one slide out (the
+- Minor slides change at most 4 blocks and keep the dialect. A block the previous slide changed sits one slide out (the
   observation says so as `coolingDown`; the shopper's own chat request
   overrides). Major slides happen only on a return visit and keep the
   carried-over blocks.
