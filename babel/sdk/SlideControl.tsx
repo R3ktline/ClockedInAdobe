@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useBabel } from "./BabelProvider";
 
 const CHANGE_CARD_MS = 15_000;
@@ -8,6 +9,7 @@ const CHANGE_CARD_MS = 15_000;
 // In ghost (testing) mode it also shows what the agent is doing and what the model answered.
 export function SlideControl() {
   const { slides, cursor, go, standard, setStandard, slide, ghost, track, forgetMe, agent, lastChange, apply, calm } = useBabel();
+  const { t } = useI18n();
   const [whyOpen, setWhyOpen] = useState(false);
   const [changeVisible, setChangeVisible] = useState(false);
   useEffect(() => {
@@ -18,14 +20,14 @@ export function SlideControl() {
   }, [lastChange, apply, ghost]);
   const rerun = (mode: string) => { const u = new URL(location.href); u.searchParams.set("apply", mode); location.assign(u); };
   const noticed = calm.filter((c) => c.status === "seen").length;
-  const WORD = { unseen: "unnoticed", seen: "noticeable", waiting: "waiting", requested: "asked for" } as const;
+  const WORD = { unseen: t("status.unseen"), seen: t("status.seen"), waiting: t("status.waiting"), requested: t("status.requested") } as const;
 
   const btn = "rounded-full px-3 py-1.5 text-sm font-medium hover:bg-black/5 disabled:opacity-35 disabled:hover:bg-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--c-primary)]";
   const box = "w-96 max-w-full rounded-xl border border-black/10 p-4 shadow-xl";
   const card = `${box} bg-white text-[#14171f]`;
   const changes = lastChange && (
     <>
-      <p className="font-semibold">What changed · view {lastChange.from} → {lastChange.to}</p>
+      <p className="font-semibold">{t("control.whatChanged", { from: lastChange.from, to: lastChange.to })}</p>
       <ul className="mt-1 list-disc pl-5 text-[#3c4250]">
         {lastChange.lines.map((l) => <li key={l}>{l}</li>)}
       </ul>
@@ -37,39 +39,39 @@ export function SlideControl() {
       {/* In the lab the left panel shows all of this, so nothing covers the store. */}
       {ghost && !ghost.lab && (
         <div className={`${box} bg-[#14171f] text-white`} role="status" aria-live="polite">
-          <p><span className="font-semibold">Synthetic shopper · {ghost.label}</span> <span className="text-white/75">{ghost.note}</span></p>
+          <p><span className="font-semibold">{t("control.synthetic", { label: ghost.label })}</span> <span className="text-white/75">{ghost.note}</span></p>
           <p className="mt-1">
-            <span className="font-semibold">Babel agent:</span>{" "}
+            <span className="font-semibold">{t("control.agent")}</span>{" "}
             <span className={agent.state === "thinking" ? "animate-pulse text-amber-300" : "text-white/75"}>{agent.text}</span>
           </p>
           <div className="mt-2 border-t border-white/15 pt-2 text-sm">
             <p className="font-semibold">
-              Unnoticed check{ghost.step > 0 && ` · page ${ghost.step + 1}`}{ghost.step < 0 && " · browsing freely, memory kept"}
-              {apply !== "next" && calm.length > 0 && <span className="font-normal text-white/75"> · {noticed} of {calm.length} could be noticed</span>}
+              {t("control.unnoticed")}{ghost.step > 0 && ` · ${t("control.page", { n: ghost.step + 1 })}`}{ghost.step < 0 && ` · ${t("control.browsingFreely")}`}
+              {apply !== "next" && calm.length > 0 && <span className="font-normal text-white/75"> · {t("control.couldBeNoticed", { seen: noticed, total: calm.length })}</span>}
             </p>
             {apply === "next"
-              ? <p className="mt-1 text-white/75">Nothing changes on this page. The next page opens with what this one learned.</p>
+              ? <p className="mt-1 text-white/75">{t("control.nothingChanges")}</p>
               : calm.length === 0
-                ? <p className="mt-1 text-white/75">No change yet. {apply === "quiet" ? "Changes wait until they are off screen." : "Changes land at once."}</p>
+                ? <p className="mt-1 text-white/75">{t("control.noChangeYet")} {apply === "quiet" ? t("control.changesWait") : t("control.changesLand")}</p>
                 : <ul className="mt-1 list-disc pl-5 text-white/75">
-                    {calm.map((c) => <li key={c.view}><span className="font-semibold text-white">view {c.view} · {WORD[c.status]}</span> {c.text}</li>)}
+                    {calm.map((c) => <li key={c.view}><span className="font-semibold text-white">{t("control.view", { n: c.view, status: WORD[c.status] })}</span> {c.text}</li>)}
                   </ul>}
-            <div className="mt-2 flex gap-1" role="group" aria-label="When changes appear on this page">
+            <div className="mt-2 flex gap-1" role="group" aria-label={t("control.whenChanges")}>
               {(["live", "quiet", "next"] as const).map((m) => (
                 <button key={m} aria-pressed={apply === m} onClick={() => rerun(m)}
                   className="rounded-full border border-white/30 px-2.5 py-0.5 hover:bg-white/15 aria-pressed:bg-white aria-pressed:text-[#14171f]">
-                  {m === "live" ? "Change live" : m === "quiet" ? "Change quietly" : "Next page only"}
+                  {m === "live" ? t("control.changeLive") : m === "quiet" ? t("control.changeQuietly") : t("control.nextPageOnly")}
                 </button>
               ))}
             </div>
           </div>
           {agent.llm && (
             <details className="mt-2 text-sm">
-              <summary className="cursor-pointer text-white/75">Model&apos;s answer · {agent.llm.model}</summary>
+              <summary className="cursor-pointer text-white/75">{t("control.modelAnswer", { model: agent.llm.model })}</summary>
               <ol className="mt-2 flex max-h-72 flex-col gap-2 overflow-auto">
                 {agent.llm.rounds.map((r, i) => (
                   <li key={i} className="rounded-lg bg-white/10 p-2">
-                    <p className="text-white/60">round {i + 1} · {(r.ms / 1000).toFixed(1)}s · {r.verdict}</p>
+                    <p className="text-white/60">{t("control.round", { n: i + 1, secs: (r.ms / 1000).toFixed(1), verdict: r.verdict })}</p>
                     {r.said && <p className="mt-1 whitespace-pre-wrap">{r.said}</p>}
                     {r.call && <pre className="mt-1 overflow-auto text-xs whitespace-pre-wrap">{r.call.name}({JSON.stringify(r.call.args, null, 1)})</pre>}
                   </li>
@@ -81,32 +83,36 @@ export function SlideControl() {
       )}
       {changeVisible && !whyOpen && lastChange && !ghost?.lab && <div className={card} role="status">{changes}</div>}
       {whyOpen && (
-        <div className={card} role="dialog" aria-label="Why this view">
-          <p className="font-semibold">{standard ? "Standard view" : "Why this view?"}</p>
+        <div className={card} role="dialog" aria-label={t("control.dialogLabel")}>
+          <p className="font-semibold">{standard ? t("control.standard") : t("control.why")}</p>
           <p className="mt-1 text-[#3c4250]">
-            {standard ? "Personalization is off. Everyone sees this page." : slide.rationale}
+            {standard ? t("control.personalOff") : slide.rationale}
           </p>
           {!standard && (
             <p className="mt-2 text-xs text-[#5b6170]">
-              View {slide.persona.dialect} · focus {slide.persona.need} · chosen by {slide.source === "director" ? "the Babel agent" : slide.source === "cache" ? "the Babel agent, remembered from your earlier visit" : "starting rules"}. Prices and product facts are the same for everyone.
+              {t("control.persona", {
+                dialect: slide.persona.dialect,
+                need: slide.persona.need,
+                source: slide.source === "director" ? t("control.sourceDirector") : slide.source === "cache" ? t("control.sourceCache") : t("control.sourceRules"),
+              })}
             </p>
           )}
           {!standard && lastChange && <div className="mt-3 border-t border-black/10 pt-3">{changes}</div>}
           {!ghost && (
             <p className="mt-3 border-t border-black/10 pt-3 text-xs text-[#5b6170]">
-              Babel remembers how you browsed, on this device, so the next page starts closer to what you need.{" "}
-              <button className="underline hover:no-underline focus-visible:outline-2" onClick={forgetMe}>Forget me</button>
+              {t("control.memory")}{" "}
+              <button className="underline hover:no-underline focus-visible:outline-2" onClick={forgetMe}>{t("control.forget")}</button>
             </p>
           )}
         </div>
       )}
-      <nav aria-label="Page views" className="flex items-center gap-1 rounded-full border border-black/10 bg-white p-1 text-[#14171f] shadow-lg">
-        <button className={btn} onClick={() => go(-1)} disabled={standard || cursor === 0} aria-label="Previous view">◀</button>
+      <nav aria-label={t("control.views")} className="flex items-center gap-1 rounded-full border border-black/10 bg-white p-1 text-[#14171f] shadow-lg">
+        <button className={btn} onClick={() => go(-1)} disabled={standard || cursor === 0} aria-label={t("control.prev")}>◀</button>
         <span className="px-1 tabular-nums" aria-live="polite">{standard ? "–" : `${cursor + 1} / ${Math.max(1, slides.length)}`}</span>
-        <button className={btn} onClick={() => go(1)} disabled={standard || cursor >= slides.length - 1} aria-label="Next view">▶</button>
-        <button className={btn} aria-expanded={whyOpen} onClick={() => { if (!whyOpen) track("why_open"); setWhyOpen(!whyOpen); }}>Why?</button>
+        <button className={btn} onClick={() => go(1)} disabled={standard || cursor >= slides.length - 1} aria-label={t("control.next")}>▶</button>
+        <button className={btn} aria-expanded={whyOpen} onClick={() => { if (!whyOpen) track("why_open"); setWhyOpen(!whyOpen); }}>{t("control.whyBtn")}</button>
         <button className={btn} aria-pressed={standard} onClick={() => setStandard(!standard)}>
-          {standard ? "Personalized view" : "Standard view"}
+          {standard ? t("control.personalized") : t("control.standard")}
         </button>
       </nav>
     </div>
