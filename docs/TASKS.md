@@ -36,7 +36,7 @@ bogdan builds the base and a thin proof of concept that touches every track's fo
 - [todo] [A] Return-visit major slide with carry-over (validator side) (bogdan) · with C
 - [todo] [A] Policy layer + red-team fixtures from [GUARDRAILS §7](GUARDRAILS.md#7-red-team-fixtures-scriptseval-fixtures) passing (bogdan) ·
 - [done] [A] A2A Agent Card + `search_products`, `get_product`, `compare_products`, `get_store_policies`, `create_handoff_link` in `babel/tools` (bogdan) · needs B: `/{store}/h/{id}` shortlist page reading `getHandoff(id)` from `babel/tools`; until then the link points at the first product page
-- [todo] [A] `scripts/buyer-agent.ts` (DeepSeek-driven buyer agent over A2A) (bogdan) ·
+- [done] [A] `scripts/buyer-agent.ts` (DeepSeek-driven buyer agent over A2A, `npm run buyer-agent`) (bogdan) ·
 - [todo] [B] All block variants for the 4 dialects on Taraba (hero, productList, filters, gallery, summary, specs, trust, buyBox, compare, continuity, assist) (Ionut) ·
 - [todo] [B] SlidePlayer polish: change highlight, Why? panel, undo (Ionut) ·
 - [todo] [C] Director: all tools, hypothesis scoring, repair loop, 6 s budget, learned priors slot (David) ·
