@@ -9,7 +9,7 @@ import { validateSlide } from "@/babel/guardrails/validateSlide";
 import { markerKinds } from "@/babel/markers";
 import { moveBlock } from "@/babel/persona";
 import { SlideProposal, type BrandKit, type Registry, type Slide } from "@/babel/schema";
-import type { Trigger, Visit } from "@/babel/session";
+import { shopperSummary, type Trigger, type Visit } from "@/babel/session";
 
 const MAX_ROUNDS = 3;
 const BUDGET_MS = Number(process.env.BABEL_DIRECTOR_BUDGET_MS ?? 6_000); // raise for slow free models
@@ -122,6 +122,7 @@ function observation(visit: Visit, prev: Slide, kind: Slide["kind"], triggers: T
     pageZoom: visit.zoom,
     markers: visit.markers,
     markerKinds: markerKinds(),
+    shopperModel: shopperSummary(visit),
     currentSlide: {
       persona: prev.persona, theme: prev.theme, copyRegister: prev.copyRegister,
       blocks: prev.blocks.map(({ id, variant, order, collapsed }) => ({ id, variant, order, collapsed })),

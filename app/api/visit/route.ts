@@ -20,8 +20,8 @@ export async function POST(req: Request) {
   const cfg = storeConfig(store);
   if (!cfg) return bad(`unknown store ${store}`, 404);
 
-  const { persona, reasons } = initialPersona(partner);
-  const built = buildSlide({ persona, template, registry: cfg.registry, brand: cfg.brand, ctx: partner });
+  const { persona, reasons, copyRegister } = initialPersona(partner);
+  const built = buildSlide({ persona, template, registry: cfg.registry, brand: cfg.brand, ctx: partner, copyRegister });
   const checked = validateSlide({ slide: built, registry: cfg.registry, brand: cfg.brand, returning: partner.visitor.returning });
   const slide = checked.ok
     ? checked.slide

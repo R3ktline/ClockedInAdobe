@@ -1,49 +1,31 @@
-// Rules for slide 0 and the fallback (SPEC §3.5). Instant, no LLM. Every later slide is the Director's.
+// Slide 0 and the fallback (SPEC §3.5). Instant, no LLM. Every later slide is the Director's.
 import type {
-  BlockId, BrandKit, Dialect, Need, PartnerContext, Persona, Registry, Slide, SlideBlock, Template, Theme,
+  BlockId, BrandKit, CopyRegister, Dialect, InteractionEvent, Need, PartnerContext, Persona, Registry, Slide, SlideBlock, Template, Theme,
 } from "@/babel/schema";
+import { modelInputs } from "./modelInputs";
+import { buildProfile, personaOf } from "./signalModel";
 
 export const CONFIDENCE_THRESHOLD = 0.55;
 export const NEUTRAL_PERSONA: Persona = { dialect: "standard", need: "balanced", confidence: 0 };
 
-export function initialPersona(ctx: PartnerContext): { persona: Persona; reasons: string[] } {
-  if (!ctx.consent.personalization) return { persona: NEUTRAL_PERSONA, reasons: ["no consent: standard view"] };
-  const reasons: string[] = [];
-  const dialect: Record<Dialect, number> = { guided: 0, standard: 0, dense: 0, visual: 0 };
-  const need: Record<Need, number> = { specs: 0, deals: 0, inspiration: 0, reassurance: 0, quick: 0, balanced: 0 };
-  const add = <K extends string>(scores: Record<K, number>, key: K, w: number, why: string) => {
-    scores[key] += w;
-    reasons.push(`${why} → ${key} +${w}`);
+// Slide 0 and the in-visit "who is this shopper" read both come from David's signal model
+// (./signalModel.ts). With no events yet, only declared needs (accessibility settings) and
+// consented partner context can move it; everything else stays neutral until real behaviour.
+export function readShopper(ctx: PartnerContext, events: InteractionEvent[] = []) {
+  const { signals, context, declared } = modelInputs(events, ctx);
+  const profile = buildProfile(signals, declared, context);
+  return { profile, model: personaOf(profile) };
+}
+
+export function initialPersona(ctx: PartnerContext): { persona: Persona; reasons: string[]; copyRegister: CopyRegister } {
+  if (!ctx.consent.personalization) return { persona: NEUTRAL_PERSONA, reasons: ["no consent: standard view"], copyRegister: "standard" };
+  const { model } = readShopper(ctx);
+  return {
+    persona: { dialect: model.dialect, need: model.need, confidence: model.confidence },
+    reasons: [`dialect: ${model.dialectWhy}`, `need: ${model.needWhy}`],
+    copyRegister: model.copyRegister,
   };
-  const a11y = ctx.account?.accessibility;
-  const d = ctx.device;
-  if (a11y?.largeText) add(dialect, "guided", 0.5, "large text set in account");
-  if (d && d.zoom >= 1.25) add(dialect, "guided", 0.3, `zoom ${d.zoom}`);
-  if (a11y?.highContrast || d?.prefersContrast) add(dialect, "guided", 0.2, "high contrast preferred");
-  if (d?.pointer === "fine" && d.viewportWidth >= 1280) add(dialect, "dense", 0.15, "desktop, fine pointer");
-  if (d?.pointer === "coarse" && d.viewportWidth < 500) add(dialect, "visual", 0.2, "phone");
-  // Campaign tags carry intent, never demographics (GUARDRAILS §3). ageBand is deliberately unused.
-  const tag = ctx.campaign?.intentTag;
-  if (tag === "specs") { add(dialect, "dense", 0.4, "specs campaign"); add(need, "specs", 0.6, "specs campaign"); }
-  if (tag === "new-season") { add(dialect, "visual", 0.4, "new-season campaign"); add(need, "inspiration", 0.6, "new-season campaign"); }
-  if (tag === "deal") add(need, "deals", 0.7, "deal campaign");
-  if (tag === "gift") add(need, "reassurance", 0.6, "gift campaign");
-  const repeat = ctx.account?.orderCategories?.some((c) => c === "groceries" || c === "health_beauty");
-  if (ctx.visitor.returning && repeat) add(need, "quick", 0.6, "returning repeat buyer");
-
-  const [topDialect, dConf] = top(dialect);
-  const [topNeed, nConf] = top(need);
-  const useDialect = dConf >= CONFIDENCE_THRESHOLD ? topDialect : "standard";
-  const useNeed = nConf >= CONFIDENCE_THRESHOLD ? topNeed : "balanced";
-  const confidence = Math.min(1, Math.max(useDialect === "standard" ? 0 : dConf, useNeed === "balanced" ? 0 : nConf));
-  if (useDialect === "standard" && useNeed === "balanced") reasons.push("weak evidence: standard view");
-  return { persona: { dialect: useDialect, need: useNeed, confidence: round(confidence) }, reasons };
 }
-
-function top<K extends string>(scores: Record<K, number>): [K, number] {
-  return (Object.entries(scores) as [K, number][]).sort((a, b) => b[1] - a[1])[0];
-}
-const round = (x: number) => Math.round(x * 100) / 100;
 
 // The store's reading of each dialect lives in its registry (byDialect); the theme presets live here.
 function themeFor(dialect: Dialect, brand: BrandKit, ctx?: PartnerContext): Theme {
@@ -100,6 +82,7 @@ export type BuildArgs = {
   trigger?: Slide["trigger"];
   source?: Slide["source"];
   parentId?: string;
+  copyRegister?: CopyRegister; // the signal model's read; otherwise derived from the persona
 };
 
 // Deterministic slide for a persona. Callers still run it through validateSlide.
@@ -121,10 +104,10 @@ export function buildSlide(a: BuildArgs): Slide {
     template: a.template,
     persona: a.persona,
     theme: themeFor(a.persona.dialect, a.brand, a.ctx),
-    copyRegister:
-      a.persona.dialect === "guided" ? "plain"
+    copyRegister: a.copyRegister ??
+      (a.persona.dialect === "guided" ? "plain"
       : a.persona.dialect === "dense" || a.persona.need === "specs" ? "technical"
-      : "standard",
+      : "standard"),
     blocks,
     keep: [],
     rationale: DIALECT_TEXT[a.persona.dialect] + (NEED_TEXT[a.persona.need] ?? ""),
