@@ -10,8 +10,8 @@ import { readShopper } from "@/babel/persona";
 import { TRAIT_NAMES, TRAITS, type Groups } from "@/babel/persona/signalModel";
 import type { LlmTranscript } from "@/babel/agents/director";
 
-// "checkin" = a routine look by the agent; "zoom" = the shopper zoomed the page in.
-export type Trigger = MarkerId | "checkin" | "zoom";
+// "checkin" = a routine look by the agent; "zoom" = the shopper zoomed the page in; "chat" = the shopper typed a request.
+export type Trigger = MarkerId | "checkin" | "zoom" | "chat";
 
 export type TraceEntry = {
   at: number; // ms since visit start
@@ -119,6 +119,8 @@ export function startSession(visitorId: string, now = Date.now()): { returning: 
   remember(visitorId, { visits: n, lastSeenAt: now });
   return { returning, visits: n };
 }
+// A return visit hands back what the browser kept (consented localStorage), already scaled down.
+export const rememberGroups = (visitorId: string, groups: Groups) => remember(visitorId, { groups });
 
 export const getVisit = (id: string) => visits.get(id);
 export const listVisits = () => [...visits.values()].sort((a, b) => b.startedAt - a.startedAt);
