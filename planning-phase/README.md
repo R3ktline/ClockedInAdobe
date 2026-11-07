@@ -7,7 +7,7 @@ Everything the team produced before the build, kept as it was written. **History
 | [bogdan/](bogdan/README.md) | bogdan (R3ktline) | First full spec of Babel (PageSpec, truth model, guardrails, demo, risks, agentic analysis, A2A proposal) |
 | [david/](david/README.md) | David Ionica | Concept, feasibility, architecture, ADRs, competitor research, Adobe mapping, UserProfile/UIIntent schemas, 10 client profiles, design briefs |
 | [matei/](matei/README.md) | Matei (estegucci-oss) | Signal tracker SDK and demo (6-tier detection) |
-| [ionut/](ionut/) | Ionut (ionutdautema) | Visual style pages (`gen-alpha-style.html`, `older-gen-z-style.html`) and the generation moodboard |
+| [ionut/](ionut/) | Ionut (ionutdautema) | Visual style pages (`gen-alpha-style.html`, `older-gen-z-style.html`, `millennial-style.html`, `gen-xx-style.html`) and the generation moodboard |
 
 ## What carried into the build
 
@@ -26,6 +26,7 @@ Everything the team produced before the build, kept as it was written. **History
 |---|---|
 | Age detection and age-to-persona mapping (Matei), generation targeting (Ionut) | Legal exposure and inaccuracy; replaced by dialect × need |
 | Age-targeted "20% off" and the countdown timer (Matei's demo) | Personalised pricing and false urgency |
+| IP geolocation and weather lookups through third-party APIs (Matei's refactored tracker) | Sends the visitor's IP to a third party without consent; location is not a Babel input |
 | Full reskins (Windows XP style, Apple product images) | Breaks brand bounds; third-party assets |
 | Own headless storefront as the product (bogdan) | Babel plugs into a store instead |
 | One re-layout per session (bogdan); implicit signals cut first (David) | Continuous adaptation as slides is now the core |
