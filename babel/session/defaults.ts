@@ -21,6 +21,7 @@ export type StoreDefault = {
   mocked: boolean;    // written by the mock LLM
   at: number;
   active: boolean;
+  pending?: boolean;  // suggested by the AI, waiting for the merchant; only becomes active when approved
 };
 
 const file = () => process.env.BABEL_DEFAULTS_FILE ?? (process.env.VITEST ? "" : path.join(process.cwd(), ".babel", "defaults.json"));
@@ -43,16 +44,23 @@ function save() {
 export const listDefaults = () => [...all].sort((a, b) => b.at - a.at);
 export const activeDefaults = (store: string, template: Template) => all.filter((d) => d.active && d.store === store && d.template === template);
 
-export function addDefault(d: Omit<StoreDefault, "id" | "at" | "active">): StoreDefault {
-  const made = { ...d, id: crypto.randomUUID().slice(0, 8), at: Date.now(), active: true };
+export function addDefault(d: Omit<StoreDefault, "id" | "at" | "active" | "pending">, pending = false): StoreDefault {
+  const made = { ...d, id: crypto.randomUUID().slice(0, 8), at: Date.now(), active: !pending, ...(pending ? { pending } : {}) };
   all.push(made);
   save();
   return made;
 }
 
+// Revert takes back an active default; on a pending suggestion it dismisses it.
 export function revertDefault(id: string): boolean {
-  const d = all.find((x) => x.id === id && x.active);
-  if (d) { d.active = false; save(); }
+  const d = all.find((x) => x.id === id && (x.active || x.pending));
+  if (d) { d.active = false; d.pending = false; save(); }
+  return !!d;
+}
+
+export function approveDefault(id: string): boolean {
+  const d = all.find((x) => x.id === id && x.pending);
+  if (d) { d.active = true; d.pending = false; save(); }
   return !!d;
 }
 

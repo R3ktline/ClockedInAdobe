@@ -26,6 +26,7 @@ type Feed = {
     mocked: boolean;
     at: number;
     active: boolean;
+    pending?: boolean;
     changes: { id: string; variant?: string; order?: number; collapsed?: boolean }[];
   }[];
   gaps: {
@@ -278,6 +279,9 @@ export default function Merchant() {
 
   const revert = (id: string) =>
     fetch("/api/insights", { method: "POST", body: JSON.stringify({ action: "revert", id }) });
+
+  const approve = (id: string) =>
+    fetch("/api/insights", { method: "POST", body: JSON.stringify({ action: "approve", id }) });
 
   const askCopilot = async (e: FormEvent) => {
     e.preventDefault();
@@ -641,6 +645,13 @@ export default function Merchant() {
               >
                 Open Simulator
               </Link>
+              <Link
+                href="/demo"
+                target="_blank"
+                className="rounded-xl border border-[#116b5f] bg-white px-4 py-2 text-sm font-semibold text-[#116b5f] hover:bg-[#ecf7f5]"
+              >
+                Run demo (simulated)
+              </Link>
               <button
                 type="button"
                 onClick={analyze}
@@ -669,7 +680,7 @@ export default function Merchant() {
                         <strong className="font-semibold">
                           {r.store} · {r.template}
                         </strong>{" "}
-                        ({r.outcome === "applied" ? "applied" : r.outcome === "hold" ? "held" : "no change"}) — {r.reason}
+                        ({r.outcome === "suggested" ? "suggested, awaiting your approval" : r.outcome === "hold" ? "held" : "no change"}) — {r.reason}
                       </li>
                     ))}
                   </ul>
@@ -1077,6 +1088,7 @@ export default function Merchant() {
                                   <p className="mt-1.5 inline-block rounded-lg bg-[#ecf7f5] px-2.5 py-1 text-xs font-medium text-[#0f5c51]">
                                     Bet: <strong>{t.hypothesis.marker}</strong> goes <strong>{t.hypothesis.expect}</strong> within{" "}
                                     {t.hypothesis.withinSeconds}s
+                                    {t.hypothesis.outcome && <> · outcome: <strong>{t.hypothesis.outcome.replace("_", " ")}</strong></>}
                                   </p>
                                 )}
 
@@ -1214,7 +1226,7 @@ export default function Merchant() {
                                 View all ({feed?.defaults.length ?? 0})
                               </button>
                             </div>
-                            <DefaultsList defaults={(feed?.defaults ?? []).slice(0, 3)} onRevert={revert} />
+                            <DefaultsList defaults={(feed?.defaults ?? []).slice(0, 3)} onRevert={revert} onApprove={approve} />
                           </section>
 
                           {/* Compact Gaps Preview */}
@@ -1259,7 +1271,7 @@ export default function Merchant() {
                   </p>
                 </div>
               </div>
-              <DefaultsList defaults={feed?.defaults ?? []} onRevert={revert} />
+              <DefaultsList defaults={feed?.defaults ?? []} onRevert={revert} onApprove={approve} />
             </section>
           )}
 
@@ -1287,9 +1299,11 @@ export default function Merchant() {
 function DefaultsList({
   defaults,
   onRevert,
+  onApprove,
 }: {
   defaults: Feed["defaults"];
   onRevert: (id: string) => void;
+  onApprove: (id: string) => void;
 }) {
   if (!defaults.length) {
     return (
@@ -1304,7 +1318,7 @@ function DefaultsList({
         <li
           key={d.id}
           className={`rounded-xl border p-4 text-sm ${
-            d.active ? "border-[#bce0d9] bg-[#f4fbf9]" : "border-[#e6e4dc] bg-[#f8f7f3] text-[#68706b]"
+            d.active ? "border-[#bce0d9] bg-[#f4fbf9]" : d.pending ? "border-[#ecd49a] bg-[#fffaf0]" : "border-[#e6e4dc] bg-[#f8f7f3] text-[#68706b]"
           }`}
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1314,10 +1328,10 @@ function DefaultsList({
               </span>
               <span
                 className={`rounded-full px-2 py-0.5 text-[11px] font-bold uppercase ${
-                  d.active ? "bg-[#116b5f] text-white" : "bg-[#e2e0d8] text-[#5c645f]"
+                  d.active ? "bg-[#116b5f] text-white" : d.pending ? "bg-[#fdf3df] text-[#8a5a0a]" : "bg-[#e2e0d8] text-[#5c645f]"
                 }`}
               >
-                {d.active ? "Active" : "Reverted"}
+                {d.active ? "Active" : d.pending ? "Suggested" : "Reverted"}
               </span>
               <span className="rounded bg-[#fdf3df] px-1.5 py-0.5 text-[11px] font-semibold text-[#8a5a0a]">
                 {d.simulated ? "simulated sessions" : "live sessions"}
@@ -1328,14 +1342,25 @@ function DefaultsList({
                 </span>
               )}
             </div>
-            {d.active && (
-              <button
-                type="button"
-                onClick={() => onRevert(d.id)}
-                className="rounded-lg border border-[#d4d2c9] bg-white px-2.5 py-1 text-xs font-semibold text-[#2d3430] hover:bg-[#f2f0e8]"
-              >
-                Revert
-              </button>
+            {(d.active || d.pending) && (
+              <div className="flex gap-1.5">
+                {d.pending && (
+                  <button
+                    type="button"
+                    onClick={() => onApprove(d.id)}
+                    className="rounded-lg bg-[#116b5f] px-2.5 py-1 text-xs font-semibold text-white hover:bg-[#0d564c]"
+                  >
+                    Approve
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onRevert(d.id)}
+                  className="rounded-lg border border-[#d4d2c9] bg-white px-2.5 py-1 text-xs font-semibold text-[#2d3430] hover:bg-[#f2f0e8]"
+                >
+                  {d.pending ? "Dismiss" : "Revert"}
+                </button>
+              </div>
             )}
           </div>
 

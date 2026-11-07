@@ -11,7 +11,7 @@ import { movedBlocks } from "@/babel/schema/diff";
 import { buildSlide, NEUTRAL_PERSONA } from "@/babel/persona";
 import type { BrandKit, Registry, Template } from "@/babel/schema";
 import { listVisits, type Visit } from "@/babel/session";
-import { activeDefaults, addDefault, withDefaults, type DefaultChange, type StoreDefault } from "@/babel/session/defaults";
+import { addDefault, listDefaults, withDefaults, type DefaultChange, type StoreDefault } from "@/babel/session/defaults";
 
 const SYSTEM_PROMPT = readFileSync(path.join(process.cwd(), "prompts", "insights.md"), "utf8");
 const BUDGET_MS = Number(process.env.BABEL_INSIGHTS_BUDGET_MS ?? 15_000);
@@ -35,6 +35,8 @@ export type Candidate = {
   slides: number;  // times it was made
   scored: number;  // times its bet was checked
   met: number;     // ... and came true
+  outcomeScored: number; // times a business outcome (cart, checkout, time, no_back) was checked
+  outcomeMet: number;    // ... and happened
   undone: number;  // times the shopper pressed back while it was showing
 };
 export type Group = { store: string; template: Template; sessions: number; simulated: boolean; candidates: Candidate[] };
@@ -72,12 +74,12 @@ export function aggregate(visits: Visit[]): Group[] {
           ...(!!was?.collapsed !== !!b.collapsed ? { collapsed: !!b.collapsed } : {}),
         };
         const key = keyOf(change);
-        const c = entry.tally.get(key) ?? { key, change, orders: [], visits: 0, share: 0, slides: 0, scored: 0, met: 0, undone: 0 };
+        const c = entry.tally.get(key) ?? { key, change, orders: [], visits: 0, share: 0, slides: 0, scored: 0, met: 0, outcomeScored: 0, outcomeMet: 0, undone: 0 };
         entry.tally.set(key, c);
         if (moved.has(bid)) c.orders.push(b.order);
         if (!seen.has(key)) { seen.add(key); c.visits++; }
         c.slides++;
-        if (result) { c.scored++; if (result.met) c.met++; }
+        if (result) { c.scored++; if (result.met) c.met++; if (result.outcome) { c.outcomeScored++; if (result.outcome.met) c.outcomeMet++; } }
         if (undone) c.undone++;
       }
     }
@@ -94,10 +96,11 @@ export function aggregate(visits: Visit[]): Group[] {
 // Frequent, not often undone, and not disproved by its own bet; and not already a default.
 export function eligible(g: Group): Candidate[] {
   const { minVisits, minShare } = bar();
-  const live = new Set(activeDefaults(g.store, g.template).flatMap((d) => d.changes.map(keyOf)));
+  // active or still waiting for approval: do not suggest the same thing twice
+  const live = new Set(listDefaults().filter((d) => (d.active || d.pending) && d.store === g.store && d.template === g.template).flatMap((d) => d.changes.map(keyOf)));
   return g.candidates
     .filter((c) => c.visits >= minVisits && c.share >= minShare && !live.has(c.key))
-    .filter((c) => c.undone / c.slides <= 1 / 3 && (c.scored === 0 || c.met / c.scored >= 0.5))
+    .filter((c) => c.undone / c.slides <= 1 / 3 && (c.scored === 0 || c.met / c.scored >= 0.5) && (c.outcomeScored === 0 || c.outcomeMet / c.outcomeScored >= 0.5))
     .sort((a, b) => b.visits - a.visits || b.met - a.met);
 }
 
@@ -106,7 +109,7 @@ export const say = (c: DefaultChange) =>
     .filter(Boolean).join(" ") || "moved";
 export const evidenceLine = (g: Group, c: Candidate) =>
   `${c.visits} of ${g.sessions} sessions ended up with ${c.change.id}: ${say(c.change)}` +
-  ` · bet came true ${c.met} of ${c.scored} checked · pressed back ${c.undone} of ${c.slides} times`;
+  ` · bet came true ${c.met} of ${c.scored} checked${c.outcomeScored ? ` · business outcome reached ${c.outcomeMet} of ${c.outcomeScored}` : ""} · pressed back ${c.undone} of ${c.slides} times`;
 
 const Pick = z.object({ keys: z.array(z.string()).min(1).max(MAX_BLOCKS), rationale: z.string().min(1).max(240) });
 const TOOLS: ChatCompletionTool[] = [
@@ -128,7 +131,7 @@ const TOOLS: ChatCompletionTool[] = [
   },
 ];
 
-export type GroupResult = { store: string; template: Template; sessions: number; candidates: number; outcome: "applied" | "hold" | "none"; reason: string; applied?: StoreDefault };
+export type GroupResult = { store: string; template: Template; sessions: number; candidates: number; outcome: "suggested" | "hold" | "none"; reason: string; suggested?: StoreDefault };
 
 export async function proposeForGroup(g: Group, cfg: { registry: Registry; brand: BrandKit }): Promise<GroupResult> {
   const base = { store: g.store, template: g.template, sessions: g.sessions, candidates: 0 };
@@ -138,7 +141,7 @@ export async function proposeForGroup(g: Group, cfg: { registry: Registry; brand
 
   const data = {
     page: g.template, sessions: g.sessions, simulated: g.simulated,
-    candidates: cands.map((c) => ({ key: c.key, block: c.change.id, change: say(c.change), sessions: c.visits, share: Math.round(c.share * 100) / 100, betsMet: `${c.met}/${c.scored}`, pressedBack: `${c.undone}/${c.slides}` })),
+    candidates: cands.map((c) => ({ key: c.key, block: c.change.id, change: say(c.change), sessions: c.visits, share: Math.round(c.share * 100) / 100, betsMet: `${c.met}/${c.scored}`, outcomesReached: `${c.outcomeMet}/${c.outcomeScored}`, pressedBack: `${c.undone}/${c.slides}` })),
   };
   const abort = new AbortController();
   const timer = setTimeout(() => abort.abort(), BUDGET_MS);
@@ -175,8 +178,9 @@ export async function proposeForGroup(g: Group, cfg: { registry: Registry; brand
   if (!checked.ok) return hold(`validator: ${checked.errors.join("; ")}`);
   if (changedBlocks(neutral.blocks, checked.slide.blocks).length > MAX_BLOCKS) return hold("would change more than 4 blocks");
 
-  const applied = addDefault({ ...trial, evidence: picked.map((c) => evidenceLine(g, c)) });
-  return { ...base, candidates: cands.length, outcome: "applied", reason: pick.data.rationale, applied };
+  // Suggest only: nothing changes for shoppers until the merchant approves it in the panel.
+  const suggested = addDefault({ ...trial, evidence: picked.map((c) => evidenceLine(g, c)) }, true);
+  return { ...base, candidates: cands.length, outcome: "suggested", reason: pick.data.rationale, suggested };
 }
 
 // Look at every shopper so far, one page type at a time.
@@ -194,7 +198,7 @@ function mockPick(g: Group, cands: Candidate[]): ChatCompletionMessage {
   const top: Candidate[] = [];
   for (const c of cands) if (top.length < MAX_BLOCKS && !top.some((t) => t.change.id === c.change.id)) top.push(c);
   const first = top[0];
-  const rationale = `${first.visits} of ${g.sessions} sessions on ${g.template} pages ended up with ${first.change.id} ${say(first.change)}, so new visits now start there.`;
+  const rationale = `${first.visits} of ${g.sessions} sessions on ${g.template} pages ended up with ${first.change.id} ${say(first.change)}, so I suggest new visits start there.`;
   return {
     role: "assistant", content: null, refusal: null,
     tool_calls: [{ id: "mock-insights", type: "function", function: { name: "proposeDefault", arguments: JSON.stringify({ keys: top.map((c) => c.key), rationale }) } }],
