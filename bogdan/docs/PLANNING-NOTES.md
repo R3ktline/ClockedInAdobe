@@ -30,7 +30,7 @@ Takeaway: don't compete on *doing* personalization or *making* content. Either e
 | **Personalization fairness auditor** | Synthetic shoppers browse a site as profiles that differ in one trait each. The tool compares what each profile saw (prices, product order, urgency banners) and flags unfair differences | Most novel. The method exists in research (Northeastern, 2014: personalization found on 9 of 16 shops), but we found no product for brands auditing themselves. Timely: the EU Digital Fairness Act proposal is expected Q4 2026. **Set aside**: it's the same engine as the next idea, and it's an audit tool rather than a marketing product |
 | **"Walk in their shoes" persona simulator** | Agents use a site as specific people (low vision, tremor, non-native speaker) and report where they get stuck. Limitations are simulated in code (low-contrast text hidden, small tap targets mis-tapped), not just described in a prompt | Crowded (Brox.ai, POPJAM, Shopify SimGym, the UXAgent paper). Simulating limits in code answers the main criticism that AI test users follow tidy paths. **Same engine as the auditor.** Reusable later as the traffic source for the optimizer (§6) |
 | **Expectation-gap / returns loop** | An agent mines return reasons and low-star reviews, finds the claim or image that sets a wrong expectation, rewrites the product page, and measures whether returns drop | Passes the agent test (§5). The workflow is known (PIM vendors, Claimlane) but no product owns it. Hard to demo without real returns data. **Set aside** |
-| **Brand agent for agent-to-agent shopping** | Each brand runs an agent that answers buyer agents with signed, verifiable claims | **Rejected**: it's a chatbot with an API. Today's buyer agents read platform product feeds and don't negotiate with brand agents. Negotiating offers is personalized pricing. The useful part (verifiable claims) is a data standard, not an agent |
+| **Brand agent for agent-to-agent shopping** | Each brand runs an agent that answers buyer agents with signed, verifiable claims | **Rejected**: it's a chatbot with an API. Today's buyer agents read platform product feeds and don't negotiate with brand agents. Negotiating offers is personalized pricing. The useful part (verifiable claims) is a data standard, not an agent. A narrower version, an A2A channel on Babel that answers but never negotiates, is in §9 |
 | **AI inbox preview** | Shows how Gmail, Apple Mail and Outlook AI would summarize an email campaign, then rewrites it so the message survives | Small and useful, but weak on "agentic". Competitors not checked |
 | **Marketing as a utility** | The ad slot holds a small useful agent (e.g. "plan my hike") instead of a banner | Close to existing "branded GPTs". Hard to pitch as new |
 | **AI-disclosure agent for campaigns** | Labels AI-generated assets per the AI Act's Article 50 (in force since 2 Aug 2026), using Content Credentials | Timely and Adobe-aligned, but GenStudio already covers part of it |
@@ -135,7 +135,43 @@ The original design was a fixed workflow for one reason: **the first page load m
 
 **TypeSafe Jev** (considered, not used): a "System One" decision model. It answers typed questions (yes/no, choice up to 255 options, scores up to 10 levels) about the data you send, returns calibrated probabilities, and **never writes text**. Vendor claims: 70–500 ms, $0.042 per 1M input tokens, output free. It scores 67.8% on its maker's own benchmark, tied with GPT-5.6 Terra and below Claude Opus 5's 73.1%. It would have fit the fast decisions (persona choice, "is the shopper struggling?", which intervention, input and policy checks, chat intent), but it can't write PageSpecs, copy or tool plans. It's early access behind a waitlist, with no documented rate limits or data handling. Revisit only if we get keys and the session agent turns out too slow on DeepSeek.
 
-## 9. Still open
+## 9. Agent channel (A2A)
+
+*Proposal, not yet in SPEC.*
+
+**Idea:** a buyer agent is one more shopper. It wants the most detail, no visual design, and proof for every claim. That makes it the far end of the persona dial: `simple → balanced → specs → agent`. We serve it over **A2A** (Agent2Agent) instead of a page.
+
+**Not the brand agent from §3.** That idea was a product where brand agents negotiate offers. This is a channel: it answers questions from the same catalog, at the same prices, and never negotiates.
+
+**What A2A is:** an open protocol for agents to talk to other agents (Linux Foundation, now in the Agentic AI Foundation, v1.0). MCP connects an agent to its tools; A2A connects agents to each other. An agent publishes an **Agent Card** at `/.well-known/agent-card.json` listing its skills. Callers send **Messages** and get **Tasks**, which can pause in `INPUT_REQUIRED` and return **Artifacts** made of text, JSON or URL parts. JSON-RPC, REST or gRPC, with SSE streaming. Official JS SDK: `@a2a-js/sdk`.
+
+**Commerce on top (secondary sources, unverified):** **AP2** (Google, Sept 2025) handles payment authorization and is a formal A2A extension. **UCP** (Google, Jan 2026) covers cart and checkout over A2A, MCP or REST, and uses AP2 mandates for payment. OpenAI and Stripe's **ACP** is the rival; sources disagree on whether it has narrowed to discovery only.
+
+| A2A concept | What already exists in Babel |
+|---|---|
+| Agent Card skills | `searchProducts`, `compareProducts`, `getProduct` ([SPEC §5.3](../SPEC.md#53-agent-tools-server-side-functions-exposed-to-deepseek)), already read-only |
+| Artifact (JSON part) | Catalog facts plus `claims` receipts ([SPEC §4.3](../SPEC.md#43-truth-model-whats-real-on-a-page-the-ai-keeps-reshaping)) the buyer agent can check |
+| Task `INPUT_REQUIRED` | The chat agent's clarifying question (§6) |
+| Task `COMPLETED` with no answer | `answer.status: "unknown"` |
+| URL part | A `?scene=<id>` link: the agent shortlists, the human opens it in their own view |
+
+**Demo:** a small buyer-agent script asks Babel over A2A for "laptop under €900, 16GB", gets structured facts with receipts, and passes the human a scene link. The human sees the same products and the same prices in their own view. On screen: the agent's log on one side, Babel's page on the other.
+
+**Why it scores:**
+- **Third-party integrations (15%):** a real open standard through its official SDK.
+- **Cost vs. value bonus:** structured skill calls skip DeepSeek, so an agent query costs almost nothing. The LLM runs only on free-text messages.
+- **Rules hold:** prices go from the catalog straight into the artifact and never pass through the LLM.
+
+**Minimum build:** one Agent Card, one route on the SDK, two skills (search, compare) that return a scene link. Track C (`app/api`) on top of Track A's `lib/tools`, plus a schema entry for the artifact payload.
+
+**Out of scope:** AP2 payments, UCP checkout, Agent Card signing, push notifications. Checkout is already a non-goal, so these are roadmap only.
+
+**Risks:**
+- Incoming A2A text is untrusted. It goes through the same input guard as chat.
+- Judges can't see a protocol. The split-screen demo is the only way it scores.
+- §3 said buyer agents only read platform feeds. UCP and AP2 weaken that, but adoption numbers are mostly vendor claims.
+
+## 10. Still open
 
 Moved to [DECISIONS.md → Open](DECISIONS.md#open).
 
@@ -149,4 +185,6 @@ Moved to [DECISIONS.md → Open](DECISIONS.md#open).
 - Returns: [Claimlane](https://www.claimlane.com/resources/blog/returns-data-product-descriptions), [Credencys](https://www.credencys.com/?p=41228)
 - AI Act Article 50: [Cooley](https://www.cooley.com/news/insight/2026/2026-08-03-eu-ai-act-transparency-obligations-take-effect-2-august-2026)
 - Model pricing: [DeepSeek (devtk)](https://devtk.ai/en/blog/deepseek-api-pricing-guide-2026/), [Gemini (Morphllm)](https://www.morphllm.com/gemini-api-pricing), [OpenAI (Morphllm)](https://morphllm.com/openai-api-pricing), [LLM pricing comparison](https://agentdeals.dev/llm-api-pricing), [Grok 4.6](https://anotherwrapper.com/llm-pricing/grok-4.6)
+- A2A: [repo](https://github.com/a2aproject/A2A), [spec](https://a2a-protocol.org/latest/specification/), [A2A and MCP](https://a2a-protocol.org/latest/topics/a2a-and-mcp/), [joining the Agentic AI Foundation](https://a2a-protocol.org/latest/blog/2026/08/27/a-new-chapter-for-a2a-joining-the-agentic-ai-foundation/)
+- Agentic commerce: [AP2 overview](https://ap2-protocol.org/overview/), [UCP guide (Stellagent)](https://stellagent.ai/insights/google-ucp-universal-commerce-protocol), [MCP vs A2A vs AP2 (Stellagent)](https://stellagent.ai/insights/mcp-vs-a2a-vs-ap2-protocol-comparison), [UCP guide (Agentpedia)](https://agentpedia.codes/blog/ucp-universal-commerce-protocol-guide), [UCP at NRF](https://kiledjian.com/2026/01/11/from-clicks-to-intent-how.html), [Shopify and UCP (Fintech Wrap Up)](https://www.fintechwrapup.com/p/deep-dive-breaking-down-shopify-and)
 - Jev: [TypeSafe announcement](https://typesafe.ai/blog/introducing-system-one-models-and-jev), [docs](https://docs.typesafe.ai/introduction), [eesel review](https://www.eesel.ai/blog/typesafe-jev-review), [TrueFoundry explainer](https://www.truefoundry.com/blog/typesafe-ai-jev)

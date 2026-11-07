@@ -16,6 +16,8 @@ The non-negotiable rules in [CLAUDE.md](../CLAUDE.md#non-negotiable-rules) and t
 - "Receipts" as the name for the claim-source feature?
 - Hackathon judging criteria: are Adobe APIs required, and how is "agentic" weighted?
 - Can we get Adobe sandbox access (Target, AEM, Firefly) for the integration story?
+- Add an A2A agent channel (buyer agents as an `agent` persona, scene-link handoff to the human)? Proposal in [PLANNING-NOTES §9](PLANNING-NOTES.md#9-agent-channel-a2a). Not yet in SPEC
+- If we add it: agents get the same prices and offers as humans, and Babel never negotiates (negotiating would be personalized pricing, see [GUARDRAILS §2](GUARDRAILS.md)). Proposed, needs team sign-off
 
 ## Log
 
