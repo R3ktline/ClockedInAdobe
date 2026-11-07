@@ -108,8 +108,10 @@ const handoffInput = z.object({
   note: text.optional().describe("Shown to the shopper as the agent's note"),
 });
 
-// shortcut: in-memory, lost on restart and not shared across server instances; move to babel/session storage if hand-offs must survive.
-const handoffs = new Map<string, { store: string; ids: string[]; note?: string; createdAt: string }>();
+// On globalThis (like babel/session) so a page and a route bundled apart see the same map.
+// shortcut: in-memory, lost on restart and not shared across server instances; persist it if hand-offs must survive.
+const g = globalThis as unknown as { __babelHandoffs?: Map<string, { store: string; ids: string[]; note?: string; createdAt: string }> };
+const handoffs = (g.__babelHandoffs ??= new Map());
 export const getHandoff = (hid: string) => handoffs.get(hid);
 
 function createHandoff(a: z.infer<typeof handoffInput>, store: string) {
