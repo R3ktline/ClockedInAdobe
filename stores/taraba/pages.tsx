@@ -213,7 +213,27 @@ function Trust({ p, policiesFirst }: { p: Product; policiesFirst: boolean }) {
       </div>
       <details className="mt-2" onToggle={(e) => e.currentTarget.open && track("review_open", { blockId: "trust", productId: p.id })}>
         <summary data-ghost="review_open" className="cursor-pointer font-semibold text-[var(--c-primary)]">Read reviews</summary>
-        <p className="mt-1 text-[var(--c-muted)]">Review texts load from the store's review system (not part of the demo catalog).</p>
+        <p className="mt-2 text-sm text-[var(--c-muted)]">
+          {p.reviews.length} of {p.reviewCount} reviews{" "}
+          <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold">simulated</span>
+        </p>
+        <ul className="mt-2 flex flex-col gap-3">
+          {p.reviews.map((r) => (
+            <li key={r.author + r.date} className="border-t border-black/10 pt-3">
+              <p>
+                <span role="img" className="text-[var(--c-primary)]" aria-label={`Rated ${r.rating} out of 5`}>
+                  {"★".repeat(r.rating)}<span className="text-black/20">{"★".repeat(5 - r.rating)}</span>
+                </span>{" "}
+                <span className="font-semibold">{r.title}</span>
+              </p>
+              <p className="mt-1">{r.text}</p>
+              <p className="mt-1 text-sm text-[var(--c-muted)]">
+                {r.author} · {new Date(r.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
+                {r.verified && " · Verified purchase"}
+              </p>
+            </li>
+          ))}
+        </ul>
       </details>
     </div>
   );
