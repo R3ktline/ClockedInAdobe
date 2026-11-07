@@ -11,14 +11,26 @@ import brandKit from "./brand-kit.json";
 import { ProductArt } from "./art";
 import { registry } from "./registry";
 import { canAdd, useCart } from "./cart";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { LanguageSwitch } from "@/lib/i18n/LanguageSwitch";
 
 const brand = brandKit as BrandKit;
 export const lei = new Intl.NumberFormat("ro-RO", { style: "currency", currency: "RON", maximumFractionDigits: 0 });
 
+// English defaults, kept for code that needs the raw names (the app renders the hook version).
 export const CATEGORY_LABEL: Record<Category, string> = {
   electronics: "Electronics", fashion: "Fashion", home: "Home & furniture",
   groceries: "Groceries", toys: "Toys", health_beauty: "Health & beauty",
 };
+
+// The same names in the visitor's language.
+function useCategoryLabel(): Record<Category, string> {
+  const { t } = useI18n();
+  return {
+    electronics: t("category.electronics"), fashion: t("category.fashion"), home: t("category.home"),
+    groceries: t("category.groceries"), toys: t("category.toys"), health_beauty: t("category.health_beauty"),
+  };
+}
 const CATEGORY_TINT: Record<Category, string> = {
   electronics: "#e7ecfb", fashion: "#f6e9ef", home: "#e9f3ec", groceries: "#fbf3df", toys: "#fdeee3", health_beauty: "#eef0f6",
 };
@@ -29,9 +41,11 @@ export const card = "rounded-[var(--babel-radius)] border border-black/10 bg-whi
 
 export function Header({ query = "" }: { query?: string }) {
   const { count } = useCart();
+  const { t } = useI18n();
+  const categoryLabel = useCategoryLabel();
   return (
     <header className="bg-[var(--c-primary)] text-white">
-      <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3">
+      <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
         <Link href="/taraba" className="text-2xl font-extrabold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
           taraba
         </Link>
@@ -40,18 +54,19 @@ export function Header({ query = "" }: { query?: string }) {
             type="search"
             name="q"
             defaultValue={query}
-            aria-label="Search Taraba"
-            placeholder="Search products"
+            aria-label={t("header.searchLabel")}
+            placeholder={t("header.searchPlaceholder")}
             className="min-w-0 flex-1 rounded-full bg-white px-4 py-2 text-[var(--c-text)] placeholder:text-[#5b6170]"
           />
         </form>
-        <Link href="/taraba/cart" className="rounded-full bg-[var(--c-accent)] px-3 py-1.5 text-sm font-bold text-[#14171f]" aria-label={`Cart, ${count} items`}>
-          Cart · {count}
+        <LanguageSwitch />
+        <Link href="/taraba/cart" className="rounded-full bg-[var(--c-accent)] px-3 py-1.5 text-sm font-bold text-[#14171f]" aria-label={t("header.cartAria", { count })}>
+          {t("header.cart")} · {count}
         </Link>
       </div>
-      <nav aria-label="Categories" className="mx-auto flex max-w-5xl gap-4 overflow-x-auto px-4 pb-2 text-sm text-white/90">
-        {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
-          <Link key={c} href={`/taraba/c/${c}`} className="whitespace-nowrap hover:underline">{CATEGORY_LABEL[c]}</Link>
+      <nav aria-label={t("header.categories")} className="mx-auto flex max-w-5xl gap-4 overflow-x-auto px-4 pb-2 text-sm text-white/90">
+        {(Object.keys(categoryLabel) as Category[]).map((c) => (
+          <Link key={c} href={`/taraba/c/${c}`} className="whitespace-nowrap hover:underline">{categoryLabel[c]}</Link>
         ))}
       </nav>
     </header>
@@ -68,24 +83,26 @@ export function Picture({ p, size = "md" }: { p: Product; size?: "sm" | "md" | "
   );
 }
 
-const Stars = ({ p }: { p: Product }) => (
-  <span className="text-sm text-[var(--c-muted)]">★ {p.rating.toFixed(1)} · {p.reviewCount} reviews</span>
-);
+const Stars = ({ p }: { p: Product }) => {
+  const { t } = useI18n();
+  return <span className="text-sm text-[var(--c-muted)]">★ {p.rating.toFixed(1)} · {t("common.reviews", { count: p.reviewCount })}</span>;
+};
 
 // ---------- Product page ----------
 
 function Gallery({ p, thumbs }: { p: Product; thumbs: boolean }) {
   const [view, setView] = useState<0 | 1 | 2>(0);
+  const { t } = useI18n();
   const frame = "overflow-hidden rounded-[var(--babel-radius)]";
   if (!thumbs) return <div className={`${frame} aspect-[4/3] w-full sm:aspect-[16/10]`}><ProductArt p={p} /></div>;
   return (
     <div className="flex gap-3">
-      <div className="flex flex-col gap-2" role="group" aria-label="Choose a picture">
+      <div className="flex flex-col gap-2" role="group" aria-label={t("gallery.group")}>
         {([0, 1, 2] as const).map((i) => (
           <button
             key={i}
             type="button"
-            aria-label={`Picture ${i + 1} of 3`}
+            aria-label={t("gallery.picture", { n: i + 1 })}
             aria-pressed={view === i}
             onClick={() => setView(i)}
             className={`${frame} h-16 w-16 border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--c-primary)] ${view === i ? "border-[var(--c-primary)]" : "border-transparent"}`}
@@ -117,6 +134,7 @@ function Benefits({ p }: { p: Product }) {
 
 function BuyBox({ p, variant }: { p: Product; variant: "standard" | "calm" | "prominent_simple" }) {
   const { track } = useBabel();
+  const { t } = useI18n();
   const cart = useCart();
   const inCart = cart.qty(p.id);
   const add = () => { track("add_to_cart", { blockId: "buyBox", productId: p.id }); cart.add(p.id); };
@@ -136,8 +154,8 @@ function BuyBox({ p, variant }: { p: Product; variant: "standard" | "calm" | "pr
       </div>
       <p className="mt-2 text-[var(--c-muted)]">
         {variant === "calm"
-          ? `Free returns within ${p.policies.returnDays} days · ${p.policies.warrantyMonths}-month warranty · delivery in ${p.policies.deliveryDays} days`
-          : big ? `It arrives in ${p.policies.deliveryDays} days.` : `${p.stock > 0 ? "In stock" : "Out of stock"} · delivery in ${p.policies.deliveryDays} days`}
+          ? t("buy.returnsLine", { days: p.policies.returnDays, months: p.policies.warrantyMonths, deliveryDays: p.policies.deliveryDays })
+          : big ? t("buy.arrives", { days: p.policies.deliveryDays }) : `${p.stock > 0 ? t("buy.inStock") : t("buy.outOfStock")} · ${t("buy.deliveryIn", { days: p.policies.deliveryDays })}`}
       </p>
       <button
         data-ghost="add_to_cart"
@@ -145,14 +163,14 @@ function BuyBox({ p, variant }: { p: Product; variant: "standard" | "calm" | "pr
         disabled={!canAdd(p, inCart)}
         className={`mt-4 ${big ? "w-full py-4 text-xl" : "px-6 py-3"} rounded-[var(--babel-radius)] bg-[var(--c-primary)] font-bold text-white hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--c-primary)] disabled:opacity-50`}
       >
-        {p.stock === 0 ? "Out of stock" : "Add to cart"}
+        {p.stock === 0 ? t("buy.outOfStock") : t("buy.add")}
       </button>
       {inCart > 0 && (
         <>
           <button data-ghost="remove_from_cart" onClick={remove} className="mt-4 ml-3 rounded-[var(--babel-radius)] px-4 py-3 font-semibold text-[var(--c-primary)] hover:bg-black/5">
-            Remove one ({inCart} in cart)
+            {t("buy.removeOne", { count: inCart })}
           </button>
-          <Link href="/taraba/cart" className="mt-3 block font-semibold text-[var(--c-primary)] underline">Go to cart and checkout</Link>
+          <Link href="/taraba/cart" className="mt-3 block font-semibold text-[var(--c-primary)] underline">{t("buy.goToCart")}</Link>
         </>
       )}
     </div>
@@ -161,6 +179,7 @@ function BuyBox({ p, variant }: { p: Product; variant: "standard" | "calm" | "pr
 
 function Specs({ p, limit }: { p: Product; limit?: number }) {
   const { track } = useBabel();
+  const { t } = useI18n();
   const rows = (list: Product["specs"]) => (
     <table className="w-full text-left">
       <tbody>
@@ -175,11 +194,11 @@ function Specs({ p, limit }: { p: Product; limit?: number }) {
   );
   return (
     <div className={`${card} p-5`}>
-      <h2 className="mb-2 text-xl font-bold">Specifications</h2>
+      <h2 className="mb-2 text-xl font-bold">{t("specs.title")}</h2>
       {rows(limit ? p.specs.slice(0, limit) : p.specs)}
       {limit && p.specs.length > limit && (
         <details className="mt-2" onToggle={(e) => e.currentTarget.open && track("block_open", { blockId: "specs" })}>
-          <summary data-ghost="block_open" className="cursor-pointer font-semibold text-[var(--c-primary)]">All {p.specs.length} specifications</summary>
+          <summary data-ghost="block_open" className="cursor-pointer font-semibold text-[var(--c-primary)]">{t("specs.all", { count: p.specs.length })}</summary>
           {rows(p.specs.slice(limit))}
         </details>
       )}
@@ -200,39 +219,40 @@ function Policy({ p, kind, title, children }: { p: Product; kind: string; title:
 // `narrow`: shown in half the width beside the photos, so inner columns are stacked.
 function Trust({ p, policiesFirst, narrow = false }: { p: Product; policiesFirst: boolean; narrow?: boolean }) {
   const { track } = useBabel();
+  const { t, tag } = useI18n();
   const picks = useReviewPicks(p.id);
   const policies = policiesFirst ? (
     <div className={`grid gap-3 ${narrow ? "" : "sm:grid-cols-3"}`}>
       {[
-        [`${p.policies.returnDays}-day free returns`, "Send it back for any reason, we collect it."],
-        [`${p.policies.warrantyMonths}-month warranty`, "Repair or replacement at no cost."],
-        [`Delivery in ${p.policies.deliveryDays} days`, "Tracked, with a time slot."],
-      ].map(([t, d]) => (
-        <div key={t} className="rounded-[var(--babel-radius)] bg-[#f3f5fb] p-3">
-          <p className="font-bold">{t}</p>
-          <p className="text-sm text-[var(--c-muted)]">{d}</p>
+        [t("trust.card.returns", { days: p.policies.returnDays }), t("trust.card.returnsNote")],
+        [t("trust.card.warranty", { months: p.policies.warrantyMonths }), t("trust.card.warrantyNote")],
+        [t("trust.card.delivery", { days: p.policies.deliveryDays }), t("trust.card.deliveryNote")],
+      ].map(([title, note]) => (
+        <div key={title} className="rounded-[var(--babel-radius)] bg-[#f3f5fb] p-3">
+          <p className="font-bold">{title}</p>
+          <p className="text-sm text-[var(--c-muted)]">{note}</p>
         </div>
       ))}
     </div>
   ) : (
     <div className="flex flex-col gap-1">
-      <Policy p={p} kind="returns" title="Returns policy">Free returns within {p.policies.returnDays} days. We collect it from your door.</Policy>
-      <Policy p={p} kind="warranty" title="Warranty">{p.policies.warrantyMonths} months, repair or replacement at no cost.</Policy>
-      <Policy p={p} kind="delivery" title="Delivery">Delivered in {p.policies.deliveryDays} days, tracked.</Policy>
+      <Policy p={p} kind="returns" title={t("policy.returns.title")}>{t("policy.returns.body", { days: p.policies.returnDays })}</Policy>
+      <Policy p={p} kind="warranty" title={t("policy.warranty.title")}>{t("policy.warranty.body", { months: p.policies.warrantyMonths })}</Policy>
+      <Policy p={p} kind="delivery" title={t("policy.delivery.title")}>{t("policy.delivery.body", { days: p.policies.deliveryDays })}</Policy>
     </div>
   );
   const reviewItem = (r: Product["reviews"][number]) => (
     <li key={r.author + r.date} className="border-t border-black/10 pt-3">
       <p>
-        <span role="img" className="text-[var(--c-primary)]" aria-label={`Rated ${r.rating} out of 5`}>
+        <span role="img" className="text-[var(--c-primary)]" aria-label={t("reviews.rated", { rating: r.rating })}>
           {"★".repeat(r.rating)}<span className="text-black/20">{"★".repeat(5 - r.rating)}</span>
         </span>{" "}
         <span className="font-semibold">{r.title}</span>
       </p>
       <p className="mt-1">{r.text}</p>
       <p className="mt-1 text-sm text-[var(--c-muted)]">
-        {r.author} · {new Date(r.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
-        {r.verified && " · Verified purchase"}
+        {r.author} · {new Date(r.date).toLocaleDateString(tag, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
+        {r.verified && ` · ${t("reviews.verified")}`}
       </p>
     </li>
   );
@@ -240,31 +260,30 @@ function Trust({ p, policiesFirst, narrow = false }: { p: Product; policiesFirst
     <div>
       <Stars p={p} />
       <div className={`mt-2 grid gap-2 ${narrow ? "" : "sm:grid-cols-2"}`}>
-        <p><span className="font-semibold">People like:</span> {p.reviewSummary.pros.join(", ")}</p>
-        <p><span className="font-semibold">Watch out for:</span> {p.reviewSummary.cons.join(", ")}</p>
+        <p><span className="font-semibold">{t("reviews.peopleLike")}</span> {p.reviewSummary.pros.join(", ")}</p>
+        <p><span className="font-semibold">{t("reviews.watchOut")}</span> {p.reviewSummary.cons.join(", ")}</p>
       </div>
       <div className="mt-3">
         <button type="button" onClick={picks.ask} disabled={picks.status === "loading"} className="font-semibold text-[var(--c-primary)] underline disabled:opacity-50">
-          {picks.status === "loading" ? "Summarising…" : "Summarise the reviews"}
+          {picks.status === "loading" ? t("reviews.summarising") : t("reviews.summarise")}
         </button>
-        {picks.status === "error" && <p className="mt-1 text-sm text-[var(--c-muted)]">Could not choose right now. All reviews are below.</p>}
+        {picks.status === "error" && <p className="mt-1 text-sm text-[var(--c-muted)]">{t("reviews.error")}</p>}
         {picks.status === "done" && (
           <div className="mt-2 rounded-[var(--babel-radius)] bg-[#f3f5fb] p-3">
             {picks.summary && <p className="font-semibold">{picks.summary}</p>}
             <p className="mt-1 text-sm text-[var(--c-muted)]">
-              {picks.summary ? "Summary written by the Babel agent from these reviews. " : ""}
-              The reviews below were chosen by the agent to cover the range of opinions; their words are the buyers&apos;.{" "}
-              <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold">simulated</span>
+              {picks.summary ? t("reviews.aiNote") : t("reviews.aiNoteBare")}{" "}
+              <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold">{t("common.simulated")}</span>
             </p>
             <ul className="mt-2 flex flex-col gap-3">{picks.indexes.map((i) => reviewItem(p.reviews[i]))}</ul>
           </div>
         )}
       </div>
       <details className="mt-2" onToggle={(e) => e.currentTarget.open && track("review_open", { blockId: "trust", productId: p.id })}>
-        <summary data-ghost="review_open" className="cursor-pointer font-semibold text-[var(--c-primary)]">Read reviews</summary>
+        <summary data-ghost="review_open" className="cursor-pointer font-semibold text-[var(--c-primary)]">{t("reviews.read")}</summary>
         <p className="mt-2 text-sm text-[var(--c-muted)]">
-          {p.reviews.length} of {p.reviewCount} reviews{" "}
-          <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold">simulated</span>
+          {t("reviews.shown", { shown: p.reviews.length, total: p.reviewCount })}{" "}
+          <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold">{t("common.simulated")}</span>
         </p>
         <ul className="mt-2 flex flex-col gap-3">
           {p.reviews.map(reviewItem)}
@@ -274,20 +293,21 @@ function Trust({ p, policiesFirst, narrow = false }: { p: Product; policiesFirst
   );
   return (
     <div className={`${card} flex flex-col gap-4 p-5`}>
-      <h2 className="text-xl font-bold">{policiesFirst ? "Returns, warranty and reviews" : "Reviews"}</h2>
+      <h2 className="text-xl font-bold">{policiesFirst ? t("trust.titleBoth") : t("trust.titleReviews")}</h2>
       {policiesFirst ? <>{policies}{reviews}</> : <>{reviews}{policies}</>}
     </div>
   );
 }
 
 export function ProductPage({ product: p, partner, ghost }: Common & { product: Product }) {
+  const categoryLabel = useCategoryLabel();
   return (
     <BabelProvider store="taraba" template="product" productId={p.id} registry={registry} brand={brand} partner={partner} ghost={ghost}>
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-6 pb-28">
         <nav aria-label="Breadcrumb" className="text-sm text-[var(--c-muted)]">
           <Link href="/taraba" className="hover:underline">Taraba</Link> /{" "}
-          <Link href={`/taraba/c/${p.category}`} className="hover:underline">{CATEGORY_LABEL[p.category]}</Link>
+          <Link href={`/taraba/c/${p.category}`} className="hover:underline">{categoryLabel[p.category]}</Link>
         </nav>
         <h1 className="mt-2 text-3xl font-extrabold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>{p.name}</h1>
         <p className="mt-1 text-[var(--c-muted)]">{p.brand} · <Stars p={p} /></p>
@@ -324,6 +344,7 @@ type ListVariant = "grid_standard" | "grid_dense" | "list_guided" | "bento_visua
 
 function QuickAdd({ p, className = "" }: { p: Product; className?: string }) {
   const { track } = useBabel();
+  const { t } = useI18n();
   const cart = useCart();
   const n = cart.qty(p.id);
   return (
@@ -332,22 +353,23 @@ function QuickAdd({ p, className = "" }: { p: Product; className?: string }) {
         type="button"
         disabled={!canAdd(p, n)}
         onClick={() => { track("add_to_cart", { blockId: "productList", productId: p.id }); cart.add(p.id); }}
-        aria-label={`Add ${p.name} to cart`}
+        aria-label={t("list.addAria", { name: p.name })}
         className="rounded-[var(--babel-radius)] border border-[var(--c-primary)] px-3 py-1.5 text-sm font-bold text-[var(--c-primary)] hover:bg-[var(--c-primary)] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--c-primary)] disabled:opacity-50"
       >
-        {p.stock === 0 ? "Out of stock" : "Add to cart"}
+        {p.stock === 0 ? t("buy.outOfStock") : t("buy.add")}
       </button>
-      {n > 0 && <span className="text-sm text-[var(--c-muted)]" role="status">✓ {n} in cart</span>}
+      {n > 0 && <span className="text-sm text-[var(--c-muted)]" role="status">✓ {t("buy.inCart", { count: n })}</span>}
     </span>
   );
 }
 
 function ProductList({ products, variant }: { products: Product[]; variant: ListVariant }) {
+  const { t } = useI18n();
   if (variant === "grid_dense") {
     return (
       <table className="w-full text-left text-sm">
         <thead className="text-[var(--c-muted)]">
-          <tr><th className="py-2" colSpan={2}>Product</th><th>Brand</th><th>Key spec</th><th>Rating</th><th className="text-right">Price</th><th><span className="sr-only">Add to cart</span></th></tr>
+          <tr><th className="py-2" colSpan={2}>{t("list.product")}</th><th>{t("list.brand")}</th><th>{t("list.keySpec")}</th><th>{t("list.rating")}</th><th className="text-right">{t("list.price")}</th><th><span className="sr-only">{t("buy.add")}</span></th></tr>
         </thead>
         <tbody>
           {products.map((p) => (
@@ -376,7 +398,7 @@ function ProductList({ products, variant }: { products: Product[]; variant: List
               <p className="mt-1">{p.benefits.slice(0, 2).join(" · ")}</p>
               <p className="mt-2 text-2xl font-extrabold">{lei.format(p.price)}</p>
               <Link href={`/taraba/p/${p.id}`} className="mt-3 inline-block rounded-[var(--babel-radius)] bg-[var(--c-primary)] px-5 py-3 text-lg font-bold text-white">
-                See this product
+                {t("list.seeProduct")}
               </Link>
               <QuickAdd p={p} className="mt-3" />
             </div>
@@ -391,7 +413,7 @@ function ProductList({ products, variant }: { products: Product[]; variant: List
       <ul className="grid grid-flow-dense auto-rows-[9rem] grid-cols-2 gap-3 md:auto-rows-[11rem] md:grid-cols-4">
         {products.map((p, i) => (
           <li key={p.id} className={i === 0 ? "col-span-2 row-span-2" : i % 7 === 3 ? "col-span-2" : ""}>
-            <Link href={`/taraba/p/${p.id}`} aria-label={`${p.name}, ${lei.format(p.price)}`} className="group relative block h-full overflow-hidden rounded-[var(--babel-radius)]">
+            <Link href={`/taraba/p/${p.id}`} aria-label={t("list.priceAria", { name: p.name, price: lei.format(p.price) })} className="group relative block h-full overflow-hidden rounded-[var(--babel-radius)]">
               <div className="h-full w-full transition-transform duration-500 group-hover:scale-105"><ProductArt p={p} decorative /></div>
               <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/60 to-transparent p-3 text-white">
                 <span className={`${i === 0 ? "text-xl" : "text-sm"} font-bold leading-tight`}>{p.name}</span>
@@ -435,6 +457,8 @@ const featured = (products: Product[]) =>
   });
 
 export function HomePage({ products, partner, ghost }: Common & { products: Product[] }) {
+  const { t } = useI18n();
+  const categoryLabel = useCategoryLabel();
   return (
     <BabelProvider store="taraba" template="home" registry={registry} brand={brand} partner={partner} ghost={ghost}>
       <Header />
@@ -446,9 +470,9 @@ export function HomePage({ products, partner, ghost }: Common & { products: Prod
               banner_promo: (
                 <Link href="/taraba/c/home" className="grid items-center gap-4 overflow-hidden rounded-[var(--babel-radius)] bg-[var(--c-accent)] text-[#14171f] md:grid-cols-[1fr_16rem]">
                   <span className="block p-8">
-                    <span className="block text-sm font-bold uppercase">Autumn deals</span>
-                    <span className="mt-1 block text-3xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>Washing machines and headphones for less</span>
-                    <span className="mt-2 block">The same prices for everyone, until the end of the month.</span>
+                    <span className="block text-sm font-bold uppercase">{t("hero.eyebrow")}</span>
+                    <span className="mt-1 block text-3xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>{t("hero.title")}</span>
+                    <span className="mt-2 block">{t("hero.body")}</span>
                   </span>
                   <span className="grid h-40 grid-cols-2 gap-1 md:h-full">
                     {["home-wm-01", "elec-hp-01"].map((id) => {
@@ -464,7 +488,7 @@ export function HomePage({ products, partner, ghost }: Common & { products: Prod
                     <li key={p.category}>
                       <Link href={`/taraba/c/${p.category}`} className="flex items-center gap-3 rounded-[var(--babel-radius)] p-3 text-lg font-bold" style={{ background: CATEGORY_TINT[p.category] }}>
                         <Picture p={p} size="lg" />
-                        {CATEGORY_LABEL[p.category]}
+                        {categoryLabel[p.category]}
                       </Link>
                     </li>
                   ))}
@@ -476,7 +500,7 @@ export function HomePage({ products, partner, ghost }: Common & { products: Prod
                     <li key={p.category} className={i === 0 ? "col-span-2 row-span-2" : ""}>
                       <Link href={`/taraba/c/${p.category}`} className="relative block h-full overflow-hidden rounded-[var(--babel-radius)]">
                         <ProductArt p={p} decorative />
-                        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-sm font-bold text-[#14171f]">{CATEGORY_LABEL[p.category]}</span>
+                        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-sm font-bold text-[#14171f]">{categoryLabel[p.category]}</span>
                       </Link>
                     </li>
                   ))}
@@ -494,11 +518,12 @@ export function HomePage({ products, partner, ghost }: Common & { products: Prod
 // ---------- Category and search results, with filters ----------
 
 type Sort = "relevance" | "price_asc" | "price_desc" | "rating";
-const SORTS: [Sort, string][] = [["relevance", "Recommended"], ["price_asc", "Price: low to high"], ["price_desc", "Price: high to low"], ["rating", "Best rated"]];
+const SORTS: [Sort, string][] = [["relevance", "sort.relevance"], ["price_asc", "sort.priceAsc"], ["price_desc", "sort.priceDesc"], ["rating", "sort.rating"]];
 const field = "rounded-[var(--babel-radius)] border border-black/20 bg-white px-2 py-1.5";
 
 function ListingBody({ title, products, note }: { title: string; products: Product[]; note?: string }) {
   const { track } = useBabel();
+  const { t } = useI18n();
   const top = Math.ceil(Math.max(0, ...products.map((p) => p.price)));
   const brands = useMemo(() => [...new Set(products.map((p) => p.brand))].sort(), [products]);
   const [sort, setSort] = useState<Sort>("relevance");
@@ -523,15 +548,15 @@ function ListingBody({ title, products, note }: { title: string; products: Produ
       <h1 className="text-3xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>{title}</h1>
       {note && <p className="mt-1 text-[var(--c-muted)]">{note}</p>}
       <div className="mt-4 grid gap-6 md:grid-cols-[14rem_1fr]">
-        <form aria-label="Filters" onSubmit={(e) => e.preventDefault()} className={`${card} flex h-fit flex-col gap-4 p-4`}>
+        <form aria-label={t("filters.label")} onSubmit={(e) => e.preventDefault()} className={`${card} flex h-fit flex-col gap-4 p-4`}>
           <label className="flex flex-col gap-1 font-semibold">
-            Sort by
+            {t("filters.sort")}
             <select value={sort} onChange={(e) => { setSort(e.target.value as Sort); track("sort", { value: e.target.value }); }} className={`${field} font-normal`}>
-              {SORTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              {SORTS.map(([v, key]) => <option key={v} value={v}>{t(key)}</option>)}
             </select>
           </label>
           <label className="flex flex-col gap-1 font-semibold">
-            <span>Up to <span className="font-extrabold">{lei.format(maxPrice)}</span></span>
+            <span>{t("filters.upTo", { price: lei.format(maxPrice) })}</span>
             <input
               type="range" min={0} max={top} step={Math.max(1, Math.round(top / 50))} value={maxPrice}
               onChange={(e) => setMaxPrice(Number(e.target.value))}
@@ -541,16 +566,16 @@ function ListingBody({ title, products, note }: { title: string; products: Produ
             />
           </label>
           <label className="flex flex-col gap-1 font-semibold">
-            Rating
+            {t("filters.rating")}
             <select value={minRating} onChange={(e) => { setMinRating(Number(e.target.value)); track("filter", { value: `rating>=${e.target.value}` }); }} className={`${field} font-normal`}>
-              <option value={0}>Any</option><option value={4}>4 ★ and up</option><option value={4.5}>4.5 ★ and up</option>
+              <option value={0}>{t("filters.any")}</option><option value={4}>{t("filters.rating4")}</option><option value={4.5}>{t("filters.rating45")}</option>
             </select>
           </label>
-          <label className="flex items-center gap-2"><input type="checkbox" checked={inStock} onChange={(e) => { setInStock(e.target.checked); track("filter", { value: "in_stock" }); }} className="accent-[var(--c-primary)]" /> In stock only</label>
-          <label className="flex items-center gap-2"><input type="checkbox" checked={onSale} onChange={(e) => { setOnSale(e.target.checked); track("filter", { value: "on_sale" }); }} className="accent-[var(--c-primary)]" /> On promotion</label>
+          <label className="flex items-center gap-2"><input type="checkbox" checked={inStock} onChange={(e) => { setInStock(e.target.checked); track("filter", { value: "in_stock" }); }} className="accent-[var(--c-primary)]" /> {t("filters.inStock")}</label>
+          <label className="flex items-center gap-2"><input type="checkbox" checked={onSale} onChange={(e) => { setOnSale(e.target.checked); track("filter", { value: "on_sale" }); }} className="accent-[var(--c-primary)]" /> {t("filters.onSale")}</label>
           {brands.length > 1 && (
             <fieldset className="flex max-h-48 flex-col gap-1 overflow-y-auto">
-              <legend className="mb-1 font-semibold">Brand</legend>
+              <legend className="mb-1 font-semibold">{t("filters.brand")}</legend>
               {brands.map((b) => (
                 <label key={b} className="flex items-center gap-2">
                   <input
@@ -562,14 +587,14 @@ function ListingBody({ title, products, note }: { title: string; products: Produ
               ))}
             </fieldset>
           )}
-          {filtered && <button type="button" onClick={clear} className="text-left font-semibold text-[var(--c-primary)] underline">Clear filters</button>}
+          {filtered && <button type="button" onClick={clear} className="text-left font-semibold text-[var(--c-primary)] underline">{t("filters.clear")}</button>}
         </form>
-        <section aria-label="Results">
-          <p className="mb-3 text-[var(--c-muted)]" role="status">{shown.length} of {products.length} products</p>
+        <section aria-label={t("results.label")}>
+          <p className="mb-3 text-[var(--c-muted)]" role="status">{t("results.count", { shown: shown.length, total: products.length })}</p>
           {shown.length === 0 ? (
             <div className={`${card} p-6`}>
-              <p className="font-semibold">Nothing matches these filters.</p>
-              {filtered && <button type="button" onClick={clear} className="mt-2 font-semibold text-[var(--c-primary)] underline">Clear filters</button>}
+              <p className="font-semibold">{t("results.none")}</p>
+              {filtered && <button type="button" onClick={clear} className="mt-2 font-semibold text-[var(--c-primary)] underline">{t("filters.clear")}</button>}
             </div>
           ) : (
             <BabelStack><BabelBlock id="productList" variants={listVariants(shown)} /></BabelStack>
@@ -590,8 +615,12 @@ function Listing({ title, products, query, note, partner, ghost }: Common & { ti
   );
 }
 
-export const CategoryPage = ({ category, ...rest }: Common & { category: Category; products: Product[] }) =>
-  <Listing title={CATEGORY_LABEL[category]} {...rest} />;
+export const CategoryPage = ({ category, ...rest }: Common & { category: Category; products: Product[] }) => {
+  const { t } = useI18n();
+  return <Listing title={t(`category.${category}`)} {...rest} />;
+};
 
-export const SearchPage = ({ query, ...rest }: Common & { query: string; products: Product[] }) =>
-  <Listing title={query ? `Results for “${query}”` : "All products"} query={query} {...rest} />;
+export const SearchPage = ({ query, ...rest }: Common & { query: string; products: Product[] }) => {
+  const { t } = useI18n();
+  return <Listing title={query ? t("search.resultsFor", { query }) : t("search.all")} query={query} {...rest} />;
+};

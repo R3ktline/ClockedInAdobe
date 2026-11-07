@@ -7,6 +7,7 @@ import type { LlmTranscript } from "@/babel/agents/director";
 import { changedBlocks, describeDiff } from "@/babel/schema/diff";
 import { buildSlide, NEUTRAL_PERSONA } from "@/babel/persona";
 import type { BlockId, BrandKit, EventType, InteractionEvent, PartnerContext, Registry, Slide, Template } from "@/babel/schema";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { DebugPanel } from "./DebugPanel";
 import { GhostCursorView, runGhost, type GhostControl, type GhostCursor, type GhostPlayback } from "./Ghost";
 import { LabPanel, memoryKey, type SavedMemory } from "./LabPanel";
@@ -94,6 +95,7 @@ export type LabInfo = {
 };
 
 export function BabelProvider(p: BabelProviderProps) {
+  const { t } = useI18n();
   const neutral = useMemo(
     () => buildSlide({ persona: NEUTRAL_PERSONA, template: p.template, registry: p.registry, brand: p.brand }),
     [p.template, p.registry, p.brand],
@@ -153,8 +155,8 @@ export function BabelProvider(p: BabelProviderProps) {
 
   // Highlight the blocks a transition changed, briefly, and spell the changes out.
   const labels = useMemo(
-    () => Object.fromEntries(Object.entries(p.registry[p.template] ?? {}).map(([id, b]) => [id, b!.label])),
-    [p.registry, p.template],
+    () => Object.fromEntries(Object.entries(p.registry[p.template] ?? {}).map(([id, b]) => [id, t(`block.${id}`, undefined, b!.label)])),
+    [p.registry, p.template, t],
   );
   const showSlide = useCallback((next: Slide, prev: Slide | undefined) => {
     if (!prev || prev.id === next.id) return;
@@ -162,9 +164,9 @@ export function BabelProvider(p: BabelProviderProps) {
       setChanged(new Set(changedBlocks(prev.blocks, next.blocks)));
       setTimeout(() => setChanged(new Set()), lab ? 7000 : 2500); // lab: long enough to watch
     }
-    const lines = describeDiff(prev, next, labels);
+    const lines = describeDiff(prev, next, labels, t);
     if (lines.length) setLastChange({ from: prev.index + 1, to: next.index + 1, lines, rationale: next.rationale, at: Date.now() });
-  }, [labels, lab]);
+  }, [labels, lab, t]);
 
   // Would the shopper see this slide arrive? Yes if a changed block is on screen or the whole look changes.
   const log = useCallback((e: CalmEntry) => setCalm((l) => {
@@ -183,13 +185,13 @@ export function BabelProvider(p: BabelProviderProps) {
   const land = useCallback((next: Slide, prev: Slide, requested = false) => {
     const { theme, seen } = noticeable(prev, next);
     const view = next.index + 1;
-    if (requested) log({ view, status: "requested", text: "applied now: the shopper zoomed in, so this is the change they asked for" });
-    else if (theme || seen.length) log({ view, status: "seen", text: theme ? "the whole look changed while it was on screen" : `${seen.map((id) => labels[id]).join(", ")} changed while on screen` });
-    else log({ view, status: "unseen", text: "applied while every changed block was off screen" });
+    if (requested) log({ view, status: "requested", text: t("calm.requested") });
+    else if (theme || seen.length) log({ view, status: "seen", text: theme ? t("calm.theme") : t("calm.blocks", { blocks: seen.map((id) => labels[id]).join(", ") }) });
+    else log({ view, status: "unseen", text: t("calm.unseen") });
     showSlide(next, prev);
     show(slidesRef.current, slidesRef.current.indexOf(next));
     track("slide_shown", { value: next.index });
-  }, [log, labels, show, showSlide, track]);
+  }, [log, labels, show, showSlide, t, track]);
   const tryLand = useCallback(() => {
     const next = pending.current;
     if (!next) return;
@@ -198,10 +200,10 @@ export function BabelProvider(p: BabelProviderProps) {
     if (at <= cursorRef.current) { pending.current = null; return; } // the shopper already paged to it
     const { theme, seen } = noticeable(prev, next);
     const view = next.index + 1;
-    if (theme) log({ view, status: "waiting", text: "changes the whole look, so it is kept for the next page" });
-    else if (seen.length) log({ view, status: "waiting", text: `waiting: ${seen.map((id) => labels[id]).join(", ")} on screen` });
+    if (theme) log({ view, status: "waiting", text: t("calm.keepNext") });
+    else if (seen.length) log({ view, status: "waiting", text: t("calm.waiting", { blocks: seen.map((id) => labels[id]).join(", ") }) });
     else { pending.current = null; land(next, prev); }
-  }, [land, labels, log]);
+  }, [land, labels, log, t]);
   useEffect(() => { const id = setInterval(tryLand, 400); return () => clearInterval(id); }, [tryLand]);
 
   // 1. Start the visit. Until slide 0 arrives the store renders its neutral page.

@@ -40,24 +40,35 @@ function lcs(a: BlockId[], b: BlockId[]): Set<BlockId> {
 
 const human = (s: string | number | boolean) => String(s).replaceAll("_", " ");
 
+// Optional translator so the shopper-facing "What changed" card can speak the visitor's language.
+// Merchant traces call describeDiff without it and keep the precise English wording.
+export type DiffTranslator = (key: string, vars?: Record<string, string | number>, fallback?: string) => string;
+
 // One line per change. Pass the store's block labels to get shopper-readable names.
-export function describeDiff(prev: Slide, next: Slide, labels: Partial<Record<BlockId, string>> = {}): string[] {
+export function describeDiff(
+  prev: Slide,
+  next: Slide,
+  labels: Partial<Record<BlockId, string>> = {},
+  t?: DiffTranslator,
+): string[] {
   const out: string[] = [];
   const name = (id: BlockId) => labels[id] ?? id;
+  const line = (key: string, vars: Record<string, string | number>, fallback: string) =>
+    t ? t(key, vars, fallback) : fallback;
   const before = new Map(prev.blocks.map((b) => [b.id, b]));
   const moved = movedBlocks(prev.blocks, next.blocks); // blocks pushed aside don't count as moved
   for (const b of [...next.blocks].sort((x, y) => x.order - y.order)) {
     const p = before.get(b.id);
-    if (!p) { out.push(`${name(b.id)}: added (${human(b.variant)})`); continue; }
-    if (p.variant !== b.variant) out.push(`${name(b.id)}: "${human(p.variant)}" → "${human(b.variant)}"`);
-    if (moved.has(b.id)) out.push(`${name(b.id)}: moved from position ${p.order} to ${b.order}`);
-    if (!!p.collapsed !== !!b.collapsed) out.push(`${name(b.id)}: ${b.collapsed ? "collapsed" : "expanded"}`);
+    if (!p) { out.push(line("diff.added", { name: name(b.id), variant: human(b.variant) }, `${name(b.id)}: added (${human(b.variant)})`)); continue; }
+    if (p.variant !== b.variant) out.push(line("diff.variant", { name: name(b.id), from: human(p.variant), to: human(b.variant) }, `${name(b.id)}: "${human(p.variant)}" → "${human(b.variant)}"`));
+    if (moved.has(b.id)) out.push(line("diff.moved", { name: name(b.id), from: p.order, to: b.order }, `${name(b.id)}: moved from position ${p.order} to ${b.order}`));
+    if (!!p.collapsed !== !!b.collapsed) out.push(line(b.collapsed ? "diff.collapsed" : "diff.expanded", { name: name(b.id) }, `${name(b.id)}: ${b.collapsed ? "collapsed" : "expanded"}`));
   }
-  if (prev.persona.dialect !== next.persona.dialect) out.push(`view style: ${prev.persona.dialect} → ${next.persona.dialect}`);
-  if (prev.persona.need !== next.persona.need) out.push(`focus: ${prev.persona.need} → ${next.persona.need}`);
-  if (prev.copyRegister !== next.copyRegister) out.push(`wording: ${prev.copyRegister} → ${next.copyRegister}`);
+  if (prev.persona.dialect !== next.persona.dialect) out.push(line("diff.style", { from: prev.persona.dialect, to: next.persona.dialect }, `view style: ${prev.persona.dialect} → ${next.persona.dialect}`));
+  if (prev.persona.need !== next.persona.need) out.push(line("diff.focus", { from: prev.persona.need, to: next.persona.need }, `focus: ${prev.persona.need} → ${next.persona.need}`));
+  if (prev.copyRegister !== next.copyRegister) out.push(line("diff.wording", { from: prev.copyRegister, to: next.copyRegister }, `wording: ${prev.copyRegister} → ${next.copyRegister}`));
   for (const k of Object.keys(next.theme) as (keyof Slide["theme"])[]) {
-    if (prev.theme[k] !== next.theme[k]) out.push(`${k}: ${human(prev.theme[k])} → ${human(next.theme[k])}`);
+    if (prev.theme[k] !== next.theme[k]) out.push(line("diff.theme", { key: k, from: human(prev.theme[k]), to: human(next.theme[k]) }, `${k}: ${human(prev.theme[k])} → ${human(next.theme[k])}`));
   }
   return out;
 }
