@@ -279,8 +279,8 @@ function Trust({ p, policiesFirst, narrow = false }: { p: Product; policiesFirst
           </div>
         )}
       </div>
-      <details className="mt-2" onToggle={(e) => e.currentTarget.open && track("review_open", { blockId: "trust", productId: p.id })}>
-        <summary data-ghost="review_open" className="cursor-pointer font-semibold text-[var(--c-primary)]">{t("reviews.read")}</summary>
+      {/* Always shown, no click: the reading signal comes from the trust block's dwell; the ghost points here and records its review_open itself. */}
+      <div data-ghost="review_open" className="mt-2">
         <p className="mt-2 text-sm text-[var(--c-muted)]">
           {t("reviews.shown", { shown: p.reviews.length, total: p.reviewCount })}{" "}
           <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold">{t("common.simulated")}</span>
@@ -288,7 +288,7 @@ function Trust({ p, policiesFirst, narrow = false }: { p: Product; policiesFirst
         <ul className="mt-2 flex flex-col gap-3">
           {p.reviews.map(reviewItem)}
         </ul>
-      </details>
+      </div>
     </div>
   );
   return (
