@@ -6,6 +6,7 @@ This folder contains the **v2 comprehensive telemetry engine** that collects **a
 
 - **`demo/tracker.js`**: Standalone `UserDataCollector` class with zero external dependencies.
 - **`demo/index.html`**: Live interactive testbench and dashboard displaying real-time sensor and biometric data feeds.
+- **`demo/presets_demo.html`**: The unified Generation Switchboard connecting user age detection directly to Ionut's preplanned interface designs (Gen Alpha, Gen Z CyberStation, Millennial Nestly, Gen X Analog Supply, Baby Boomer Study Paper, and Easter Eggs).
 
 ## Markers Collected
 
