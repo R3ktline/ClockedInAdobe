@@ -88,3 +88,18 @@ doc and mark the question `ANSWERED` with the date — don't delete it.
     reporting I found does not say so, which is the basis of our gap claim. This should be
     confirmed against Adobe's own product documentation before it goes on a slide — the
     whole chat differentiation rests on it.
+
+## Added 2026-11-07 with `specs/client-profiles.md`
+
+20. **Add `trust` and `buyingFor` to `specs/profile-schema.md`?** Both are used in the 10
+    client profiles, kept in a separate `proposed` block so the profiles still match the
+    current schema. `trust` (0–1) is needed to *remove* persuasion (Bogdan #8, Radu #6);
+    `buyingFor` (`self` | `other`) covers gift and team buyers (Gheorghe #10, Ioana #7).
+    `bogdan/SPEC.md` has the same gap (no skeptic, gift or repeat-buyer persona). Needs
+    David's call, then agreement with Bogdan.
+21. **Name clashes.** `specs/visitor-fixtures.md` reuses six names from the canonical client
+    profiles for different people, and client #8 shares a name with teammate Bogdan.
+    Proposal: rename the fixtures file's people, and rename client #8. Not done — renaming
+    touches files the design workstream already uses.
+22. **Return-visit memory.** `bogdan/SPEC.md` lists cross-session tracking as a non-goal;
+    client #5 (Cristina) depends on it. localStorage-only would be enough. Team decision.
