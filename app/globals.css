@@ -52,7 +52,7 @@ body {
    Shape, type, spacing and card style only: Taraba's primary/accent colours stay.
    BabelProvider sets data-dialect and falls back to the brand fonts and surface.
    --------------------------------------------------------------------------- */
-[data-dialect] .babel-block { transition: background-color .4s, border-color .4s, box-shadow .4s, padding .4s; }
+[data-dialect] .babel-block { transition: background-color .4s, border-color .4s, box-shadow .4s, padding .4s, border-radius .5s; }
 @media (prefers-reduced-motion: reduce) { [data-dialect] .babel-block { transition: none; } }
 
 /* visual <- Gen Alpha bento: big soft cards on a light canvas */
@@ -150,4 +150,19 @@ body {
   .babel-curtain, .babel-curtain__card { transition: none; }
   .babel-curtain__ring { animation: none; }
   [data-popping] .babel-stage { animation: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   Smooth looks (prototype). What can morph does: page colour, corner roundness (registered so a custom
+   property can animate), text size. What cannot (fonts, layout swaps) is crossfaded with View Transitions.
+   --------------------------------------------------------------------------- */
+@property --babel-radius { syntax: "<length>"; inherits: true; initial-value: 11px; }
+[data-dialect], .babel-stage { transition: background-color .7s ease, color .5s ease, --babel-radius .5s ease; }
+html { transition: font-size .5s ease; }
+html.babel-vt::view-transition-old(root), html.babel-vt::view-transition-new(root) {
+  animation-duration: .9s; animation-timing-function: ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-dialect], .babel-stage, html { transition: none; }
+  html.babel-vt::view-transition-old(root), html.babel-vt::view-transition-new(root) { animation: none; }
 }
