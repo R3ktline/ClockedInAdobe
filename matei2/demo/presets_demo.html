@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Babel — Ionut Preset Switcher Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .fade-in { animation: fadeIn 0.35s ease-in-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased h-screen flex flex-col font-sans overflow-hidden">
+
+  <!-- TOP APP BAR -->
+  <header class="bg-slate-900 border-b border-slate-800 px-4 py-2.5 z-30 flex flex-wrap items-center justify-between gap-3 shadow-lg shrink-0">
+    
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-black text-white text-sm shadow-md">B</div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-sm font-bold tracking-tight">Babel Adaptive Storefront</h1>
+          <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            Ionut's Presets Switchboard
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-400">Dynamic generation swapping based on user age and behavioral markers</p>
+      </div>
+    </div>
+
+    <!-- CONTROLS ROW -->
+    <div class="flex items-center gap-3 flex-wrap">
+      
+      <!-- Account quick select -->
+      <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs">
+        <span class="text-slate-400">👤 User:</span>
+        <select id="user-select" onchange="onUserSelect(this.value)" class="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer">
+          <option value="custom">Custom / Slider</option>
+          <option value="19" selected>Alice (Age 19 — Gen Z)</option>
+          <option value="32">Marcus (Age 32 — Millennial)</option>
+          <option value="48">Andrei (Age 48 — Gen X)</option>
+          <option value="72">Eleanor (Age 72 — Boomer)</option>
+          <option value="12">Leo (Age 12 — Gen Alpha)</option>
+        </select>
+      </div>
+
+      <!-- Age Slider -->
+      <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1 text-xs">
+        <span class="text-slate-400">Age:</span>
+        <input type="range" id="age-slider" min="10" max="80" value="19" oninput="onAgeSlider(this.value)" class="w-24 accent-indigo-500 cursor-pointer">
+        <span id="age-val" class="font-bold font-mono text-indigo-400 w-6 text-center">19</span>
+      </div>
+
+      <!-- Manual Preset Override buttons -->
+      <div class="flex items-center gap-1 text-[11px]">
+        <button onclick="setPreset('alpha')" id="btn-alpha" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">Alpha</button>
+        <button onclick="setPreset('genz')" id="btn-genz" class="px-2 py-1 rounded bg-indigo-600 text-white font-bold transition">Gen Z</button>
+        <button onclick="setPreset('millennial')" id="btn-millennial" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">Millennial</button>
+        <button onclick="setPreset('genx')" id="btn-genx" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">Gen X</button>
+        <button onclick="setPreset('boomer')" id="btn-boomer" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">Boomer</button>
+      </div>
+
+      <!-- Easter Eggs Dropdown -->
+      <select onchange="if(this.value) setCustomUrl(this.value)" class="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-amber-400 cursor-pointer">
+        <option value="">🕹️ Easter Eggs</option>
+        <option value="../../EasterEggs/1990.html">1990 Web</option>
+        <option value="../../EasterEggs/flash2000.html">Flash 2000</option>
+        <option value="../../EasterEggs/linux.html">Terminal Linux</option>
+        <option value="../../EasterEggs/minimalistdemure.html">Very Demure</option>
+        <option value="../../EasterEggs/konami.html">Konami Arcade</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- SECONDARY BANNER: Inferred Status & Rationale -->
+  <div class="bg-slate-900/60 border-b border-slate-800 px-4 py-1.5 flex items-center justify-between text-xs shrink-0">
+    <div class="flex items-center gap-3">
+      <span class="flex items-center gap-1.5 font-bold">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>Active Preset:</span>
+        <span id="active-preset-name" class="text-indigo-400 font-mono">Older Gen Z (CyberStation X-1 OS)</span>
+      </span>
+      <span class="text-slate-500">|</span>
+      <span class="text-slate-400" id="preset-description">Y2K Retro Desktop with XP Bliss wallpaper, draggable windows, bold deal callouts.</span>
+    </div>
+    <div class="text-[11px] text-slate-400 flex items-center gap-2">
+      <span>File: <code id="active-preset-file" class="text-slate-300 font-mono">planning-phase/ionut/older-gen-z-style.html</code></span>
+      <button onclick="reloadFrame()" class="text-indigo-400 hover:underline">↺ Reload</button>
+    </div>
+  </div>
+
+  <!-- MAIN PREVIEW FRAME -->
+  <main class="flex-1 relative bg-slate-950 overflow-hidden">
+    <iframe id="store-frame" src="../../planning-phase/ionut/older-gen-z-style.html" class="w-full h-full border-none fade-in"></iframe>
+  </main>
+
+  <script>
+    const PRESETS = {
+      alpha: {
+        name: "Gen Alpha (Gamified & Hyper-Vibrant)",
+        file: "../../planning-phase/ionut/gen-alpha-style.html",
+        desc: "Playful stickers, vibrant neon palette, gamified cards, brainrot/meme references, micro-animations.",
+        ageRange: "10-15"
+      },
+      genz: {
+        name: "Older Gen Z (CyberStation X-1 OS / Y2K)",
+        file: "../../planning-phase/ionut/older-gen-z-style.html",
+        desc: "Y2K Retro XP Desktop with draggable windows, instant deals, Apple Pay/Klarna, street audio aesthetic.",
+        ageRange: "16-24"
+      },
+      millennial: {
+        name: "Millennial (Nestly — Clean Pastel Lifestyle)",
+        file: "../../planning-phase/ionut/millennial-style.html",
+        desc: "Pastel aesthetics, Poppins typography, work-life ergonomics, sustainability badges, specs in context.",
+        ageRange: "25-40"
+      },
+      genx: {
+        name: "Gen X (Fieldbook 14 — Analog Supply Blueprint)",
+        file: "../../planning-phase/ionut/gen-xx-style.html",
+        desc: "Technical blueprint typography, durable hardware schematics, engineering specs, long warranty emphasis.",
+        ageRange: "41-59"
+      },
+      boomer: {
+        name: "Baby Boomer (Fieldbook 14 — Study Paper & Clarity)",
+        file: "../../Baby Boomers/index.html",
+        desc: "High-contrast paper texture, large 18px+ typography, clear TV dialogue focus, toll-free phone order hotline.",
+        ageRange: "60+"
+      }
+    };
+
+    let currentPresetKey = 'genz';
+
+    function getPresetForAge(age) {
+      const a = parseInt(age, 10);
+      if (a < 16) return 'alpha';
+      if (a <= 24) return 'genz';
+      if (a <= 40) return 'millennial';
+      if (a <= 59) return 'genx';
+      return 'boomer';
+    }
+
+    function onAgeSlider(val) {
+      document.getElementById('age-val').innerText = val;
+      document.getElementById('user-select').value = 'custom';
+      const key = getPresetForAge(val);
+      if (key !== currentPresetKey) {
+        setPreset(key);
+      }
+    }
+
+    function onUserSelect(val) {
+      if (val === 'custom') return;
+      document.getElementById('age-slider').value = val;
+      document.getElementById('age-val').innerText = val;
+      const key = getPresetForAge(val);
+      setPreset(key);
+    }
+
+    function setPreset(key) {
+      currentPresetKey = key;
+      const p = PRESETS[key];
+      if (!p) return;
+
+      // Update frame with transition
+      const frame = document.getElementById('store-frame');
+      frame.classList.remove('fade-in');
+      void frame.offsetWidth; // trigger reflow
+      frame.src = p.file;
+      frame.classList.add('fade-in');
+
+      // Update header info
+      document.getElementById('active-preset-name').innerText = p.name;
+      document.getElementById('preset-description').innerText = p.desc;
+      document.getElementById('active-preset-file').innerText = p.file.replace('../../', '');
+
+      // Update button highlights
+      ['alpha', 'genz', 'millennial', 'genx', 'boomer'].forEach(k => {
+        const btn = document.getElementById('btn-' + k);
+        if (btn) {
+          if (k === key) {
+            btn.className = 'px-2 py-1 rounded bg-indigo-600 text-white font-bold transition shadow-xs';
+          } else {
+            btn.className = 'px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition';
+          }
+        }
+      });
+    }
+
+    function setCustomUrl(url) {
+      const frame = document.getElementById('store-frame');
+      frame.classList.remove('fade-in');
+      void frame.offsetWidth;
+      frame.src = url;
+      frame.classList.add('fade-in');
+      document.getElementById('active-preset-name').innerText = "Easter Egg Interface (" + url.split('/').pop() + ")";
+      document.getElementById('preset-description').innerText = "Special secret theme override unlocked!";
+      document.getElementById('active-preset-file').innerText = url.replace('../../', '');
+    }
+
+    function reloadFrame() {
+      const frame = document.getElementById('store-frame');
+      frame.src = frame.src;
+    }
+  </script>
+</body>
+</html>
