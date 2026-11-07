@@ -1,0 +1,254 @@
+[
+  {
+    "id": "home-wm-01", "category": "home", "name": "WashPro 8 washing machine", "brand": "Brisk",
+    "price": 1899, "stock": 14, "rating": 4.4, "reviewCount": 312,
+    "specs": [
+      { "key": "capacity", "label": "Capacity", "value": "8 kg" },
+      { "key": "spin", "label": "Spin speed", "value": "1400 rpm" },
+      { "key": "energy", "label": "Energy class", "value": "A" },
+      { "key": "noise", "label": "Spin noise", "value": "72 dB" },
+      { "key": "programs", "label": "Programmes", "value": "15" },
+      { "key": "size", "label": "Dimensions (H×W×D)", "value": "85 × 60 × 55 cm" },
+      { "key": "motor", "label": "Motor", "value": "Inverter, brushless" }
+    ],
+    "copy": {
+      "plain": "Washes a full family load, spins clothes almost dry and uses little electricity.",
+      "standard": "An 8 kg front-loader with a quiet inverter motor, 15 programmes and an A energy rating.",
+      "technical": "8 kg front-loader, brushless inverter motor, 1400 rpm spin, energy class A, 72 dB at spin, 15 programmes."
+    },
+    "benefits": ["Big enough for a family's weekly wash", "Cheap to run (energy class A)", "Quiet motor"],
+    "reviewSummary": { "pros": ["Quiet", "Clothes come out dry"], "cons": ["Door seal needs wiping"] },
+    "policies": { "returnDays": 30, "warrantyMonths": 24, "deliveryDays": 2 },
+    "promotion": { "label": "Autumn deals", "oldPrice": 2199 }
+  },
+  {
+    "id": "home-wm-02", "category": "home", "name": "EcoWash 7 washing machine", "brand": "Nordwave",
+    "price": 1449, "stock": 6, "rating": 4.1, "reviewCount": 128,
+    "specs": [
+      { "key": "capacity", "label": "Capacity", "value": "7 kg" },
+      { "key": "spin", "label": "Spin speed", "value": "1200 rpm" },
+      { "key": "energy", "label": "Energy class", "value": "B" },
+      { "key": "noise", "label": "Spin noise", "value": "76 dB" },
+      { "key": "programs", "label": "Programmes", "value": "12" },
+      { "key": "size", "label": "Dimensions (H×W×D)", "value": "85 × 60 × 50 cm" },
+      { "key": "motor", "label": "Motor", "value": "Universal" }
+    ],
+    "copy": {
+      "plain": "A simple washing machine for smaller homes that fits in tight spaces.",
+      "standard": "A 7 kg slim front-loader with 12 programmes, good for flats.",
+      "technical": "7 kg slim front-loader (50 cm deep), universal motor, 1200 rpm, energy class B, 76 dB at spin."
+    },
+    "benefits": ["Fits narrow bathrooms", "Easy to use dial", "Lower price"],
+    "reviewSummary": { "pros": ["Compact", "Simple controls"], "cons": ["Louder when spinning"] },
+    "policies": { "returnDays": 30, "warrantyMonths": 24, "deliveryDays": 3 }
+  },
+  {
+    "id": "home-sofa-01", "category": "home", "name": "Lina three-seat sofa", "brand": "Casa Verde",
+    "price": 2799, "stock": 4, "rating": 4.6, "reviewCount": 87,
+    "specs": [
+      { "key": "seats", "label": "Seats", "value": "3" },
+      { "key": "fabric", "label": "Fabric", "value": "Recycled bouclé, removable covers" },
+      { "key": "size", "label": "Dimensions (W×D×H)", "value": "210 × 92 × 80 cm" },
+      { "key": "frame", "label": "Frame", "value": "Solid pine" }
+    ],
+    "copy": {
+      "plain": "A soft, deep sofa for three with covers you can take off and wash.",
+      "standard": "A three-seat sofa in recycled bouclé with removable, washable covers and a solid pine frame.",
+      "technical": "210 cm three-seater, solid pine frame, recycled bouclé upholstery, removable covers (30 °C wash)."
+    },
+    "benefits": ["Washable covers", "Deep seats", "Solid wood frame"],
+    "reviewSummary": { "pros": ["Very comfortable", "Covers wash well"], "cons": ["Delivery takes over a week"] },
+    "policies": { "returnDays": 30, "warrantyMonths": 24, "deliveryDays": 10 }
+  },
+  {
+    "id": "elec-lap-01", "category": "electronics", "name": "Aero 14 laptop", "brand": "Voltra",
+    "price": 4299, "stock": 22, "rating": 4.5, "reviewCount": 540,
+    "specs": [
+      { "key": "cpu", "label": "Processor", "value": "8-core, 4.8 GHz" },
+      { "key": "ram", "label": "Memory", "value": "16 GB DDR5" },
+      { "key": "storage", "label": "Storage", "value": "1 TB SSD" },
+      { "key": "screen", "label": "Screen", "value": "14\" 2.8K OLED, 120 Hz" },
+      { "key": "battery", "label": "Battery life", "value": "Up to 14 h" },
+      { "key": "weight", "label": "Weight", "value": "1.3 kg" }
+    ],
+    "copy": {
+      "plain": "A light laptop that lasts a full workday and handles video calls, photos and office work easily.",
+      "standard": "A 14-inch OLED laptop with 16 GB of memory, a 1 TB SSD and up to 14 hours of battery.",
+      "technical": "8-core 4.8 GHz CPU, 16 GB DDR5, 1 TB NVMe SSD, 14\" 2.8K OLED 120 Hz, 1.3 kg, up to 14 h battery."
+    },
+    "benefits": ["Lasts a full workday", "Sharp, bright screen", "Light enough to carry daily"],
+    "reviewSummary": { "pros": ["Battery life", "Screen quality"], "cons": ["Few ports"] },
+    "policies": { "returnDays": 30, "warrantyMonths": 24, "deliveryDays": 1 }
+  },
+  {
+    "id": "elec-hp-01", "category": "electronics", "name": "Calm 3 noise-cancelling headphones", "brand": "Lumio",
+    "price": 649, "stock": 40, "rating": 4.3, "reviewCount": 1210,
+    "specs": [
+      { "key": "anc", "label": "Noise cancelling", "value": "Active, 3 levels" },
+      { "key": "battery", "label": "Battery life", "value": "30 h" },
+      { "key": "codec", "label": "Codecs", "value": "AAC, LDAC" },
+      { "key": "weight", "label": "Weight", "value": "250 g" }
+    ],
+    "copy": {
+      "plain": "Comfortable headphones that block out noise and last more than a day on one charge.",
+      "standard": "Over-ear noise-cancelling headphones with 30 hours of battery.",
+      "technical": "Over-ear, 3-level ANC, AAC/LDAC, 30 h battery, 250 g."
+    },
+    "benefits": ["Blocks out noise on trips", "30 hours per charge", "Light and comfortable"],
+    "reviewSummary": { "pros": ["Comfort", "Battery"], "cons": ["Case is bulky"] },
+    "policies": { "returnDays": 30, "warrantyMonths": 24, "deliveryDays": 1 },
+    "promotion": { "label": "Autumn deals", "oldPrice": 749 }
+  },
+  {
+    "id": "elec-mon-01", "category": "electronics", "name": "Clear 27 office monitor", "brand": "Voltra",
+    "price": 999, "stock": 60, "rating": 4.2, "reviewCount": 302,
+    "specs": [
+      { "key": "size", "label": "Size", "value": "27\"" },
+      { "key": "resolution", "label": "Resolution", "value": "2560 × 1440" },
+      { "key": "panel", "label": "Panel", "value": "IPS, 75 Hz" },
+      { "key": "ports", "label": "Ports", "value": "USB-C 65 W, HDMI" }
+    ],
+    "copy": {
+      "plain": "A big, sharp screen for office work that charges your laptop through one cable.",
+      "standard": "A 27-inch QHD monitor with USB-C that also charges your laptop.",
+      "technical": "27\" 2560×1440 IPS 75 Hz, USB-C with 65 W power delivery, HDMI."
+    },
+    "benefits": ["One cable for screen and charging", "Sharp text", "Adjustable stand"],
+    "reviewSummary": { "pros": ["USB-C charging", "Sharp"], "cons": ["Speakers are weak"] },
+    "policies": { "returnDays": 30, "warrantyMonths": 36, "deliveryDays": 2 }
+  },
+  {
+    "id": "fash-snk-01", "category": "fashion", "name": "Drift low sneakers", "brand": "Kestrel",
+    "price": 389, "stock": 35, "rating": 4.4, "reviewCount": 640,
+    "specs": [
+      { "key": "upper", "label": "Upper", "value": "Suede and mesh" },
+      { "key": "sole", "label": "Sole", "value": "Rubber, cushioned" },
+      { "key": "sizes", "label": "Sizes", "value": "36-46" }
+    ],
+    "copy": {
+      "plain": "Light, comfortable sneakers that go with everything.",
+      "standard": "Low-top sneakers in suede and mesh with a cushioned sole.",
+      "technical": "Suede/mesh upper, cushioned rubber outsole, sizes 36-46, true to size."
+    },
+    "benefits": ["Comfortable all day", "Goes with everything", "True to size"],
+    "reviewSummary": { "pros": ["Comfort", "Look"], "cons": ["Suede marks easily"] },
+    "policies": { "returnDays": 60, "warrantyMonths": 24, "deliveryDays": 2 }
+  },
+  {
+    "id": "fash-jkt-01", "category": "fashion", "name": "Storm kids' rain jacket", "brand": "Merilo",
+    "price": 179, "stock": 50, "rating": 4.7, "reviewCount": 210,
+    "specs": [
+      { "key": "waterproof", "label": "Waterproof rating", "value": "10,000 mm" },
+      { "key": "sizes", "label": "Sizes", "value": "104-152" },
+      { "key": "reflective", "label": "Reflective details", "value": "Yes" }
+    ],
+    "copy": {
+      "plain": "A warm, waterproof jacket for children that is easy to see in the dark.",
+      "standard": "A waterproof kids' jacket with reflective details, sizes 104-152.",
+      "technical": "10,000 mm waterproof shell, taped seams, reflective trims, sizes 104-152."
+    },
+    "benefits": ["Keeps children dry", "Easy to see in the dark", "Machine washable"],
+    "reviewSummary": { "pros": ["Really waterproof", "Bright colours"], "cons": ["Runs slightly small"] },
+    "policies": { "returnDays": 60, "warrantyMonths": 24, "deliveryDays": 2 }
+  },
+  {
+    "id": "groc-coffee-01", "category": "groceries", "name": "Morning roast coffee beans, 1 kg", "brand": "Pepo",
+    "price": 89, "stock": 200, "rating": 4.5, "reviewCount": 980,
+    "specs": [
+      { "key": "weight", "label": "Weight", "value": "1 kg" },
+      { "key": "roast", "label": "Roast", "value": "Medium" },
+      { "key": "origin", "label": "Origin", "value": "Brazil and Colombia" }
+    ],
+    "copy": {
+      "plain": "Smooth everyday coffee beans, not bitter.",
+      "standard": "A 1 kg bag of medium-roast beans from Brazil and Colombia.",
+      "technical": "1 kg, medium roast, Brazil/Colombia blend, notes of chocolate and nuts."
+    },
+    "benefits": ["Smooth taste", "Lasts about a month", "Good value per cup"],
+    "reviewSummary": { "pros": ["Smooth", "Value"], "cons": ["Not for dark-roast fans"] },
+    "policies": { "returnDays": 14, "warrantyMonths": 0, "deliveryDays": 1 }
+  },
+  {
+    "id": "groc-olive-01", "category": "groceries", "name": "Extra virgin olive oil, 1 l", "brand": "Pepo",
+    "price": 59, "stock": 150, "rating": 4.6, "reviewCount": 420,
+    "specs": [
+      { "key": "volume", "label": "Volume", "value": "1 l" },
+      { "key": "origin", "label": "Origin", "value": "Greece" }
+    ],
+    "copy": {
+      "plain": "Good olive oil for cooking and salads.",
+      "standard": "A litre of Greek extra virgin olive oil.",
+      "technical": "1 l, extra virgin, cold pressed, Greece."
+    },
+    "benefits": ["For cooking and salads", "Cold pressed"],
+    "reviewSummary": { "pros": ["Taste"], "cons": ["Bottle is not resealable"] },
+    "policies": { "returnDays": 14, "warrantyMonths": 0, "deliveryDays": 1 }
+  },
+  {
+    "id": "toy-blocks-01", "category": "toys", "name": "Big builder blocks, 120 pieces", "brand": "Brisk Kids",
+    "price": 149, "stock": 70, "rating": 4.8, "reviewCount": 350,
+    "specs": [
+      { "key": "pieces", "label": "Pieces", "value": "120" },
+      { "key": "age", "label": "Suitable from", "value": "3 years" },
+      { "key": "material", "label": "Material", "value": "BPA-free plastic" }
+    ],
+    "copy": {
+      "plain": "Large, safe building blocks for children from 3 years old.",
+      "standard": "A 120-piece set of large building blocks for ages 3 and up.",
+      "technical": "120 pieces, BPA-free plastic, compatible with standard large-format blocks, ages 3+."
+    },
+    "benefits": ["Safe for small children", "Hours of play", "Comes in a storage box"],
+    "reviewSummary": { "pros": ["Sturdy", "Storage box"], "cons": ["Box lid is flimsy"] },
+    "policies": { "returnDays": 30, "warrantyMonths": 24, "deliveryDays": 2 }
+  },
+  {
+    "id": "toy-scooter-01", "category": "toys", "name": "Glide kids' scooter", "brand": "Kestrel",
+    "price": 259, "stock": 18, "rating": 4.5, "reviewCount": 190,
+    "specs": [
+      { "key": "age", "label": "Suitable from", "value": "5 years" },
+      { "key": "maxLoad", "label": "Max load", "value": "50 kg" },
+      { "key": "foldable", "label": "Foldable", "value": "Yes" }
+    ],
+    "copy": {
+      "plain": "A sturdy scooter for children from 5 that folds up for the car.",
+      "standard": "A foldable two-wheel scooter for ages 5 and up, up to 50 kg.",
+      "technical": "Two-wheel, aluminium deck, 50 kg max load, adjustable bar, folds to 60 cm."
+    },
+    "benefits": ["Folds for the car", "Grows with your child", "Sturdy"],
+    "reviewSummary": { "pros": ["Sturdy", "Folds easily"], "cons": ["No bell"] },
+    "policies": { "returnDays": 30, "warrantyMonths": 24, "deliveryDays": 2 }
+  },
+  {
+    "id": "hb-vit-01", "category": "health_beauty", "name": "Vitamin D3 1000 IU, 90 tablets", "brand": "Aria",
+    "price": 39, "stock": 300, "rating": 4.6, "reviewCount": 760,
+    "specs": [
+      { "key": "dose", "label": "Dose", "value": "1000 IU per tablet" },
+      { "key": "count", "label": "Tablets", "value": "90" }
+    ],
+    "copy": {
+      "plain": "One small tablet a day. A three-month supply.",
+      "standard": "Vitamin D3 food supplement, 90 tablets of 1000 IU.",
+      "technical": "Cholecalciferol 1000 IU (25 µg) per tablet, 90 tablets."
+    },
+    "benefits": ["Three-month supply", "Small, easy-to-swallow tablets"],
+    "reviewSummary": { "pros": ["Easy to swallow"], "cons": ["Plain packaging"] },
+    "policies": { "returnDays": 14, "warrantyMonths": 0, "deliveryDays": 1 }
+  },
+  {
+    "id": "hb-cream-01", "category": "health_beauty", "name": "Gentle daily face cream, 50 ml", "brand": "Aria",
+    "price": 69, "stock": 120, "rating": 4.3, "reviewCount": 410,
+    "specs": [
+      { "key": "volume", "label": "Volume", "value": "50 ml" },
+      { "key": "skin", "label": "Skin type", "value": "Sensitive, all ages" },
+      { "key": "fragrance", "label": "Fragrance", "value": "Fragrance-free" }
+    ],
+    "copy": {
+      "plain": "A light, fragrance-free cream for every day.",
+      "standard": "A fragrance-free daily moisturiser for sensitive skin.",
+      "technical": "50 ml, fragrance-free, ceramides and glycerin, non-comedogenic."
+    },
+    "benefits": ["No fragrance", "Light, not greasy"],
+    "reviewSummary": { "pros": ["Gentle"], "cons": ["Small tube"] },
+    "policies": { "returnDays": 14, "warrantyMonths": 0, "deliveryDays": 1 }
+  }
+]

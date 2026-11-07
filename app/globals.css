@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Brief highlight on blocks a slide transition changed (SPEC §4.4). */
+.babel-block[data-babel-changed] {
+  animation: babel-changed 2.4s ease-out;
+  border-radius: var(--babel-radius);
+}
+@keyframes babel-changed {
+  0%, 40% { box-shadow: 0 0 0 3px var(--c-accent), 0 0 0 9px color-mix(in srgb, var(--c-accent) 30%, transparent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .babel-block[data-babel-changed] { animation: none; outline: 3px solid var(--c-accent); }
+}
+
+[data-contrast="high"] .border-black\/10 { border-color: rgb(0 0 0 / 0.6); }

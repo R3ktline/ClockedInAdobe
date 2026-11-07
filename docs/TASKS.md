@@ -11,17 +11,19 @@ Tracks: **A** bogdan · **B** Ionut · **C** David · **D** Matei ([AGENTS.md](.
 
 bogdan builds the base and a thin proof of concept that touches every track's folder, so each track starts Phase 2 from working code instead of four competing scaffolds. Nobody else pushes app code during this phase.
 
-- [todo] [A] Scaffold Next.js + TS + Tailwind + Framer Motion + zod + `openai`; scripts `dev`, `typecheck`, `lint`, `test`; folder skeleton from [SPEC §12](../SPEC.md#12-repo-layout); fill in the Commands table in AGENTS.md (bogdan) ·
-- [todo] [A] `babel/schema`: first version of every zod schema (bogdan) ·
-- [todo] [A] Seed catalog across the 6 categories, enough for the PoC (bogdan) · grown to ~60 in Phase 2
-- [todo] [B] Taraba skeleton: home, category, product pages built from `<BabelBlock>`, brand kit, registry, two variants on a few blocks (bogdan) ·
-- [todo] [B] `babel/sdk`: `BabelProvider`, `BabelBlock`, basic SlidePlayer (transition, ◀ ▶, Standard view) (bogdan) ·
-- [todo] [D] Signals → `/api/events` → `babel/markers` with 3 markers (`hesitation`, `trustNeed`, `infoAppetite`) (bogdan) ·
-- [todo] [C] `babel/llm` (DeepSeek client + mock + usage logging), `babel/persona` slide-0 rules, minimal Director with `proposeSlide` (bogdan) ·
-- [todo] [A] `validateSlide`: schema, registry, brand clamp, change budget (bogdan) ·
-- [todo] [D] Bare `/merchant` page (markers + Director trace) and one ghost shopper (Radu) (bogdan) ·
+- [done] [A] Scaffold: Next.js 16 + TS 5.9 + Tailwind 4 + Framer Motion + zod 4 + `openai`; scripts `dev`, `build`, `typecheck`, `test`; Commands table in AGENTS.md (bogdan) · lint not set up yet
+- [done] [A] `babel/schema`: first version of every zod schema, plus `SlideProposal` (what the Director proposes) (bogdan) ·
+- [done] [A] Seed catalog: 14 products across the 6 categories, `data/catalog.json` (bogdan) · grown to ~60 in Phase 2
+- [done] [B] Taraba: home, category and product pages from `<BabelBlock>`, brand kit, registry with `byDialect` (bogdan) · placeholder images
+- [done] [B] `babel/sdk`: `BabelProvider` (visit, signals, ghost replay, pause-then-slide), `BabelBlock`, `BabelStack`, slide control (◀ ▶, Why?, Standard view), change highlight (bogdan) ·
+- [done] [D] Signals → `/api/events` → `babel/markers` with `hesitation`, `trustNeed`, `infoAppetite` + triggers, unit-tested (bogdan) ·
+- [done] [C] `babel/llm` (DeepSeek client, mock, usage log), `babel/persona` slide-0 rules, Director with `proposeSlide` / `hold`, repair loop, 6 s budget (bogdan) ·
+- [done] [A] `validateSlide`: schema, registry, brand clamp, change budget, unit-tested (bogdan) ·
+- [done] [D] Bare `/merchant` (markers + evidence, Director trace, LLM usage) and the Radu ghost shopper (bogdan) ·
 
 **Foundation checkpoint:** the Radu ghost shopper runs on Taraba; his markers rise on `/merchant`; the Director (real DeepSeek) proposes a slide; the validator accepts or makes it repair; the page moves to slide 2 and ◀ goes back. With DeepSeek unreachable, the Director holds and the store still works. CI is green. When this is met, bogdan marks it `done` here and tells the team.
+
+- [doing] Checkpoint (bogdan) · verified on 2026-11-07 with the **mock** LLM: Radu's replay → hesitation/trustNeed cross 0.6 → Director slide 1 (trust moved up, promo badge off) → ◀ back works; unreachable DeepSeek → hold (unit test); typecheck, 15 tests and `next build` pass. **Left: one run with a real `DEEPSEEK_API_KEY`.**
 
 **While Phase 1 runs (prep only, no app code pushed):**
 - Ionut: designs for the 4 dialects on Taraba, and Croiala's look.

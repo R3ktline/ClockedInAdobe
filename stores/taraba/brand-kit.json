@@ -1,0 +1,26 @@
+{
+  "store": "taraba",
+  "name": "Taraba",
+  "colors": {
+    "primary": "#2346d8",
+    "accent": "#f5b800",
+    "surface": "#ffffff",
+    "text": "#14171f",
+    "muted": "#5b6170"
+  },
+  "fonts": {
+    "heading": "ui-rounded, 'SF Pro Rounded', system-ui, sans-serif",
+    "body": "system-ui, -apple-system, 'Segoe UI', sans-serif"
+  },
+  "ranges": {
+    "typeScale": [0.95, 1.3],
+    "radius": [6, 16],
+    "density": ["airy", "comfortable", "compact"],
+    "contrast": ["normal", "high"]
+  },
+  "voice": {
+    "do": ["friendly", "plain words", "short sentences"],
+    "dont": ["pressure", "jargon without explanation", "exclamation marks"]
+  },
+  "bannedWords": ["hurry", "only today", "last chance", "don't miss out", "selling fast"]
+}

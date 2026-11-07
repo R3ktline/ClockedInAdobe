@@ -206,7 +206,7 @@ Runs at every slide boundary for a live visit.
    - `getRegistry(template)`: the blocks and variants this store allows.
    - `getBrandKit()`: the store's ranges.
    - `getProductFacts(ids, fields)`: catalog facts, to pick which spec fields matter for this shopper.
-   - `proposeSlide(slide)`: runs the full validator and returns errors, so the agent **repairs its own proposal** (up to 2 retries).
+   - `proposeSlide(changes)`: a `SlideProposal`, i.e. the changes to the current slide (blocks' variant/order/collapsed, theme, copy register, need, rationale, hypothesis). Code assembles the full Slide and runs the validator; errors go back so the agent **repairs its own proposal** (up to 2 retries). Proposing a diff instead of a whole slide keeps the model's output small and makes the change budget natural.
    - `hold(reason)`: no change this time.
 4. **Learn:** at the next boundary the hypothesis is scored and fed back in. Across visits, the Insights agent's summaries ("for `guided` × `reassurance`, moving `trust` up lowered hesitation in 7 of 9 sessions") are added to the Director's context as learned priors.
 
@@ -248,10 +248,12 @@ type BrandKit = {
   bannedWords: string[];
 };
 
-type Registry = Record<Template, Record<BlockId, {
+type Registry = Record<Template, Record<BlockId, {   // key order = the store's default page order
+  label: string;          // shown when collapsed, and in the trace
   variants: string[];
   neutral: string;        // the store's default variant
   required?: boolean;     // can be collapsed, never hidden
+  byDialect?: Partial<Record<Dialect, string>>;  // the store's own reading of each dialect
 }>>;
 ```
 
@@ -344,10 +346,10 @@ A thin catalog makes every persona look the same and kills the demo, so the cata
 app/
   [store]/                 store routes: page.tsx (home), c/[category], p/[id], h/[handoff]
   merchant/                markers panel, Director trace, insights, cost meter
-  api/events  api/slide  api/chat  api/a2a  api/mcp
+  api/visit  api/events  api/slide  api/merchant  api/chat  api/a2a  api/mcp
   .well-known/agent-card.json/route.ts
 stores/
-  taraba/                  brand-kit.json, registry.ts, blocks/ (one file per block, all variants)
+  taraba/                  brand-kit.json, registry.ts, config.ts, pages.tsx (split into blocks/ as it grows)
   croiala/
 babel/
   schema/                  zod: Slide, Timeline, Persona, Markers, Events, PartnerContext, BrandKit, Registry, Product
@@ -357,6 +359,7 @@ babel/
   agents/                  director.ts, concierge.ts, insights.ts, shopper-sim.ts
   llm/                     DeepSeek client, record/replay for the demo, usage → cost
   guardrails/              validateSlide (schema, registry, clamp, budget, policy), inputGuard
+  session/                 in-memory visit state: events, markers, slides, trace, pacing
   tools/                   catalog tools shared by agents, A2A and MCP
 prompts/                   director.md, concierge.md, insights.md, shopper-sim.md (versioned)
 data/                      catalog.json, shoppers/*.json, sessions/, slide-cache/
