@@ -14,7 +14,7 @@ import { SlideControl } from "./SlideControl";
 import { ChatBox } from "./ChatBox";
 import { Curtain, CURTAIN_OFF, type CurtainState } from "./Curtain";
 import { flushSync } from "react-dom";
-import { Invite, TransitionLab, ViewNotice, type Transition } from "./Adapt";
+import { Invite, TransitionLab, ViewNotice, type Skin, type Transition } from "./Adapt";
 
 type TrackExtra = Omit<InteractionEvent, "t" | "type">;
 
@@ -140,6 +140,7 @@ export function BabelProvider(p: BabelProviderProps) {
   const [ready, setReady] = useState(false);     // the visit starts once the opt-in is settled
   const [ask, setAsk] = useState(false);
   const [txlab, setTxlab] = useState(false);
+  const [skin, setSkin] = useState<Skin>("none"); // the visual identity of the store frame (?skin=genx|alpha|alphadark|millennial|xp|print)
   const [notice, setNotice] = useState<{ id: string; dialect: Slide["persona"]["dialect"] } | null>(null);
   const profiledKey = `babel.profiled.${p.store}`;
   const markProfiled = useCallback(() => { try { localStorage.setItem(profiledKey, "1"); } catch { /* ignore */ } }, [profiledKey]);
@@ -244,6 +245,9 @@ export function BabelProvider(p: BabelProviderProps) {
     try { tx = sessionStorage.getItem("babel.tx"); if (tq) { sessionStorage.setItem("babel.tx", tq); tx = tq; } } catch { /* ignore */ }
     txMode.current = tx === "fade" || tx === "morph" ? tx : "glass";
     setTxlab(q.get("txlab") === "1");
+    const SKINS = ["genx", "alpha", "alphadark", "millennial", "xp", "print"];
+    const sq = q.get("skin");
+    try { if (sq) localStorage.setItem("babel.skin", sq); const s = sq ?? localStorage.getItem("babel.skin"); if (s && SKINS.includes(s)) setSkin(s as Skin); else if (s === "none") setSkin("none"); } catch { /* ignore */ }
     let answered: string | null = null;
     try { if (q.get("optin") === "reset") localStorage.removeItem("babel.optin"); answered = localStorage.getItem("babel.optin"); } catch { /* ignore */ } // ?optin=reset asks again
     if (curtainMode.current && !p.ghost && answered === null) setAsk(true); // asked once, at the start
@@ -479,6 +483,15 @@ export function BabelProvider(p: BabelProviderProps) {
       .finally(() => { txMode.current = prevTx; });
   }, [applyBehind, changeWith, p.brand, p.partner, p.registry, p.template]);
 
+  // Local comparison: put on a skin from the switcher panel, in the chosen transition.
+  const previewSkin = useCallback((next: Skin, tx: Transition) => {
+    const prevTx = txMode.current;
+    txMode.current = tx;
+    try { localStorage.setItem("babel.skin", next); } catch { /* ignore */ }
+    void changeWith("Dressing the store in a new style…", async () => next, (s) => { setSkin(s); return true; }, 1100)
+      .finally(() => { txMode.current = prevTx; });
+  }, [changeWith]);
+
   const chat = useCallback(async (message: string) => {
     track("chat_message", { value: message.length }); // the text itself is not kept as a signal
     if (curtainMode.current) return chatBehindCurtain(message);
@@ -610,15 +623,15 @@ export function BabelProvider(p: BabelProviderProps) {
 
   const { colors, fonts } = p.brand;
   const style = {
-    "--c-primary": colors.primary, "--c-accent": colors.accent, "--c-surface": colors.surface,
-    "--c-text": slide.theme.contrast === "high" ? "#000000" : colors.text,
-    "--c-muted": slide.theme.contrast === "high" ? colors.text : colors.muted,
+    // --skin-* (a visual identity, app/skins.css) win over --look-* (the dialect's look), which win over the brand kit.
+    "--c-primary": `var(--skin-primary, ${colors.primary})`, "--c-accent": `var(--skin-accent, ${colors.accent})`, "--c-surface": colors.surface,
+    "--c-text": slide.theme.contrast === "high" ? "#000000" : `var(--skin-text, ${colors.text})`,
+    "--c-muted": slide.theme.contrast === "high" ? `var(--skin-text, ${colors.text})` : `var(--skin-muted, ${colors.muted})`,
     "--babel-gap": GAP[slide.theme.density],
-    "--babel-radius": `${slide.theme.radius}px`,
-    // --look-* come from the dialect's look in globals.css; the brand fonts/surface are the fallback.
-    "--font-heading": `var(--look-heading, ${fonts.heading})`,
-    fontFamily: `var(--look-body, ${fonts.body})`,
-    background: `var(--look-canvas, ${colors.surface})`,
+    "--babel-radius": `var(--skin-radius, ${slide.theme.radius}px)`,
+    "--font-heading": `var(--skin-heading, var(--look-heading, ${fonts.heading}))`,
+    fontFamily: `var(--skin-body, var(--look-body, ${fonts.body}))`,
+    background: `var(--skin-canvas, var(--look-canvas, ${colors.surface}))`,
     color: "var(--c-text)",
   } as CSSProperties;
 
@@ -641,7 +654,7 @@ export function BabelProvider(p: BabelProviderProps) {
   return (
     <Ctx.Provider value={ctx}>
       <MotionConfig reducedMotion={slide.theme.motion === "reduced" ? "always" : "never"}>
-        <div style={style} data-contrast={slide.theme.contrast} data-dialect={standard ? undefined : slide.persona.dialect} data-popping={popping || undefined} className={`min-h-screen ${lab ? "babel-lab pl-[370px]" : ""}`}>
+        <div style={style} data-contrast={slide.theme.contrast} data-dialect={standard ? undefined : slide.persona.dialect} data-skin={skin === "none" ? undefined : skin} data-popping={popping || undefined} className={`min-h-screen ${lab ? "babel-lab pl-[370px]" : ""}`}>
           <div className="babel-stage" inert={curtain.phase === "in" || curtain.phase === "hold" || curtain.phase === "done"}>{p.children}</div>
           <SlideControl />
           <ChatBox />
@@ -654,7 +667,7 @@ export function BabelProvider(p: BabelProviderProps) {
             notice={notice} dialect={slide.persona.dialect} standard={standard} optedIn={optinRef.current !== "no"}
             onKeep={() => track("view_switch", { value: "keep" })} onBack={() => go(-1)}
           />
-          {txlab && <TransitionLab current={standard ? "standard" : slide.persona.dialect} onPreview={previewLook} />}
+          {txlab && <TransitionLab current={standard ? "standard" : slide.persona.dialect} onPreview={previewLook} skin={skin} onSkin={previewSkin} />}
         </div>
       </MotionConfig>
     </Ctx.Provider>

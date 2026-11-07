@@ -9,6 +9,12 @@ import type { Dialect } from "@/babel/schema";
 
 export const LOOK_LABEL: Record<Dialect, string> = { standard: "Standard", guided: "Guided", dense: "Detailed", visual: "Visual" };
 export type Transition = "glass" | "fade" | "morph";
+// A skin is a visual identity for the store frame (palette, type, texture, shape), taken from the five design pages.
+// It is separate from the look above (layout and detail level) and is chosen by the shopper, never inferred.
+export type Skin = "none" | "genx" | "alpha" | "alphadark" | "millennial" | "xp" | "print";
+export const SKIN_LABEL: Record<Skin, string> = {
+  none: "Store default", genx: "Glossy", alpha: "Bento", alphadark: "Bento dark", millennial: "Pastel", xp: "Y2K desktop", print: "Print",
+};
 
 const card = "pointer-events-auto rounded-2xl border border-white/70 bg-white/80 p-4 text-[#14171f] shadow-[0_18px_50px_rgba(20,23,31,.22)] backdrop-blur-md";
 const btn = "rounded-full px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#14171f]";
@@ -73,7 +79,7 @@ export function ViewNotice({ notice, dialect, standard, optedIn, onKeep, onBack 
   return null;
 }
 
-export function TransitionLab({ current, onPreview }: { current: Dialect; onPreview: (look: Dialect, tx: Transition) => void }) {
+export function TransitionLab({ current, onPreview, skin, onSkin }: { current: Dialect; onPreview: (look: Dialect, tx: Transition) => void; skin: Skin; onSkin: (s: Skin, tx: Transition) => void }) {
   const [tx, setTx] = useState<Transition>("glass");
   const looks: Dialect[] = ["standard", "guided", "dense", "visual"];
   const txs: { id: Transition; hint: string }[] = [
@@ -83,12 +89,18 @@ export function TransitionLab({ current, onPreview }: { current: Dialect; onPrev
   const off = "border border-[#14171f]/25 text-[#14171f]";
   return (
     <div className="pointer-events-none fixed right-3 top-16 z-[8500]" aria-label="Look switcher">
-      <div className={`${card} w-60`}>
+      <div className={`${card} w-64`}>
         <p className="text-xs font-bold uppercase tracking-wide text-[#4a5160]">Look switcher · prototype</p>
         <p className="mt-2 text-xs font-semibold">Look</p>
         <div className="mt-1 flex flex-wrap gap-1.5">
           {looks.map((l) => (
             <button key={l} className={`${btn} !px-3 !py-1 ${current === l ? on : off}`} onClick={() => onPreview(l, tx)}>{LOOK_LABEL[l]}</button>
+          ))}
+        </div>
+        <p className="mt-3 text-xs font-semibold">Skin</p>
+        <div className="mt-1 flex flex-wrap gap-1.5">
+          {(Object.keys(SKIN_LABEL) as Skin[]).map((s) => (
+            <button key={s} className={`${btn} !px-3 !py-1 ${skin === s ? on : off}`} onClick={() => onSkin(s, tx)}>{SKIN_LABEL[s]}</button>
           ))}
         </div>
         <p className="mt-3 text-xs font-semibold">Transition</p>
