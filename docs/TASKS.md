@@ -32,7 +32,7 @@ bogdan builds the base and a thin proof of concept that touches every track's fo
 
 ## Phase 2: P0 per track ([SPEC §13](../SPEC.md#13-scope))
 
-- [todo] [A] Full catalog: ~60 products, 3 copy registers, policies, store-wide promotions (bogdan) ·
+- [done] [A] Full catalog: 60 products (10 per category), 3 copy registers, policies, store-wide promotions, 3–4 simulated review texts each (`Product.reviews`, shown under "Read reviews" on Taraba) (bogdan)
 - [todo] [A] Return-visit major slide with carry-over (validator side) (bogdan) · with C
 - [todo] [A] Policy layer + red-team fixtures from [GUARDRAILS §7](GUARDRAILS.md#7-red-team-fixtures-scriptseval-fixtures) passing (bogdan) ·
 - [todo] [A] A2A Agent Card + `search_products`, `compare_products`, `create_handoff_link`; `/{store}/h/{id}` route with B (bogdan) ·

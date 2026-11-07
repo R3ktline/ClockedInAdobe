@@ -32,6 +32,15 @@ export const Product = z.object({
   copy: z.object({ plain: z.string(), standard: z.string(), technical: z.string() }),
   benefits: z.array(z.string()),
   reviewSummary: z.object({ pros: z.array(z.string()), cons: z.array(z.string()) }),
+  // A few review texts to show (simulated, synthetic data). rating/reviewCount stay the store-wide totals.
+  reviews: z.array(z.object({
+    author: z.string(),
+    rating: z.number().int().min(1).max(5),
+    date: z.iso.date(),
+    title: z.string(),
+    text: z.string(),
+    verified: z.boolean(),
+  })),
   policies: z.object({
     returnDays: z.number().int(),
     warrantyMonths: z.number().int(),
