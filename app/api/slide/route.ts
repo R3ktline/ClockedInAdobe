@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         ...common, kind: "slide", hypothesis: o.slide.hypothesis, diff: describeDiff(prev, o.slide),
         text: `slide ${o.slide.index} (${o.slide.kind}): ${o.slide.rationale}`,
       });
-      return Response.json({ decision: "slide", slide: o.slide, llm: o.transcript });
+      return Response.json({ decision: "slide", slide: o.slide, llm: o.transcript, urgent: triggers.includes("zoom") });
     }
     visit.trace.push({ ...common, kind: "hold", text: `hold: ${o.reason}` });
     return Response.json({ decision: "hold", reason: o.reason, llm: o.transcript });

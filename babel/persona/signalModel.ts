@@ -141,9 +141,9 @@ export function buyingFor(s: Signals, declared: Declared): [Profile["buyingFor"]
 }
 
 // ---------------------------------------------------------------- 5. profile
-export function buildProfile(signals: Signals, declared: Declared = {}, context: Context = {}, prior?: Groups): Profile | null {
+export function buildProfile(signals: Signals, declared: Declared = {}, context: Context = {}, prior?: Groups, carry?: number): Profile | null {
   if (context.consent === false) return null; // no consent: nothing collected, nothing inferred
-  const groups = accumulate(signals, prior);
+  const groups = accumulate(signals, prior, carry);
   const traits = {} as Record<Trait, TraitScore>;
   for (const t of TRAITS) {
     const [v, c] = score(groups[t]);
