@@ -9,7 +9,7 @@ import { validateSlide } from "@/babel/guardrails/validateSlide";
 import { markerKinds } from "@/babel/markers";
 import { moveBlock } from "@/babel/persona";
 import { SlideProposal, type BrandKit, type Registry, type Slide } from "@/babel/schema";
-import { shopperSummary, type Trigger, type Visit } from "@/babel/session";
+import { elapsed, shopperSummary, type Trigger, type Visit } from "@/babel/session";
 
 const MAX_ROUNDS = 3;
 const BUDGET_MS = Number(process.env.BABEL_DIRECTOR_BUDGET_MS ?? 6_000); // raise for slow free models
@@ -34,6 +34,12 @@ const TOOLS: ChatCompletionTool[] = [
       parameters: { type: "object", properties: { reason: { type: "string" } }, required: ["reason"] },
     },
   },
+];
+
+// The two system messages every Director call starts with; the debug panel shows them as sent.
+export const staticContext = (registry: Registry, brand: BrandKit, template: Slide["template"]) => [
+  SYSTEM_PROMPT,
+  `REGISTRY\n${JSON.stringify(registry[template])}\n\nBRAND RANGES\n${JSON.stringify(brand.ranges)}`,
 ];
 
 export type DirectorOutcome = {
@@ -66,8 +72,7 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
 
   // Static parts first so DeepSeek's prefix cache can reuse them (GUARDRAILS §5).
   const messages: ChatCompletionMessageParam[] = [
-    { role: "system", content: SYSTEM_PROMPT },
-    { role: "system", content: `REGISTRY\n${JSON.stringify(registry[prev.template])}\n\nBRAND RANGES\n${JSON.stringify(brand.ranges)}` },
+    ...staticContext(registry, brand, prev.template).map((content) => ({ role: "system" as const, content })),
     { role: "user", content: `<data>\n${input}\n</data>` },
   ];
 
@@ -128,6 +133,8 @@ function observation(visit: Visit, prev: Slide, kind: Slide["kind"], triggers: T
       blocks: prev.blocks.map(({ id, variant, order, collapsed }) => ({ id, variant, order, collapsed })),
       keep: prev.keep, hypothesis: prev.hypothesis,
     },
+    // What the shopper just did, newest last, so the agent can react to specific behaviour and not only to scores.
+    recentEvents: visit.events.slice(-15).map((e) => ({ type: e.type, block: e.blockId, value: e.value, secondsAgo: Math.max(0, Math.round((elapsed(visit) - e.t) / 1000)) })),
     lastHypothesisResult: lastScored?.text ?? null,
     wentBack: visit.events.filter((e) => e.type === "slide_prev").length,
     slidesSoFar: visit.slides.length,

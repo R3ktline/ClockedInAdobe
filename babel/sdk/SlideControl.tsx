@@ -7,7 +7,7 @@ const CHANGE_CARD_MS = 15_000;
 // The shopper's control over Babel: page through views, see why, or switch personalization off.
 // In ghost (testing) mode it also shows what the agent is doing and what the model answered.
 export function SlideControl() {
-  const { slides, cursor, go, standard, setStandard, slide, ghost, track, agent, lastChange, apply, calm } = useBabel();
+  const { slides, cursor, go, standard, setStandard, slide, ghost, track, forgetMe, agent, lastChange, apply, calm } = useBabel();
   const [whyOpen, setWhyOpen] = useState(false);
   const [changeVisible, setChangeVisible] = useState(false);
   useEffect(() => {
@@ -87,10 +87,16 @@ export function SlideControl() {
           </p>
           {!standard && (
             <p className="mt-2 text-xs text-[#5b6170]">
-              View {slide.persona.dialect} · focus {slide.persona.need} · chosen by {slide.source === "director" ? "the Babel agent" : "starting rules"}. Prices and product facts are the same for everyone.
+              View {slide.persona.dialect} · focus {slide.persona.need} · chosen by {slide.source === "director" ? "the Babel agent" : slide.source === "cache" ? "the Babel agent, remembered from your earlier visit" : "starting rules"}. Prices and product facts are the same for everyone.
             </p>
           )}
           {!standard && lastChange && <div className="mt-3 border-t border-black/10 pt-3">{changes}</div>}
+          {!ghost && (
+            <p className="mt-3 border-t border-black/10 pt-3 text-xs text-[#5b6170]">
+              Babel remembers how you browsed, on this device, so the next page starts closer to what you need.{" "}
+              <button className="underline hover:no-underline focus-visible:outline-2" onClick={forgetMe}>Forget me</button>
+            </p>
+          )}
         </div>
       )}
       <nav aria-label="Page views" className="flex items-center gap-1 rounded-full border border-black/10 bg-white p-1 text-[#14171f] shadow-lg">

@@ -8,6 +8,7 @@ import { changedBlocks, describeDiff } from "@/babel/schema/diff";
 import { buildSlide, NEUTRAL_PERSONA } from "@/babel/persona";
 import type { BlockId, BrandKit, EventType, InteractionEvent, PartnerContext, Registry, Slide, Template } from "@/babel/schema";
 import { GhostCursorView, runGhost, type GhostCursor } from "./Ghost";
+import { DebugPanel } from "./DebugPanel";
 import { SlideControl } from "./SlideControl";
 
 type TrackExtra = Omit<InteractionEvent, "t" | "type">;
@@ -30,6 +31,9 @@ type BabelContext = {
   track: (type: EventType, extra?: TrackExtra) => void;
   go: (delta: -1 | 1) => void;
   setStandard: (on: boolean) => void;
+  forgetMe: () => Promise<void>;
+  visitId: string | null;
+  askNow: () => Promise<void>; // debug: ask the agent to look right now, whatever the pacing says
 };
 
 // How a new slide reaches a page the shopper is looking at (?apply=…):
@@ -86,10 +90,12 @@ export function BabelProvider(p: BabelProviderProps) {
   const [lastChange, setLastChange] = useState<LastChange | null>(null);
   const [apply, setApply] = useState<Apply>("quiet");
   const [calm, setCalm] = useState<CalmEntry[]>([]);
+  const [visitIdState, setVisitIdState] = useState<string | null>(null);
 
   const applyRef = useRef<Apply>("quiet");
   const pending = useRef<Slide | null>(null);  // arrived, not yet on screen (quiet mode)
   const visitId = useRef<string | null>(null);
+  const visitorIdRef = useRef<string | undefined>(undefined);
   const t0 = useRef(0);
   const buffer = useRef<InteractionEvent[]>([]);
   const lastScrollAt = useRef(0);
@@ -193,6 +199,7 @@ export function BabelProvider(p: BabelProviderProps) {
         return localStorage.getItem(k) ?? (localStorage.setItem(k, crypto.randomUUID()), localStorage.getItem(k) ?? undefined);
       } catch { return undefined; }
     })();
+    visitorIdRef.current = visitorId;
     const device = p.partner.device ?? {
       pointer: matchMedia("(pointer: coarse)").matches ? "coarse" as const : "fine" as const,
       viewportWidth: innerWidth,
@@ -212,6 +219,7 @@ export function BabelProvider(p: BabelProviderProps) {
       .then((r: { visitId?: string; slide?: Slide }) => {
         if (!r.visitId || !r.slide) return;
         visitId.current = r.visitId;
+        setVisitIdState(r.visitId);
         t0.current = performance.now();
         show([r.slide], 0);
         showSlide(r.slide, neutral);
@@ -253,6 +261,16 @@ export function BabelProvider(p: BabelProviderProps) {
       else { pending.current = next; tryLand(); }
     }
   }, [land, tryLand]);
+
+  const askNow = useCallback(async () => {
+    if (!visitId.current || slideWanted.current) return;
+    const ok = await fetch("/api/debug", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitId: visitId.current, action: "look" }),
+    }).then((x) => x.ok).catch(() => false);
+    if (!ok) return;
+    slideWanted.current = true;
+    requestSlide();
+  }, [requestSlide]);
 
   // 3. Flush signals; idle detection; scroll and hover tracking.
   useEffect(() => {
@@ -353,6 +371,14 @@ export function BabelProvider(p: BabelProviderProps) {
     track(delta < 0 ? "slide_prev" : "slide_next", { value: n });
   }, [show, showSlide, track]);
 
+  // The shopper's off switch for memory: the server drops everything it kept, then the page starts over.
+  const forgetMe = useCallback(async () => {
+    if (visitorIdRef.current) {
+      await fetch("/api/forget", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitorId: visitorIdRef.current }) }).catch(() => null);
+    }
+    location.reload();
+  }, []);
+
   const setStandard = useCallback((on: boolean) => {
     setStandardState(on);
     track("view_switch", { value: on ? "standard" : "babel" });
@@ -373,7 +399,7 @@ export function BabelProvider(p: BabelProviderProps) {
 
   const ctx: BabelContext = {
     store: p.store, template: p.template, registry: p.registry, brand: p.brand,
-    slide, slides, cursor, standard, changed, track, go, setStandard, agent, lastChange, apply, calm,
+    slide, slides, cursor, standard, changed, track, go, setStandard, forgetMe, visitId: visitIdState, askNow, agent, lastChange, apply, calm,
     ghost: p.ghost ? { label: p.ghost.label, note: ghostNote, step: p.ghost.step ?? 0 } : undefined,
   };
 
@@ -383,6 +409,7 @@ export function BabelProvider(p: BabelProviderProps) {
         <div style={style} data-contrast={slide.theme.contrast} className="min-h-screen">
           {p.children}
           <SlideControl />
+          <DebugPanel />
           {p.ghost && <GhostCursorView c={ghostCursor} name={p.ghost.label} />}
         </div>
       </MotionConfig>
