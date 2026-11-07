@@ -15,8 +15,10 @@ projects die.
 
 - [x] Workspace structure and agent protocol (`CLAUDE.md`)
 - [x] Concept, feasibility, architecture docs
-- [ ] Install toolchain: git, Node LTS (neither is on this machine — see `CLAUDE.md`)
-- [ ] Get access to `github.com/R3ktline/ClockedInAdobe` (currently 404 to us)
+- [x] Install `git` (2.56.0) and `gh` (2.103.3) — done 2026-11-07.
+      **`node` / `npm` are still NOT installed** — this now blocks P1.
+- [x] Get access to `github.com/R3ktline/ClockedInAdobe` — done 2026-11-07 via the Docker
+      Desktop MCP GitHub connector. Repo exists, is private, David is a collaborator.
 - [ ] Ratify `specs/profile-schema.md` and `specs/ui-intent-schema.md` with the team
 - [ ] Anthropic API key in `.env.local`, confirmed never committed
 
