@@ -6,9 +6,10 @@ import path from "node:path";
 import { z } from "zod";
 import { chat, isMocked, type ChatCompletionMessage, type ChatCompletionMessageParam, type ChatCompletionTool } from "@/babel/llm";
 import { validateSlide } from "@/babel/guardrails/validateSlide";
+import { changedBlocks } from "@/babel/schema/diff";
 import { markerKinds } from "@/babel/markers";
 import { moveBlock } from "@/babel/persona";
-import { Gap, SlideProposal, type BrandKit, type Registry, type Slide } from "@/babel/schema";
+import { Gap, SlideProposal, type BlockId, type BrandKit, type Registry, type Slide } from "@/babel/schema";
 import { elapsed, shopperSummary, type Trigger, type Visit } from "@/babel/session";
 
 const MAX_ROUNDS = 3;
@@ -68,7 +69,12 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
   const started = Date.now();
   const prev = visit.slides.at(-1)!;
   const kind: Slide["kind"] = visit.returning && prev.index === 0 ? "major" : "minor";
-  const input = JSON.stringify(observation(visit, prev, kind, triggers), null, 1);
+  // Blocks the previous change touched are off limits for one slide (they must settle).
+  const beforeLast = visit.slides.at(-2);
+  const lastChanged = prev.kind === "minor" || prev.kind === "explicit"
+    ? (beforeLast ? changedBlocks(beforeLast.blocks, prev.blocks) : changedBlocks(visit.slides[0]?.blocks ?? prev.blocks, prev.blocks))
+    : [];
+  const input = JSON.stringify(observation(visit, prev, kind, triggers, lastChanged), null, 1);
   const transcript: LlmTranscript = { model: isMocked() ? "mock" : process.env.DEEPSEEK_MODEL ?? "", input, rounds: [] };
   const out: DirectorOutcome = { decision: "hold", gaps: [], clamps: [], errors: [], rounds: 0, ms: 0, mocked: isMocked(), transcript };
   const done = (o: Partial<DirectorOutcome>) => ({ ...out, ...o, ms: Date.now() - started });
@@ -85,7 +91,7 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
     for (let round = 1; round <= MAX_ROUNDS; round++) {
       out.rounds = round;
       const roundStart = Date.now();
-      const msg = await chat({ agent: "director", messages, tools: TOOLS, signal: abort.signal, mock: () => mockDecision(visit, prev, triggers, brand, message) });
+      const msg = await chat({ agent: "director", messages, tools: TOOLS, signal: abort.signal, mock: () => mockDecision(visit, prev, triggers, brand, message, lastChanged) });
       messages.push({ role: "assistant", content: msg.content ?? "", tool_calls: msg.tool_calls });
       const calls = (msg.tool_calls ?? []).filter((c) => c.type === "function");
       const said = (msg.content ?? "").slice(0, 2000);
@@ -104,7 +110,8 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
 
       const parsed = SlideProposal.safeParse(safeJson(call.function.arguments));
       const result = parsed.success
-        ? validateSlide({ slide: applyProposal(prev, parsed.data, kind), prev, registry, brand, returning: visit.returning })
+      // The validator also refuses these unless the shopper asks in their own words.
+      ? validateSlide({ slide: applyProposal(prev, parsed.data, kind), prev, lastChanged: message ? [] : lastChanged, registry, brand, returning: visit.returning })
         : { ok: false as const, clamps: [], errors: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`) };
       if (parsed.success) out.gaps = parsed.data.gaps ?? [];
       out.clamps.push(...result.clamps);
@@ -123,7 +130,7 @@ export async function runDirector(visit: Visit, registry: Registry, brand: Brand
   }
 }
 
-function observation(visit: Visit, prev: Slide, kind: Slide["kind"], triggers: Trigger[]) {
+function observation(visit: Visit, prev: Slide, kind: Slide["kind"], triggers: Trigger[], lastChanged: BlockId[]) {
   const lastScored = visit.trace.filter((t) => t.kind === "result").at(-1);
   return {
     page: prev.template,
@@ -133,6 +140,8 @@ function observation(visit: Visit, prev: Slide, kind: Slide["kind"], triggers: T
     markers: visit.markers,
     markerKinds: markerKinds(),
     shopperModel: shopperSummary(visit),
+    // Your previous slide just changed these; the validator refuses to touch them again this turn.
+    coolingDown: lastChanged.length ? lastChanged : undefined,
     currentSlide: {
       persona: prev.persona, theme: prev.theme, copyRegister: prev.copyRegister,
       blocks: prev.blocks.map(({ id, variant, order, collapsed }) => ({ id, variant, order, collapsed })),
@@ -182,13 +191,14 @@ function safeJson(s: string): Record<string, unknown> | undefined {
 }
 
 // Deterministic stand-in used without an API key: answers trust or hesitation spikes on a product page.
-function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: BrandKit, message = ""): ChatCompletionMessage {
+function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: BrandKit, message = "", coolingDown: BlockId[] = []): ChatCompletionMessage {
+  const cooling = (id: BlockId) => coolingDown.includes(id);
   const call = (name: string, args: unknown): ChatCompletionMessage => ({
     role: "assistant", content: null, refusal: null,
     tool_calls: [{ id: `mock-${visit.slides.length}`, type: "function", function: { name, arguments: JSON.stringify(args) } }],
   });
   const asked = (re: RegExp) => triggers.includes("chat") && re.test(message);
-  if (triggers.includes("zoom") || asked(/bigger|larger|small text|hard to read|simpl|plain/i)) {
+  if ((triggers.includes("zoom") || asked(/bigger|larger|small text|hard to read|simpl|plain/i)) && !cooling("summary")) {
     const plain = prev.blocks.find((b) => b.id === "summary") ? [{ id: "summary", variant: "benefits_plain" }] : [];
     return call("proposeSlide", {
       changes: plain,
@@ -206,7 +216,7 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
   }
   const m = visit.markers;
   // Like the live Director, the mock also follows the signal model's read when it is confident and
-  // differs from what is on screen (minor slide: ≤ 2 blocks, dialect unchanged).
+  // differs from what is on screen (minor slide: ≤ 4 blocks; the dialect may change).
   const model = shopperSummary(visit)?.suggested;
   const modelSays = (need: string) => !!model && model.need === need && model.confidence >= 0.55 && prev.persona.need !== need;
   const trustUp = prev.blocks.find((b) => b.id === "trust")?.order === 2;
@@ -228,6 +238,21 @@ function mockDecision(visit: Visit, prev: Slide, triggers: Trigger[], brand: Bra
       changes: [{ id: "specs", order: 2, variant: "table_full" }],
       rationale: "You opened the details and read them, so all the specifications are now open, right under the photos.",
       hypothesis: { marker: "infoAppetite", expect: "up", withinSeconds: 30 },
+    });
+  }
+  // Layout: the section the shopper looked at last goes right next to the photos (two blocks: the photos
+  // narrow, that section beside them), unless it is already there.
+  const SIDE = { trust: "side_reviews", specs: "side_key", buyBox: "side_standard" } as const;
+  const looked = visit.events.slice(-15).reverse()
+    .map((e) => (e.type === "review_open" || e.type === "policy_open" ? "trust" : e.type === "block_open" || e.type === "block_dwell" ? e.blockId : undefined))
+    .find((id): id is keyof typeof SIDE => !!id && id in SIDE);
+  const gallery = prev.blocks.find((b) => b.id === "gallery");
+  const target = looked && prev.blocks.find((b) => b.id === looked);
+  if (prev.template === "product" && looked && target && gallery && !target.variant.startsWith("side_") && !target.collapsed && !cooling("gallery") && !cooling(looked)) {
+    return call("proposeSlide", {
+      changes: [{ id: "gallery", variant: "side_large" }, { id: looked, variant: SIDE[looked], order: gallery.order + 1 }],
+      rationale: `You looked at the ${{ trust: "reviews", specs: "details", buyBox: "price" }[looked]}, so that section now sits next to the photos.`,
+      hypothesis: { marker: looked === "specs" ? "infoAppetite" : "hesitation", expect: looked === "specs" ? "up" : "down", withinSeconds: 30 },
     });
   }
   return call("hold", { reason: "mock: nothing to change" });

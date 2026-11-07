@@ -66,23 +66,41 @@ describe("validateSlide", () => {
     expect(changedBlocks(prev.blocks, moved)).toEqual(["trust"]);
   });
 
-  it("allows a minor slide with 2 changes and rejects 3", () => {
+  it("allows a minor slide with 4 changes and rejects 5", () => {
     const prev = ok(validateSlide({ slide: base(), registry, brand, returning: false })).slide;
-    const two = minorFrom(prev, (s) => {
+    const four = minorFrom(prev, (s) => {
       s.blocks = moveBlock(s.blocks, "trust", 2);
       s.blocks.find((b) => b.id === "buyBox")!.variant = "calm";
+      s.blocks.find((b) => b.id === "specs")!.variant = "table_full";
+      s.blocks.find((b) => b.id === "gallery")!.variant = "single_large";
     });
-    ok(validateSlide({ slide: two, prev, registry, brand, returning: false }));
-    const three = minorFrom(two, (s) => { s.blocks.find((b) => b.id === "specs")!.variant = "table_full"; });
-    three.blocks.find((b) => b.id === "gallery")!.variant = "single_large";
-    const r = validateSlide({ slide: three, prev, registry, brand, returning: false });
+    ok(validateSlide({ slide: four, prev, registry, brand, returning: false }));
+    const five = minorFrom(four, (s) => {
+      s.blocks = moveBlock(s.blocks, "trust", 5);
+      s.blocks.find((b) => b.id === "gallery")!.variant = "grid_thumbs";
+      s.blocks.find((b) => b.id === "buyBox")!.variant = "standard";
+      s.blocks.find((b) => b.id === "specs")!.variant = "table_key";
+      s.blocks.find((b) => b.id === "summary")!.variant = "benefits_plain";
+    });
+    const r = validateSlide({ slide: five, prev: four, registry, brand, returning: false });
     expect(r.ok).toBe(false);
   });
 
-  it("rejects a dialect change in a minor slide", () => {
+  it("allows a dialect change in a minor slide", () => {
     const prev = base();
     const s = minorFrom(prev, (x) => { x.persona = { ...x.persona, dialect: "guided" }; });
-    expect(validateSlide({ slide: s, prev, registry, brand, returning: false }).ok).toBe(false);
+    ok(validateSlide({ slide: s, prev, registry, brand, returning: false }));
+  });
+
+  it("gives blocks changed by the previous slide one slide off", () => {
+    const first = ok(validateSlide({ slide: base(), registry, brand, returning: false })).slide;
+    const prev = ok(validateSlide({ slide: minorFrom(first, (x) => { x.blocks.find((b) => b.id === "trust")!.variant = "returns_warranty_first"; }), prev: first, registry, brand, returning: false })).slide;
+    const lastChanged = changedBlocks(first.blocks, prev.blocks);
+    expect(lastChanged).toEqual(["trust"]);
+    const again = validateSlide({ slide: minorFrom(prev, (x) => { x.blocks = moveBlock(x.blocks, "trust", 1); }), prev, lastChanged, registry, brand, returning: false });
+    expect(again.ok).toBe(false);
+    const elsewhere = validateSlide({ slide: minorFrom(prev, (x) => { x.blocks.find((b) => b.id === "buyBox")!.variant = "calm"; }), prev, lastChanged, registry, brand, returning: false });
+    ok(elsewhere);
   });
 
   it("allows a major slide only on a return visit", () => {

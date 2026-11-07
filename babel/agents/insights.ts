@@ -15,7 +15,7 @@ import { activeDefaults, addDefault, withDefaults, type DefaultChange, type Stor
 
 const SYSTEM_PROMPT = readFileSync(path.join(process.cwd(), "prompts", "insights.md"), "utf8");
 const BUDGET_MS = Number(process.env.BABEL_INSIGHTS_BUDGET_MS ?? 15_000);
-const MAX_BLOCKS = 2; // same size as a minor slide's change budget
+const MAX_BLOCKS = 4; // same size as a minor slide's change budget
 // Held back from the model's wording (GUARDRAILS §3, rule 8): no pressure tactics, no people-labels.
 const BANNED = /\b(discount|sale|% off|countdown|hurry|limited stock|scarcity|urgen\w*|elderly|senior|young|older|boomer|gen z|millennial)\b/i;
 
@@ -113,7 +113,7 @@ const TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "proposeDefault",
-      description: "Make these candidate changes the starting view for the page type. Pick at most 2, for different blocks.",
+      description: "Make these candidate changes the starting view for the page type. Pick at most 4, for different blocks.",
       parameters: {
         type: "object",
         properties: { keys: { type: "array", items: { type: "string" }, maxItems: MAX_BLOCKS }, rationale: { type: "string", maxLength: 240 } },
@@ -172,7 +172,7 @@ export async function proposeForGroup(g: Group, cfg: { registry: Registry; brand
   const neutral = buildSlide({ persona: NEUTRAL_PERSONA, template: g.template, registry: cfg.registry, brand: cfg.brand });
   const checked = validateSlide({ slide: withDefaults(neutral, [trial]), registry: cfg.registry, brand: cfg.brand, returning: false });
   if (!checked.ok) return hold(`validator: ${checked.errors.join("; ")}`);
-  if (changedBlocks(neutral.blocks, checked.slide.blocks).length > MAX_BLOCKS) return hold("would change more than 2 blocks");
+  if (changedBlocks(neutral.blocks, checked.slide.blocks).length > MAX_BLOCKS) return hold("would change more than 4 blocks");
 
   const applied = addDefault({ ...trial, evidence: picked.map((c) => evidenceLine(g, c)) });
   return { ...base, candidates: cands.length, outcome: "applied", reason: pick.data.rationale, applied };

@@ -8,6 +8,7 @@ export { changedBlocks };
 export type ValidateInput = {
   slide: unknown;
   prev?: Slide;          // the slide currently shown, if any
+  lastChanged?: BlockId[]; // blocks the previous slide itself changed: they get one slide off
   registry: Registry;
   brand: BrandKit;
   returning: boolean;    // is this a return visit?
@@ -18,9 +19,9 @@ export type ValidateResult =
   | { ok: false; errors: string[]; clamps: string[] };
 
 const DENSITY = ["airy", "comfortable", "compact"] as const;
-const MAX_MINOR_CHANGES = 2;
+const MAX_MINOR_CHANGES = 4;
 
-export function validateSlide({ slide: raw, prev, registry, brand, returning }: ValidateInput): ValidateResult {
+export function validateSlide({ slide: raw, prev, lastChanged, registry, brand, returning }: ValidateInput): ValidateResult {
   const parsed = Slide.safeParse(raw);
   if (!parsed.success) {
     return { ok: false, clamps: [], errors: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`) };
@@ -62,7 +63,7 @@ export function validateSlide({ slide: raw, prev, registry, brand, returning }: 
   clampTheme(slide.theme, brand, clamps);
 
   // Change budget.
-  if (errors.length === 0) errors.push(...checkBudget(slide, prev, returning));
+  if (errors.length === 0) errors.push(...checkBudget(slide, prev, returning, lastChanged));
 
   return errors.length ? { ok: false, errors, clamps } : { ok: true, slide, clamps, fixes };
 }
@@ -91,7 +92,7 @@ function clampTheme(theme: Theme, brand: BrandKit, clamps: string[]) {
   }
 }
 
-function checkBudget(slide: Slide, prev: Slide | undefined, returning: boolean): string[] {
+function checkBudget(slide: Slide, prev: Slide | undefined, returning: boolean, lastChanged?: BlockId[]): string[] {
   const samePage = prev && prev.template === slide.template;
   switch (slide.kind) {
     case "explicit":
@@ -110,11 +111,16 @@ function checkBudget(slide: Slide, prev: Slide | undefined, returning: boolean):
       if (changed.length > MAX_MINOR_CHANGES) {
         errors.push(`minor slides may change at most ${MAX_MINOR_CHANGES} blocks; this changes ${changed.length} (${changed.join(", ")})`);
       }
-      if (slide.persona.dialect !== prev.persona.dialect) errors.push("minor slides may not change the dialect");
+      // Blocks the previous slide changed get one slide off, so an element is not
+      // reworked twice in a row and the page has time to settle.
+      if (lastChanged) {
+        const hot = changed.filter((id) => lastChanged.includes(id));
+        if (hot.length) errors.push(`fresh from the last slide, leave for this one: ${hot.join(", ")}`);
+      }
       const a = prev.theme, b = slide.theme;
-      if (Math.abs(DENSITY.indexOf(a.density) - DENSITY.indexOf(b.density)) > 1) errors.push("density may move one step at most");
-      if (Math.abs(a.typeScale - b.typeScale) > 0.1 + 1e-9) errors.push("typeScale may move by 0.1 at most");
-      if (Math.abs(a.radius - b.radius) > 4) errors.push("radius may move by 4px at most");
+      if (Math.abs(DENSITY.indexOf(a.density) - DENSITY.indexOf(b.density)) > 2) errors.push("density may move two steps at most");
+      if (Math.abs(a.typeScale - b.typeScale) > 0.2 + 1e-9) errors.push("typeScale may move by 0.2 at most");
+      if (Math.abs(a.radius - b.radius) > 8) errors.push("radius may move by 8px at most");
       if (a.contrast !== b.contrast || a.motion !== b.motion) errors.push("minor slides may not change contrast or motion");
       return errors;
     }
