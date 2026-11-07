@@ -98,3 +98,15 @@ describe("validateSlide", () => {
     expect(validateSlide({ slide: s, prev, registry, brand, returning: false }).ok).toBe(false);
   });
 });
+
+describe("describeDiff", () => {
+  it("reports only the block that moved, not the ones it pushed along", async () => {
+    const { describeDiff } = await import("@/babel/schema/diff");
+    const prev = base();
+    const next = { ...prev, blocks: moveBlock(prev.blocks, "trust", 3).map((b) => (b.id === "buyBox" ? { ...b, variant: "calm" } : b)) };
+    expect(describeDiff(prev, next)).toEqual([
+      'trust: moved from position 5 to 3',
+      'buyBox: "standard" → "calm"',
+    ]);
+  });
+});

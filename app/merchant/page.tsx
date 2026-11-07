@@ -109,7 +109,25 @@ export default function Merchant() {
                     {t.errors?.map((e, j) => <p key={j} className="mt-1 text-red-700">rejected, repaired: {e.join("; ")}</p>)}
                     {t.clamps && t.clamps.length > 0 && <p className="mt-1 text-amber-800">brand clamp: {t.clamps.join("; ")}</p>}
                     {t.ms !== undefined && (
-                      <p className="mt-1 text-xs text-[#5b6170]">{t.rounds} round{t.rounds === 1 ? "" : "s"} · {t.ms} ms · {t.mocked ? "mock LLM" : "DeepSeek"}</p>
+                      <p className="mt-1 text-xs text-[#5b6170]">{t.rounds} round{t.rounds === 1 ? "" : "s"} · {t.ms} ms · {t.mocked ? "mock LLM" : t.llm?.model || "live LLM"}</p>
+                    )}
+                    {t.llm && (
+                      <details className="mt-2 rounded-lg bg-slate-50 p-2" open={i === 0 && t.kind !== "trigger"}>
+                        <summary className="cursor-pointer text-xs font-semibold text-[#3c4250]">LLM conversation · {t.llm.model}</summary>
+                        <details className="mt-2">
+                          <summary className="cursor-pointer text-xs text-[#5b6170]">What the agent was shown</summary>
+                          <pre className="mt-1 max-h-64 overflow-auto rounded bg-white p-2 text-xs">{t.llm.input}</pre>
+                        </details>
+                        <ol className="mt-2 flex flex-col gap-2">
+                          {t.llm.rounds.map((r, j) => (
+                            <li key={j} className="rounded bg-white p-2 text-xs">
+                              <p className="font-semibold">round {j + 1} · {(r.ms / 1000).toFixed(1)}s · {r.verdict}</p>
+                              {r.said && <p className="mt-1 whitespace-pre-wrap text-[#3c4250]">said: {r.said}</p>}
+                              {r.call && <pre className="mt-1 overflow-auto whitespace-pre-wrap">{r.call.name}({JSON.stringify(r.call.args, null, 1)})</pre>}
+                            </li>
+                          ))}
+                        </ol>
+                      </details>
                     )}
                   </li>
                 ))}

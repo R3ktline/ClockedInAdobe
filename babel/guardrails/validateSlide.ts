@@ -1,6 +1,9 @@
 // Slide validation (GUARDRAILS §1, layers 5-8): schema → registry → brand clamp → change budget.
 // The policy layer (banned words, persona labels) arrives in Phase 2.
 import { Slide, type BlockId, type BrandKit, type Registry, type SlideBlock, type Theme } from "@/babel/schema";
+import { changedBlocks } from "@/babel/schema/diff";
+
+export { changedBlocks };
 
 export type ValidateInput = {
   slide: unknown;
@@ -121,34 +124,4 @@ function checkBudget(slide: Slide, prev: Slide | undefined, returning: boolean):
 function keptUnchanged(slide: Slide, prev: Slide): string[] {
   const changed = new Set(changedBlocks(prev.blocks, slide.blocks));
   return prev.keep.filter((id) => changed.has(id)).map((id) => `block "${id}" is carried over and may not change`);
-}
-
-// A block counts as changed if its variant or collapsed state changed, or it had to move.
-// "Had to move" = not in the longest common subsequence of the two orders, so moving one
-// block up counts as one change, not as every block it pushed down.
-export function changedBlocks(before: SlideBlock[], after: SlideBlock[]): BlockId[] {
-  const a = [...before].sort((x, y) => x.order - y.order).map((b) => b.id);
-  const b = [...after].sort((x, y) => x.order - y.order).map((b) => b.id);
-  const stayed = lcs(a, b);
-  const prevById = new Map(before.map((x) => [x.id, x]));
-  return after
-    .filter((x) => {
-      const p = prevById.get(x.id);
-      return !p || p.variant !== x.variant || !!p.collapsed !== !!x.collapsed || !stayed.has(x.id);
-    })
-    .map((x) => x.id);
-}
-
-function lcs(a: BlockId[], b: BlockId[]): Set<BlockId> {
-  const dp = Array.from({ length: a.length + 1 }, () => Array<number>(b.length + 1).fill(0));
-  for (let i = a.length - 1; i >= 0; i--)
-    for (let j = b.length - 1; j >= 0; j--)
-      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
-  const out = new Set<BlockId>();
-  for (let i = 0, j = 0; i < a.length && j < b.length; ) {
-    if (a[i] === b[j]) { out.add(a[i]); i++; j++; }
-    else if (dp[i + 1][j] >= dp[i][j + 1]) i++;
-    else j++;
-  }
-  return out;
 }
