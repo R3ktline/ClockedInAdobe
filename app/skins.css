@@ -20,7 +20,7 @@
     repeating-linear-gradient(0deg, #ffffff05 0 1px, transparent 1px 3px), linear-gradient(140deg, #1d303d, #101c25 75%);
 }
 [data-skin="genx"] header { background: linear-gradient(#37596d, #1b2f3b); color: #fff; border-bottom: 1px solid #0b161d; box-shadow: inset 0 1px 0 #ffffff26, 0 6px 18px #07131d66; }
-[data-skin="genx"] header a:first-child { font-style: italic; letter-spacing: .02em; text-shadow: 0 1px 0 #0b161d; }
+[data-skin="genx"] header > div > a:first-child { font-style: italic; letter-spacing: .02em; text-shadow: 0 1px 0 #0b161d; }
 [data-skin="genx"] header input { border-radius: 6px; border: 1px solid #0b161d; box-shadow: inset 0 2px 3px #0003; background: #f4f2ea; }
 [data-skin="genx"] .babel-stage > main { background: #eeece4; border-radius: 14px; margin-block: 22px 40px; box-shadow: 0 12px 32px #07131d66, inset 0 1px 0 #fff; }
 [data-skin="genx"] .babel-block { background: linear-gradient(#fbfaf6, #f1efe6); border: 1px solid #c3c7bf; border-radius: 12px; box-shadow: inset 0 1px 0 #fff, 0 2px 0 #0000000d; }
@@ -60,7 +60,7 @@
     radial-gradient(circle at 70% 8%, #ebe4ff 0 90px, transparent 91px), #ffe8dc;
 }
 [data-skin="millennial"] header { background: #fff; color: #2b2d42; box-shadow: 0 4px 20px rgb(120 90 160 / .1); }
-[data-skin="millennial"] header a:first-child { color: #ff6b6b; font-weight: 800; }
+[data-skin="millennial"] header > div > a:first-child { color: #ff6b6b; font-weight: 800; }
 [data-skin="millennial"] header nav { color: #6e7191; }
 [data-skin="millennial"] header input { background: #ffe8dc; box-shadow: none; }
 [data-skin="millennial"] header a[aria-label^="Cart"] { background: #d6f5e8; color: #2bb888; }
@@ -104,7 +104,7 @@
   --skin-canvas: radial-gradient(#1717170d .65px, transparent .65px) 0 0 / 5px 5px, #f5f0e5;
 }
 [data-skin="print"] header { background: #f0c84b; color: #171717; border-bottom: 4px solid #171717; }
-[data-skin="print"] header a:first-child { font-family: "Arial Black", Arial, sans-serif; text-transform: uppercase; letter-spacing: -.04em; font-size: 2rem; }
+[data-skin="print"] header > div > a:first-child { font-family: "Arial Black", Arial, sans-serif; text-transform: uppercase; letter-spacing: -.04em; font-size: 2rem; }
 [data-skin="print"] header nav { color: #171717; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-size: .75rem; }
 [data-skin="print"] header input { border-radius: 0; border: 3px solid #171717; background: #fffdf7; }
 [data-skin="print"] header a[aria-label^="Cart"] { background: #171717; color: #fff; border-radius: 0; }

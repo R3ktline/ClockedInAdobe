@@ -89,3 +89,18 @@ Try it: `http://localhost:3100/taraba/p/elec-mon-01?curtain=1&txlab=1` (`&optin=
 - **After a change** (`ViewNotice`): "Laid out for you: Visual. Same store, same prices. Keep / Back", then a small "Your view" chip.
   Keep is tracked as a `view_switch` event with value `keep`.
 - **Look switcher** (`TransitionLab`, `?txlab=1`): switch between the four looks with any transition, no server involved.
+
+## Skins (local prototype, branch `d/transition-lab`)
+
+A **skin** is a visual identity for the store frame, taken from Ionut's five designs: **Glossy** (Gen X "Analog Supply": navy backdrop with scan-lines,
+cream device panel, glossy blue bevelled buttons, orange ribbon badge, serif), **Bento** and **Bento dark** (Gen Alpha: `#f5f5f7`/`#000` canvas, glass
+tiles, 22px corners, Inter, blue pill buttons), **Pastel** (Millennial "Nestly": peach page with floating shapes, coral pill buttons, white 24px cards with
+lilac shadow, Poppins), **Y2K desktop** (Older Gen Z "CyberStation": Luna blue title bars named after each block, red close boxes, sky-and-hill backdrop,
+start taskbar, Tahoma; the Bliss wallpaper itself is not used, AGENTS rule 13) and **Print** (Boomers "Good Machine": halftone paper, yellow header, 3px
+ink outlines, hard shadows, Arial Black uppercase).
+
+- Files: `app/skins.css` (imported after `globals.css`), `--skin-*` tokens read by `BabelProvider` (skin wins over the dialect's `--look-*`, which wins over the
+  brand kit), `Skin` picker in the look switcher (`?txlab=1`), `?skin=<genx|alpha|alphadark|millennial|xp|print|none>` (sticky in `localStorage`).
+- A skin is independent of the look (layout and detail level) and of the transition style. It is chosen by the shopper; the styles are organised by
+  generation, so any default tied to age must be a weak, declared suggestion, never an inference (ADR-002; the team's `ageBand` rule).
+- Limits: only the Taraba frame was checked (product page); home, category, cart and checkout were not. Copy is the store's, never the designs'.
